@@ -200,7 +200,8 @@ function mapCliOptionsToSDK(options = {}) {
   // Map system prompt configuration
   sdkOptions.systemPrompt = {
     type: 'preset',
-    preset: 'claude_code'  // Required to use CLAUDE.md
+    preset: 'claude_code',  // Required to use CLAUDE.md
+    ...(options.appendSystemPrompt ? { append: options.appendSystemPrompt } : {})
   };
 
   // Map setting sources for CLAUDE.md loading

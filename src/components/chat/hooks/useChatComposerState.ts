@@ -147,6 +147,11 @@ export function useChatComposerState({
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const inputHighlightRef = useRef<HTMLDivElement>(null);
+  // When a custom command (skill) is executed, its expanded template goes
+  // here as a pending system prompt instead of being pasted as user input.
+  // The next submit picks it up and sends it via options.appendSystemPrompt.
+  const pendingSystemPromptRef = useRef<string | null>(null);
+
   const handleSubmitRef = useRef<
     ((event: FormEvent<HTMLFormElement> | MouseEvent | TouchEvent | KeyboardEvent<HTMLTextAreaElement>) => Promise<void>) | null
   >(null);
@@ -235,7 +240,7 @@ export function useChatComposerState({
     [onFileOpen, onShowSettings, addMessage, clearMessages, rewindMessages],
   );
 
-  const handleCustomCommand = useCallback(async (result: CommandExecutionResult) => {
+  const handleCustomCommand = useCallback(async (result: CommandExecutionResult, userArgsText?: string) => {
     const { content, hasBashCommands } = result;
 
     if (hasBashCommands) {
@@ -252,11 +257,19 @@ export function useChatComposerState({
       }
     }
 
+    // Store the skill template as a pending system prompt so the user's
+    // conversation stream stays clean (no 200-line markdown dump). The
+    // next submit will pick it up via options.appendSystemPrompt.
     const commandContent = content || '';
-    setInput(commandContent);
-    inputValueRef.current = commandContent;
+    pendingSystemPromptRef.current = commandContent;
 
-    // Defer submit to next tick so the command text is reflected in UI before dispatching.
+    // Show just the user's args (the topic/query) as the visible input,
+    // not the entire skill template.
+    const visibleInput = userArgsText || '';
+    setInput(visibleInput);
+    inputValueRef.current = visibleInput;
+
+    // Defer submit to next tick so the input is reflected in UI before dispatching.
     setTimeout(() => {
       if (handleSubmitRef.current) {
         handleSubmitRef.current(createFakeSubmitEvent());
@@ -315,7 +328,8 @@ export function useChatComposerState({
           setInput('');
           inputValueRef.current = '';
         } else if (result.type === 'custom') {
-          await handleCustomCommand(result);
+          const rawArgsText = commandMatch && commandMatch[1] ? commandMatch[1].trim() : '';
+          await handleCustomCommand(result, rawArgsText);
         }
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error';
@@ -652,8 +666,16 @@ export function useChatComposerState({
             model: claudeModel,
             sessionSummary,
             images: uploadedImages,
+            // If a skill was just executed, its expanded template is pending
+            // as a system prompt. Inject it so the SDK receives the skill
+            // instructions as system context, not as user-visible input.
+            ...(pendingSystemPromptRef.current
+              ? { appendSystemPrompt: pendingSystemPromptRef.current }
+              : {}),
           },
         });
+        // Clear the pending system prompt after sending
+        pendingSystemPromptRef.current = null;
       }
 
       setInput('');

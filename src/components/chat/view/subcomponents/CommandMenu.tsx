@@ -198,20 +198,15 @@ export default function CommandMenu({
                 onMouseDown={(event) => event.preventDefault()}
               >
                 <div className="min-w-0 flex-1">
-                  <div className={`flex items-center gap-2 ${command.description ? 'mb-1' : 'mb-0'}`}>
+                  <div className="flex items-center gap-2">
                     <span className="shrink-0 text-xs text-gray-500 dark:text-gray-300">{namespaceIcons[namespace] || namespaceIcons.other}</span>
-                    <span className="font-mono text-sm font-semibold text-gray-900 dark:text-gray-100">{command.name}</span>
-                    {command.metadata?.type && (
-                      <span className="command-metadata-badge rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-500 dark:bg-gray-700 dark:text-gray-300">
-                        {command.metadata.type}
-                      </span>
-                    )}
+                    <span className="min-w-0 truncate font-mono text-sm text-gray-900 dark:text-gray-100">
+                      <span className="font-semibold">{command.name}</span>
+                      {command.description && (
+                        <span className="font-normal text-gray-500 dark:text-gray-400">: {command.description}</span>
+                      )}
+                    </span>
                   </div>
-                  {command.description && (
-                    <div className="ml-6 truncate whitespace-nowrap text-[13px] text-gray-500 dark:text-gray-300">
-                      {command.description}
-                    </div>
-                  )}
                 </div>
                 {isSelected && <span className="ml-2 text-xs font-semibold text-blue-500 dark:text-blue-300">{'<-'}</span>}
               </div>
