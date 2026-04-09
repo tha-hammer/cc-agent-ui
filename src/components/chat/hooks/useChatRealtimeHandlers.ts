@@ -3,6 +3,7 @@ import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { PendingPermissionRequest } from '../types/types';
 import type { Project, ProjectSession, SessionProvider } from '../../../types/app';
 import type { SessionStore, NormalizedMessage } from '../../../stores/useSessionStore';
+import type { SectionAccumulator, SectionMeta } from '../../../utils/SectionAccumulator';
 
 type PendingViewSession = {
   sessionId: string | null;
@@ -69,6 +70,8 @@ interface UseChatRealtimeHandlersArgs {
   onNavigateToSession?: (sessionId: string) => void;
   onWebSocketReconnect?: () => void;
   sessionStore: SessionStore;
+  sectionAccumulatorRef?: MutableRefObject<SectionAccumulator>;
+  onStreamStructureReady?: (sessionId: string, sections: SectionMeta[], contentLength: number) => void;
 }
 
 /* ------------------------------------------------------------------ */
@@ -98,6 +101,8 @@ export function useChatRealtimeHandlers({
   onNavigateToSession,
   onWebSocketReconnect,
   sessionStore,
+  sectionAccumulatorRef,
+  onStreamStructureReady,
 }: UseChatRealtimeHandlersArgs) {
   const lastProcessedMessageRef = useRef<LatestChatMessage | null>(null);
 
@@ -186,6 +191,8 @@ export function useChatRealtimeHandlers({
       if (!text) return;
       streamBufferRef.current += text;
       accumulatedStreamRef.current += text;
+      // Feed the section accumulator (silent metadata collection)
+      sectionAccumulatorRef?.current.feed(text);
       if (!streamTimerRef.current) {
         streamTimerRef.current = window.setTimeout(() => {
           streamTimerRef.current = null;
@@ -211,6 +218,14 @@ export function useChatRealtimeHandlers({
           sessionStore.updateStreaming(sid, accumulatedStreamRef.current, provider);
         }
         sessionStore.finalizeStreaming(sid);
+      }
+      // Finalize section accumulator and evaluate for structured layout
+      if (sectionAccumulatorRef?.current && sid) {
+        sectionAccumulatorRef.current.finalize();
+        const sections = sectionAccumulatorRef.current.getMetadata();
+        const contentLength = accumulatedStreamRef.current.length;
+        onStreamStructureReady?.(sid, sections, contentLength);
+        sectionAccumulatorRef.current.reset();
       }
       accumulatedStreamRef.current = '';
       streamBufferRef.current = '';

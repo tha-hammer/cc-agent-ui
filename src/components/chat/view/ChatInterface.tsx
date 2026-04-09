@@ -1,4 +1,6 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { SectionAccumulator, qualifiesForStructure } from '../../../utils/SectionAccumulator';
+import type { SectionMeta } from '../../../utils/SectionAccumulator';
 import { useTranslation } from 'react-i18next';
 import { useTasksSettings } from '../../../contexts/TasksSettingsContext';
 import { QuickSettingsPanel } from '../../quick-settings-panel';
@@ -51,6 +53,12 @@ function ChatInterface({
   const accumulatedStreamRef = useRef('');
   const pendingViewSessionRef = useRef<PendingViewSession | null>(null);
 
+  // Structured layout: accumulate section metadata during streaming
+  const sectionAccumulatorRef = useRef(new SectionAccumulator());
+  const [structuredMessages, setStructuredMessages] = useState<
+    Map<string, { sections: SectionMeta[]; renderMode: 'stream' | 'structured' | 'raw' }>
+  >(new Map());
+
   const resetStreamingState = useCallback(() => {
     if (streamTimerRef.current) {
       clearTimeout(streamTimerRef.current);
@@ -58,6 +66,7 @@ function ChatInterface({
     }
     streamBufferRef.current = '';
     accumulatedStreamRef.current = '';
+    sectionAccumulatorRef.current.reset();
   }, []);
 
   const {
@@ -240,6 +249,18 @@ function ChatInterface({
     onNavigateToSession,
     onWebSocketReconnect: handleWebSocketReconnect,
     sessionStore,
+    sectionAccumulatorRef,
+    onStreamStructureReady: (sessionId: string, sections: SectionMeta[], contentLength: number) => {
+      const qualifies = qualifiesForStructure(sections, contentLength);
+      setStructuredMessages((prev) => {
+        const next = new Map(prev);
+        next.set(sessionId, {
+          sections,
+          renderMode: qualifies ? 'structured' : 'stream',
+        });
+        return next;
+      });
+    },
   });
 
   useEffect(() => {
@@ -339,6 +360,20 @@ function ChatInterface({
           showThinking={showThinking}
           selectedProject={selectedProject}
           isLoading={isLoading}
+          structuredMessages={structuredMessages}
+          onToggleRenderMode={(sessionId: string) => {
+            setStructuredMessages((prev) => {
+              const next = new Map(prev);
+              const entry = next.get(sessionId);
+              if (entry) {
+                next.set(sessionId, {
+                  ...entry,
+                  renderMode: entry.renderMode === 'structured' ? 'raw' : 'structured',
+                });
+              }
+              return next;
+            });
+          }}
         />
 
         <ChatComposer

@@ -3,6 +3,7 @@ import { useCallback, useRef } from 'react';
 import type { Dispatch, RefObject, SetStateAction } from 'react';
 import type { ChatMessage } from '../../types/types';
 import type { Project, ProjectSession, SessionProvider } from '../../../../types/app';
+import type { SectionMeta } from '../../../../utils/SectionAccumulator';
 import { getIntrinsicMessageKey } from '../../utils/messageKeys';
 import MessageComponent from './MessageComponent';
 import ProviderSelectionEmptyState from './ProviderSelectionEmptyState';
@@ -52,6 +53,8 @@ interface ChatMessagesPaneProps {
   showThinking?: boolean;
   selectedProject: Project;
   isLoading: boolean;
+  structuredMessages?: Map<string, { sections: SectionMeta[]; renderMode: 'stream' | 'structured' | 'raw' }>;
+  onToggleRenderMode?: (sessionId: string) => void;
 }
 
 export default function ChatMessagesPane({
@@ -98,6 +101,8 @@ export default function ChatMessagesPane({
   showThinking,
   selectedProject,
   isLoading,
+  structuredMessages,
+  onToggleRenderMode,
 }: ChatMessagesPaneProps) {
   const { t } = useTranslation('chat');
   const messageKeyMapRef = useRef<WeakMap<ChatMessage, string>>(new WeakMap());
@@ -256,6 +261,8 @@ export default function ChatMessagesPane({
                 showThinking={showThinking}
                 selectedProject={selectedProject}
                 provider={provider}
+                structuredMessages={currentSessionId ? structuredMessages?.get(currentSessionId) ?? null : null}
+                onToggleRenderMode={currentSessionId && onToggleRenderMode ? () => onToggleRenderMode(currentSessionId) : undefined}
               />
             );
           })}
