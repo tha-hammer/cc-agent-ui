@@ -33,6 +33,7 @@ const useWebSocketProviderState = (): WebSocketContextType => {
   const [latestMessage, setLatestMessage] = useState<any>(null);
   const [isConnected, setIsConnected] = useState(false);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectAttemptsRef = useRef(0);
   const { token } = useAuth();
 
   useEffect(() => {
@@ -78,15 +79,24 @@ const useWebSocketProviderState = (): WebSocketContextType => {
         }
       };
 
+      websocket.onopen = () => {
+        reconnectAttemptsRef.current = 0; // Reset backoff on successful connect
+      };
+
       websocket.onclose = () => {
         setIsConnected(false);
         wsRef.current = null;
-        
-        // Attempt to reconnect after 3 seconds
+
+        // Exponential backoff: 1s, 2s, 4s, 8s, max 30s
+        const attempts = reconnectAttemptsRef.current;
+        const delay = Math.min(1000 * Math.pow(2, attempts), 30000);
+        reconnectAttemptsRef.current = attempts + 1;
+        console.log(`[WS] Connection closed. Reconnecting in ${delay}ms (attempt ${attempts + 1})`);
+
         reconnectTimeoutRef.current = setTimeout(() => {
-          if (unmountedRef.current) return; // Prevent reconnection if unmounted
+          if (unmountedRef.current) return;
           connect();
-        }, 3000);
+        }, delay);
       };
 
       websocket.onerror = (error) => {

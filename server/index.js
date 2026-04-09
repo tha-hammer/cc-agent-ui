@@ -223,6 +223,13 @@ async function setupProjectsWatcher() {
 const app = express();
 const server = http.createServer(app);
 
+// Increase HTTP server timeouts for long-running agent sessions.
+// Default keepAliveTimeout (65s) and headersTimeout (60s) are too
+// aggressive — they can close the underlying TCP socket while a
+// WebSocket is still active during long tool-call sequences.
+server.keepAliveTimeout = 86400 * 1000; // 24 hours (matches nginx)
+server.headersTimeout = 86400 * 1000 + 1000; // must be > keepAliveTimeout
+
 const ptySessionsMap = new Map();
 const PTY_SESSION_TIMEOUT = 30 * 60 * 1000;
 const SHELL_URL_PARSE_BUFFER_LIMIT = 32768;
@@ -325,6 +332,28 @@ const wss = new WebSocketServer({
         console.log('[OK] WebSocket authenticated for user:', user.username);
         return true;
     }
+});
+
+// WebSocket ping/pong keep-alive — prevents intermediate proxies and
+// OS-level TCP stacks from closing "idle" connections during long agent
+// tool-call sequences where no frames are sent for minutes at a time.
+const WS_HEARTBEAT_INTERVAL = 30000; // 30 seconds
+const heartbeat = setInterval(() => {
+    wss.clients.forEach((ws) => {
+        if (ws.isAlive === false) {
+            console.log('[WS] Terminating unresponsive client');
+            return ws.terminate();
+        }
+        ws.isAlive = false;
+        ws.ping();
+    });
+}, WS_HEARTBEAT_INTERVAL);
+
+wss.on('close', () => clearInterval(heartbeat));
+
+wss.on('connection', (ws) => {
+    ws.isAlive = true;
+    ws.on('pong', () => { ws.isAlive = true; });
 });
 
 // Make WebSocket server available to routes
