@@ -33,8 +33,6 @@ type MessageComponentProps = {
   showThinking?: boolean;
   selectedProject?: Project | null;
   provider: Provider | string;
-  structuredMessages?: { sections: import('../../../../utils/SectionAccumulator').SectionMeta[]; renderMode: 'stream' | 'structured' | 'raw' } | null;
-  onToggleRenderMode?: () => void;
 };
 
 type InteractiveOption = {
@@ -46,7 +44,7 @@ type InteractiveOption = {
 type PermissionGrantState = 'idle' | 'granted' | 'error';
 const COPY_HIDDEN_TOOL_NAMES = new Set(['Bash', 'Edit', 'Write', 'ApplyPatch']);
 
-const MessageComponent = memo(({ message, prevMessage, createDiff, onFileOpen, onShowSettings, onGrantToolPermission, autoExpandTools, showRawParameters, showThinking, selectedProject, provider, structuredMessages, onToggleRenderMode }: MessageComponentProps) => {
+const MessageComponent = memo(({ message, prevMessage, createDiff, onFileOpen, onShowSettings, onGrantToolPermission, autoExpandTools, showRawParameters, showThinking, selectedProject, provider }: MessageComponentProps) => {
   const { t } = useTranslation('chat');
   const isGrouped = prevMessage && prevMessage.type === message.type &&
     ((prevMessage.type === 'assistant') ||
@@ -448,23 +446,12 @@ const MessageComponent = memo(({ message, prevMessage, createDiff, onFileOpen, o
 
                   // Normal rendering for non-JSON content
                   if (message.type === 'assistant') {
-                    // Check if the current session has structured layout data
-                    // structuredMessages is the entry for the current session (passed from ChatMessagesPane)
-                    const structuredEntry = structuredMessages;
-                    if (structuredEntry && (structuredEntry.renderMode === 'structured' || structuredEntry.renderMode === 'raw')) {
-                      return (
-                        <StructuredMessage
-                          content={content}
-                          sections={structuredEntry.sections}
-                          renderMode={structuredEntry.renderMode === 'stream' ? 'raw' : structuredEntry.renderMode}
-                          onToggle={() => onToggleRenderMode?.()}
-                        />
-                      );
-                    }
                     return (
-                      <Markdown className="prose prose-sm prose-gray max-w-none dark:prose-invert">
-                        {content}
-                      </Markdown>
+                      <StructuredMessage content={content}>
+                        <Markdown className="prose prose-sm prose-gray max-w-none dark:prose-invert">
+                          {content}
+                        </Markdown>
+                      </StructuredMessage>
                     );
                   }
                   return (

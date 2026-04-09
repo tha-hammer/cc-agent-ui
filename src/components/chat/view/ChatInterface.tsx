@@ -59,6 +59,34 @@ function ChatInterface({
     Map<string, { sections: SectionMeta[]; renderMode: 'stream' | 'structured' | 'raw' }>
   >(new Map());
 
+  // Analyze loaded/historical messages for structured layout.
+  // Runs when visibleMessages change (session load, pagination, new messages).
+  // Only analyzes messages that don't already have metadata in the map.
+  const analyzeLoadedMessages = useCallback((messages: Array<{ type?: string; content?: string; displayText?: string }>, sessionId: string | null) => {
+    if (!sessionId || !messages.length) return;
+    // Check if we already have metadata for this session
+    if (structuredMessages.has(sessionId)) return;
+
+    // Find the last assistant message with substantial content
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const msg = messages[i];
+      if (msg.type === 'assistant' && msg.content && msg.content.length >= 500) {
+        const acc = new SectionAccumulator();
+        acc.feed(msg.content);
+        acc.finalize();
+        const sections = acc.getMetadata();
+        if (qualifiesForStructure(sections, msg.content.length)) {
+          setStructuredMessages((prev) => {
+            const next = new Map(prev);
+            next.set(sessionId, { sections, renderMode: 'structured' });
+            return next;
+          });
+        }
+        break; // Only analyze the last qualifying message
+      }
+    }
+  }, [structuredMessages]);
+
   const resetStreamingState = useCallback(() => {
     if (streamTimerRef.current) {
       clearTimeout(streamTimerRef.current);
@@ -263,6 +291,11 @@ function ChatInterface({
     },
   });
 
+  // Analyze historical messages when a session loads
+  useEffect(() => {
+    analyzeLoadedMessages(visibleMessages, currentSessionId);
+  }, [visibleMessages, currentSessionId, analyzeLoadedMessages]);
+
   useEffect(() => {
     if (!isLoading || !canAbortSession) {
       return;
@@ -360,20 +393,6 @@ function ChatInterface({
           showThinking={showThinking}
           selectedProject={selectedProject}
           isLoading={isLoading}
-          structuredMessages={structuredMessages}
-          onToggleRenderMode={(sessionId: string) => {
-            setStructuredMessages((prev) => {
-              const next = new Map(prev);
-              const entry = next.get(sessionId);
-              if (entry) {
-                next.set(sessionId, {
-                  ...entry,
-                  renderMode: entry.renderMode === 'structured' ? 'raw' : 'structured',
-                });
-              }
-              return next;
-            });
-          }}
         />
 
         <ChatComposer

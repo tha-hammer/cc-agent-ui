@@ -1,11 +1,14 @@
 /**
- * StructuredMessage — renders a completed assistant message as a
- * horizontal layout (Grid/Tabs/Cards) when it qualifies, with a
- * toggle to switch back to the default single-column markdown view.
+ * StructuredMessage — self-contained component that analyzes assistant
+ * message content and renders it as a horizontal layout (Grid/Tabs/Cards)
+ * when it qualifies, with a toggle to switch back to single-column markdown.
+ *
+ * Drop-in replacement: wrap any <Markdown>{content}</Markdown> with
+ * <StructuredMessage content={content}><Markdown>...</Markdown></StructuredMessage>
  */
 
 import React, { useState, useMemo } from 'react';
-import type { SectionMeta } from '../../../../utils/SectionAccumulator';
+import { SectionAccumulator, qualifiesForStructure } from '../../../../utils/SectionAccumulator';
 import { sectionsToPrefab, type ComponentNode } from '../../../../utils/sectionsToPrefab';
 import { Markdown } from './Markdown';
 
@@ -144,11 +147,9 @@ function RenderNode({ node }: { node: ComponentNode }): React.ReactElement | nul
       );
 
     case 'Tab':
-      // Tabs handles Tab rendering internally
       return null;
 
     default:
-      // Fallback: render children or text
       if (node.text) {
         return <span>{node.text}</span>;
       }
@@ -178,7 +179,7 @@ function ViewToggle({ mode, onToggle }: {
             : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'
         }`}
       >
-        📊 Structured
+        Structured
       </button>
       <button
         onClick={mode !== 'raw' ? onToggle : undefined}
@@ -188,7 +189,7 @@ function ViewToggle({ mode, onToggle }: {
             : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'
         }`}
       >
-        📝 Raw
+        Raw
       </button>
     </div>
   );
@@ -196,38 +197,56 @@ function ViewToggle({ mode, onToggle }: {
 
 // ── Main Component ──────────────────────────────────
 
-interface StructuredMessageProps {
+interface StructuredMessageWrapperProps {
   content: string;
-  sections: SectionMeta[];
-  renderMode: 'structured' | 'raw';
-  onToggle: () => void;
+  children: React.ReactNode; // The original <Markdown> element as fallback
 }
 
-export default function StructuredMessage({
+/**
+ * Self-contained wrapper. Analyzes content via SectionAccumulator
+ * on mount. If the content qualifies for structured layout, renders
+ * Grid/Tabs/Cards with a toggle. Otherwise renders children as-is.
+ */
+export default function StructuredMessageWrapper({
   content,
-  sections,
-  renderMode,
-  onToggle,
-}: StructuredMessageProps) {
-  const tree = useMemo(
-    () => sectionsToPrefab(sections, content),
-    [sections, content],
-  );
+  children,
+}: StructuredMessageWrapperProps) {
+  const [renderMode, setRenderMode] = useState<'structured' | 'raw'>('structured');
+
+  const analysis = useMemo(() => {
+    if (!content || content.length < 500) return null;
+
+    const acc = new SectionAccumulator();
+    acc.feed(content);
+    acc.finalize();
+    const sections = acc.getMetadata();
+
+    if (!qualifiesForStructure(sections, content.length)) return null;
+
+    return {
+      sections,
+      tree: sectionsToPrefab(sections, content),
+    };
+  }, [content]);
+
+  // Doesn't qualify — render children (original Markdown) unchanged
+  if (!analysis) {
+    return <>{children}</>;
+  }
 
   return (
     <div className="w-full">
       <div className="flex justify-end mb-3">
-        <ViewToggle mode={renderMode} onToggle={onToggle} />
+        <ViewToggle
+          mode={renderMode}
+          onToggle={() => setRenderMode((m) => (m === 'structured' ? 'raw' : 'structured'))}
+        />
       </div>
 
       {renderMode === 'structured' ? (
-        <div className="animate-in fade-in duration-300">
-          <RenderNode node={tree} />
-        </div>
+        <RenderNode node={analysis.tree} />
       ) : (
-        <Markdown className="prose prose-sm max-w-none dark:prose-invert">
-          {content}
-        </Markdown>
+        children
       )}
     </div>
   );
