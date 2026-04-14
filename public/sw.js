@@ -1,7 +1,7 @@
 // Service Worker for Claude Code UI PWA
 // Cache only manifest (needed for PWA install). HTML and JS are never pre-cached
 // so a rebuild + refresh always picks up the latest assets.
-const CACHE_NAME = 'claude-ui-v2';
+const CACHE_NAME = 'claude-ui-v3';
 const urlsToCache = [
   '/manifest.json'
 ];
@@ -45,15 +45,19 @@ self.addEventListener('fetch', event => {
           const clone = response.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
           return response;
-        });
+        }).catch(() => new Response('', { status: 504, statusText: 'Offline' }));
       })
     );
     return;
   }
 
-  // Everything else — network-first
+  // Everything else — network-first with guaranteed Response fallback
   event.respondWith(
-    fetch(event.request).catch(() => caches.match(event.request))
+    fetch(event.request).catch(() =>
+      caches.match(event.request).then(cached =>
+        cached || new Response('', { status: 504, statusText: 'Offline' })
+      )
+    )
   );
 });
 
