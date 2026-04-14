@@ -823,7 +823,8 @@ app.get('/api/projects/:projectName/file', authenticateToken, async (req, res) =
             ? path.resolve(filePath)
             : path.resolve(projectRoot, filePath);
         const normalizedRoot = path.resolve(projectRoot) + path.sep;
-        if (!resolved.startsWith(normalizedRoot)) {
+        const claudeDir = path.resolve(os.homedir(), '.claude') + path.sep;
+        if (!resolved.startsWith(normalizedRoot) && !resolved.startsWith(claudeDir)) {
             return res.status(403).json({ error: 'Path must be under project root' });
         }
 
@@ -860,7 +861,8 @@ app.get('/api/projects/:projectName/files/content', authenticateToken, async (re
 
         const resolved = path.resolve(filePath);
         const normalizedRoot = path.resolve(projectRoot) + path.sep;
-        if (!resolved.startsWith(normalizedRoot)) {
+        const claudeDir = path.resolve(os.homedir(), '.claude') + path.sep;
+        if (!resolved.startsWith(normalizedRoot) && !resolved.startsWith(claudeDir)) {
             return res.status(403).json({ error: 'Path must be under project root' });
         }
 
@@ -920,7 +922,8 @@ app.put('/api/projects/:projectName/file', authenticateToken, async (req, res) =
             ? path.resolve(filePath)
             : path.resolve(projectRoot, filePath);
         const normalizedRoot = path.resolve(projectRoot) + path.sep;
-        if (!resolved.startsWith(normalizedRoot)) {
+        const claudeDir = path.resolve(os.homedir(), '.claude') + path.sep;
+        if (!resolved.startsWith(normalizedRoot) && !resolved.startsWith(claudeDir)) {
             return res.status(403).json({ error: 'Path must be under project root' });
         }
 
@@ -989,7 +992,8 @@ function validatePathInProject(projectRoot, targetPath) {
         ? path.resolve(targetPath)
         : path.resolve(projectRoot, targetPath);
     const normalizedRoot = path.resolve(projectRoot) + path.sep;
-    if (!resolved.startsWith(normalizedRoot)) {
+    const claudeDir = path.resolve(os.homedir(), '.claude') + path.sep;
+    if (!resolved.startsWith(normalizedRoot) && !resolved.startsWith(claudeDir)) {
         return { valid: false, error: 'Path must be under project root' };
     }
     return { valid: true, resolved };
