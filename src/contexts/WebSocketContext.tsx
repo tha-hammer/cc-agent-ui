@@ -63,6 +63,7 @@ const useWebSocketProviderState = (): WebSocketContextType => {
       websocket.onopen = () => {
         setIsConnected(true);
         wsRef.current = websocket;
+        reconnectAttemptsRef.current = 0; // Reset backoff on successful connect
         if (hasConnectedRef.current) {
           // This is a reconnect — signal so components can catch up on missed messages
           setLatestMessage({ type: 'websocket-reconnected', timestamp: Date.now() });
@@ -77,10 +78,6 @@ const useWebSocketProviderState = (): WebSocketContextType => {
         } catch (error) {
           console.error('Error parsing WebSocket message:', error);
         }
-      };
-
-      websocket.onopen = () => {
-        reconnectAttemptsRef.current = 0; // Reset backoff on successful connect
       };
 
       websocket.onclose = () => {
