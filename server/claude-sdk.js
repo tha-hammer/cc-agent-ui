@@ -143,7 +143,7 @@ function matchesToolPermission(entry, toolName, input) {
  * @param {Object} options - CLI options
  * @returns {Object} SDK-compatible options
  */
-function mapCliOptionsToSDK(options = {}) {
+export function mapCliOptionsToSDK(options = {}) {
   const { sessionId, cwd, toolsSettings, permissionMode } = options;
 
   const sdkOptions = {};
@@ -208,10 +208,18 @@ function mapCliOptionsToSDK(options = {}) {
   // This loads CLAUDE.md from project, user (~/.config/claude/CLAUDE.md), and local directories
   sdkOptions.settingSources = ['project', 'user', 'local'];
 
-  // Map resume session
+  // Map resume session (legacy path: caller-supplied sessionId → resume)
   if (sessionId) {
     sdkOptions.resume = sessionId;
   }
+
+  // Fork-session forwarding (additive — only set when present/truthy)
+  // Overrides legacy sessionId→resume mapping when explicit options.resume provided.
+  if (options.resume) sdkOptions.resume = options.resume;
+  if (options.forkSession) sdkOptions.forkSession = options.forkSession;
+  if (options.resumeSessionAt) sdkOptions.resumeSessionAt = options.resumeSessionAt;
+  // sessionId gated by forkSession per SDK contract (sdk.d.ts:834)
+  if (options.sessionId && options.forkSession) sdkOptions.sessionId = options.sessionId;
 
   return sdkOptions;
 }
