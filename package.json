@@ -24,6 +24,8 @@
   },
   "scripts": {
     "dev": "concurrently --kill-others \"npm run server\" \"npm run client\"",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "server": "node server/index.js",
     "client": "vite",
     "build": "vite build",
@@ -121,10 +123,12 @@
     "@commitlint/config-conventional": "^20.4.3",
     "@eslint/js": "^9.39.3",
     "@release-it/conventional-changelog": "^10.0.5",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/node": "^22.19.7",
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
-    "@vitejs/plugin-react": "^4.6.0",
+    "@vitejs/plugin-react": "^4.7.0",
     "auto-changelog": "^2.5.0",
     "autoprefixer": "^10.4.16",
     "concurrently": "^8.2.2",
@@ -137,6 +141,7 @@
     "eslint-plugin-unused-imports": "^4.4.1",
     "globals": "^17.4.0",
     "husky": "^9.1.7",
+    "jsdom": "^29.0.2",
     "lint-staged": "^16.3.2",
     "node-gyp": "^10.0.0",
     "postcss": "^8.4.32",
@@ -145,7 +150,8 @@
     "tailwindcss": "^3.4.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.56.1",
-    "vite": "^7.0.4"
+    "vite": "^7.0.4",
+    "vitest": "^4.1.4"
   },
   "lint-staged": {
     "src/**/*.{ts,tsx,js,jsx}": "eslint"
