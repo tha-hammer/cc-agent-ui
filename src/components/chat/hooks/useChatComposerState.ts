@@ -159,6 +159,17 @@ export function useChatComposerState({
   >(null);
   const inputValueRef = useRef(input);
 
+  // Lazy fork dispatch (Option B):
+  // Fork click arms this ref; the next user submit consumes it and builds
+  // the claude-command with forkSession options. CLI rejects empty-prompt
+  // forks, so we never dispatch without a prompt.
+  const pendingForkRef = useRef<{
+    parentSessionId: string;
+    parentMessageUuid: string;
+    newSessionId: string;
+  } | null>(null);
+  const [isForkPending, setIsForkPending] = useState(false);
+
   const handleBuiltInCommand = useCallback(
     (result: CommandExecutionResult) => {
       const { action, data } = result;
@@ -655,19 +666,34 @@ export function useChatComposerState({
           },
         });
       } else {
+        // Consume any armed fork before building options. Fork click stashes
+        // {parentSessionId, parentMessageUuid, newSessionId} into a ref;
+        // the first submit after that click dispatches as a fork.
+        const pendingFork = pendingForkRef.current;
+        const forkOptions = pendingFork
+          ? {
+              sessionId: pendingFork.newSessionId,
+              resume: pendingFork.parentSessionId,
+              forkSession: true as const,
+              resumeSessionAt: pendingFork.parentMessageUuid,
+            }
+          : {
+              sessionId: effectiveSessionId,
+              resume: Boolean(effectiveSessionId),
+            };
+
         sendMessage({
           type: 'claude-command',
           command: messageContent,
           options: {
             projectPath: resolvedProjectPath,
             cwd: resolvedProjectPath,
-            sessionId: effectiveSessionId,
-            resume: Boolean(effectiveSessionId),
             toolsSettings,
             permissionMode,
             model: claudeModel,
             sessionSummary,
             images: uploadedImages,
+            ...forkOptions,
             // If a skill was just executed, its expanded template is pending
             // as a system prompt. Inject it so the SDK receives the skill
             // instructions as system context, not as user-visible input.
@@ -678,6 +704,11 @@ export function useChatComposerState({
         });
         // Clear the pending system prompt after sending
         pendingSystemPromptRef.current = null;
+        // Clear pending fork after it's consumed by the dispatch.
+        if (pendingFork) {
+          pendingForkRef.current = null;
+          setIsForkPending(false);
+        }
       }
 
       setInput('');
@@ -910,71 +941,47 @@ export function useChatComposerState({
 
       // BC-1: Slice parent merged array up to and including the forked message.
       // Read-only access — no mutation, no store writes against parent.
+      // Happens on Fork CLICK (before dispatch) so parent view reflects the
+      // intended branch point before the user types their prompt.
       const parentMessages = sessionStore.getMessages(parentSessionId);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _slicedHistory = parentMessages.slice(0, messageIndex + 1);
 
-      // Resolve inherited tools settings from localStorage (claude-settings).
-      // DefaultOnMissing / DefaultOnParseError → sane defaults, no throw.
-      const defaultToolsSettings = {
-        allowedTools: [] as string[],
-        disallowedTools: [] as string[],
-        skipPermissions: false,
-      };
-      let toolsSettings: {
-        allowedTools: string[];
-        disallowedTools: string[];
-        skipPermissions: boolean;
-      } = defaultToolsSettings;
-      if (provider === 'claude') {
-        const raw = safeLocalStorage.getItem('claude-settings');
-        if (raw) {
-          try {
-            const parsed = JSON.parse(raw);
-            toolsSettings = {
-              allowedTools: Array.isArray(parsed?.allowedTools) ? parsed.allowedTools : [],
-              disallowedTools: Array.isArray(parsed?.disallowedTools) ? parsed.disallowedTools : [],
-              skipPermissions: Boolean(parsed?.skipPermissions),
-            };
-          } catch {
-            toolsSettings = defaultToolsSettings;
-          }
-        }
-      }
-
-      const resolvedProjectPath = selectedProject.fullPath || selectedProject.path || '';
       const newSessionId =
         typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
           ? crypto.randomUUID()
           : `fork-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
-      sendMessage({
-        type: 'claude-command',
-        command: '',
-        options: {
-          provider: 'claude',
-          model: claudeModel,
-          projectPath: resolvedProjectPath,
-          cwd: resolvedProjectPath,
-          permissionMode,
-          toolsSettings,
-          sessionId: newSessionId,
-          resume: parentSessionId,
-          forkSession: true,
-          resumeSessionAt: messageId,
-        },
-      });
+      // Strip the `_<index>` part-suffix the Claude adapter appends when
+      // it splits a single SDK assistant message into N NormalizedMessages
+      // (one per content part). SDK's resumeSessionAt wants the base UUID.
+      // See server/providers/claude/adapter.js — ids shaped as "<uuid>_0".
+      const parentMessageUuid = messageId.replace(/_(?:\d+|text|tr_.*)$/, '');
+
+      // Arm lazy fork — actual claude-command dispatch happens on next submit.
+      // Claude CLI rejects empty-prompt commands ("Provide a prompt to
+      // continue the conversation"), so we defer until we have a real prompt.
+      pendingForkRef.current = {
+        parentSessionId,
+        parentMessageUuid,
+        newSessionId,
+      };
+      setIsForkPending(true);
+
+      // Focus composer so the user can immediately type their forked prompt.
+      if (typeof window !== 'undefined') {
+        setTimeout(() => {
+          textareaRef.current?.focus();
+        }, 0);
+      }
     },
-    [
-      sessionStore,
-      currentSessionId,
-      selectedProject,
-      provider,
-      claudeModel,
-      permissionMode,
-      sendMessage,
-    ],
+    [sessionStore, currentSessionId, selectedProject],
   );
+
+  const cancelPendingFork = useCallback(() => {
+    pendingForkRef.current = null;
+    setIsForkPending(false);
+  }, []);
 
   const handleTranscript = useCallback((text: string) => {
     if (!text.trim()) {
@@ -1093,6 +1100,8 @@ export function useChatComposerState({
     handleClearInput,
     handleAbortSession,
     handleForkFromMessage,
+    cancelPendingFork,
+    isForkPending,
     handleTranscript,
     handlePermissionDecision,
     handleGrantToolPermission,

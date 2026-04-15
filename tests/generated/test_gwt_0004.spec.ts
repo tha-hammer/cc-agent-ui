@@ -1,7 +1,12 @@
-// gwt-0004: fork.handler.inherits-settings
+// gwt-0004: fork.handler.inherits-settings (lazy dispatch variant)
+// Under Option B, settings inheritance happens at SUBMIT time (via the shared
+// getToolsSettings path) rather than on Fork click. Fork click only arms the
+// pending fork ref. The submit that follows reads claude-settings and builds
+// the options payload.
+//
 // Verifiers:
 //   - NoDialog
-//   - LocalStorageRead      (getItem('claude-settings') called)
+//   - LocalStorageRead      (getItem('claude-settings') called on submit)
 //   - ComposerStatePull     (cwd, projectPath, provider, permissionMode)
 //   - ProviderKey           (claude-settings, not cursor/codex/gemini)
 //   - DefaultOnMissing      (null from getItem → default defaults)
@@ -54,7 +59,19 @@ function seedParent(parentId: string, messageId: string) {
   return storeResult;
 }
 
-describe('gwt-0004 fork.handler.inherits-settings', () => {
+function armForkAndSubmit(result: any, messageId: string, prompt = 'forked prompt') {
+  act(() => {
+    result.current.handleForkFromMessage(messageId, 0);
+  });
+  act(() => {
+    result.current.setInput(prompt);
+  });
+  act(() => {
+    void result.current.handleSubmit({ preventDefault: () => {} } as any);
+  });
+}
+
+describe('gwt-0004 fork.handler.inherits-settings (lazy dispatch)', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.restoreAllMocks();
@@ -74,11 +91,9 @@ describe('gwt-0004 fork.handler.inherits-settings', () => {
     const args = makeArgs({ currentSessionId: parentId });
     const { result } = renderHook(() => useChatComposerState(args as any));
 
-    act(() => {
-      (result.current as any).handleForkFromMessage(messageId, 0);
-    });
+    armForkAndSubmit(result, messageId);
 
-    // LocalStorageRead + ProviderKey
+    // LocalStorageRead + ProviderKey — claude-settings read at submit time.
     const keysRead = getItemSpy.mock.calls.map((c) => c[0]);
     expect(keysRead).toContain('claude-settings');
     expect(keysRead).not.toContain('cursor-tools-settings');
@@ -97,12 +112,16 @@ describe('gwt-0004 fork.handler.inherits-settings', () => {
     expect(opts.projectPath).toBe('/work/proj');
     expect(opts.permissionMode).toBe('default');
     expect(opts.model).toBe('claude-sonnet-4.5');
+    // Fork markers are present because submit consumed the armed ref.
+    expect(opts.forkSession).toBe(true);
+    expect(opts.resume).toBe(parentId);
+    expect(opts.resumeSessionAt).toBe(messageId);
 
     // NoDialog
     expect(document.querySelector('[role="dialog"]')).toBeNull();
   });
 
-  it('DefaultOnMissing: getItem returns null → defaults used, fork still proceeds', () => {
+  it('DefaultOnMissing: getItem returns null → defaults used, fork still dispatches', () => {
     const parentId = 'p2';
     const messageId = 'a2';
     // localStorage is empty — no claude-settings key
@@ -111,9 +130,7 @@ describe('gwt-0004 fork.handler.inherits-settings', () => {
     const args = makeArgs({ currentSessionId: parentId });
     const { result } = renderHook(() => useChatComposerState(args as any));
 
-    act(() => {
-      (result.current as any).handleForkFromMessage(messageId, 0);
-    });
+    armForkAndSubmit(result, messageId);
 
     expect(args.sendMessage).toHaveBeenCalledTimes(1);
     const opts = args.sendMessage.mock.calls[0][0].options;
@@ -122,6 +139,7 @@ describe('gwt-0004 fork.handler.inherits-settings', () => {
       disallowedTools: [],
       skipPermissions: false,
     });
+    expect(opts.forkSession).toBe(true);
   });
 
   it('DefaultOnParseError: invalid JSON in localStorage → defaults used, no throw', () => {
@@ -133,11 +151,7 @@ describe('gwt-0004 fork.handler.inherits-settings', () => {
     const args = makeArgs({ currentSessionId: parentId });
     const { result } = renderHook(() => useChatComposerState(args as any));
 
-    expect(() => {
-      act(() => {
-        (result.current as any).handleForkFromMessage(messageId, 0);
-      });
-    }).not.toThrow();
+    expect(() => armForkAndSubmit(result, messageId)).not.toThrow();
 
     expect(args.sendMessage).toHaveBeenCalledTimes(1);
     const opts = args.sendMessage.mock.calls[0][0].options;

@@ -1,10 +1,11 @@
-// gwt-0003: fork.handler.sends-claude-command-with-fork-options
+// gwt-0003: fork.handler.arms-then-dispatches-on-next-submit (lazy dispatch / Option B)
 // Verifiers:
-//   - ChannelReuse       (type === 'claude-command')
+//   - ArmOnClick         (fork click does NOT dispatch sendMessage)
+//   - ChannelReuse       (type === 'claude-command' on subsequent submit)
 //   - ForkMarker         (options.forkSession === true; resume, resumeSessionAt)
 //   - FreshSessionId     (new UUID v4, distinct from parent)
-//   - EmptyCommand       (command === '')
-//   - sendMessage called exactly once
+//   - UserPromptConsumed (command === user input, not empty)
+//   - sendMessage called exactly once (on submit, not on fork)
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
@@ -13,12 +14,12 @@ import { useSessionStore } from '../../src/stores/useSessionStore';
 
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 
-describe('gwt-0003 fork.handler.sends-claude-command-with-fork-options', () => {
+describe('gwt-0003 fork.handler.arms-then-dispatches-on-next-submit', () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
-  it('dispatches claude-command with fork options over sendMessage exactly once', () => {
+  it('fork click arms pending state; next submit dispatches claude-command with fork options', async () => {
     const parentId = '11111111-1111-4111-8111-111111111111';
     const messageId = 'a-uuid-1234';
 
@@ -68,18 +69,29 @@ describe('gwt-0003 fork.handler.sends-claude-command-with-fork-options', () => {
       } as any)
     );
 
+    // ArmOnClick: Fork click stashes pending fork; does NOT dispatch.
     act(() => {
       (result.current as any).handleForkFromMessage(messageId, 1);
     });
+    expect(sendMessage).not.toHaveBeenCalled();
+    expect((result.current as any).isForkPending).toBe(true);
 
-    // sendMessage-called-once
+    // Simulate user typing a prompt + submitting.
+    act(() => {
+      (result.current as any).setInput('forked prompt');
+    });
+    act(() => {
+      void (result.current as any).handleSubmit({ preventDefault: () => {} } as any);
+    });
+
+    // sendMessage-called-once on submit.
     expect(sendMessage).toHaveBeenCalledTimes(1);
     const payload = sendMessage.mock.calls[0][0];
 
     // ChannelReuse
     expect(payload.type).toBe('claude-command');
-    // EmptyCommand
-    expect(payload.command).toBe('');
+    // UserPromptConsumed — command is user text, not empty
+    expect(payload.command).toBe('forked prompt');
     // ForkMarker
     expect(payload.options).toMatchObject({
       forkSession: true,
@@ -90,6 +102,9 @@ describe('gwt-0003 fork.handler.sends-claude-command-with-fork-options', () => {
     expect(payload.options.sessionId).toBe(newUUID);
     expect(payload.options.sessionId).toMatch(UUID_V4);
     expect(payload.options.sessionId).not.toBe(parentId);
+
+    // Pending state cleared after dispatch.
+    expect((result.current as any).isForkPending).toBe(false);
 
     vi.restoreAllMocks();
   });
