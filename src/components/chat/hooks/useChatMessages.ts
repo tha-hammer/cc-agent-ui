@@ -45,6 +45,7 @@ export function normalizedToChatMessages(messages: NormalizedMessage[]): ChatMes
             });
           } else {
             converted.push({
+              id: msg.id,
               type: 'user',
               content: unescapeWithMathProtection(decodeHtmlEntities(content)),
               timestamp: msg.timestamp,
@@ -55,6 +56,7 @@ export function normalizedToChatMessages(messages: NormalizedMessage[]): ChatMes
           text = unescapeWithMathProtection(text);
           text = formatUsageLimitText(text);
           converted.push({
+            id: msg.id,
             type: 'assistant',
             content: text,
             timestamp: msg.timestamp,
