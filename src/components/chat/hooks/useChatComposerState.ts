@@ -23,6 +23,7 @@ import type { Project, ProjectSession, SessionProvider } from '../../../types/ap
 import { escapeRegExp } from '../utils/chatFormatting';
 import { useFileMentions } from './useFileMentions';
 import { type SlashCommand, useSlashCommands } from './useSlashCommands';
+import { useSessionStore } from '../../../stores/useSessionStore';
 
 type PendingViewSession = {
   sessionId: string | null;
@@ -133,6 +134,7 @@ export function useChatComposerState({
   setIsUserScrolledUp,
   setPendingPermissionRequests,
 }: UseChatComposerStateArgs) {
+  const sessionStore = useSessionStore();
   const [input, setInput] = useState(() => {
     if (typeof window !== 'undefined' && selectedProject) {
       return safeLocalStorage.getItem(`draft_input_${selectedProject.name}`) || '';
@@ -900,6 +902,80 @@ export function useChatComposerState({
     });
   }, [canAbortSession, currentSessionId, pendingViewSessionRef, provider, selectedSession?.id, sendMessage]);
 
+  const handleForkFromMessage = useCallback(
+    (messageId: string, messageIndex: number) => {
+      if (!selectedProject) return;
+      const parentSessionId = currentSessionId;
+      if (!parentSessionId) return;
+
+      // BC-1: Slice parent merged array up to and including the forked message.
+      // Read-only access — no mutation, no store writes against parent.
+      const parentMessages = sessionStore.getMessages(parentSessionId);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const _slicedHistory = parentMessages.slice(0, messageIndex + 1);
+
+      // Resolve inherited tools settings from localStorage (claude-settings).
+      // DefaultOnMissing / DefaultOnParseError → sane defaults, no throw.
+      const defaultToolsSettings = {
+        allowedTools: [] as string[],
+        disallowedTools: [] as string[],
+        skipPermissions: false,
+      };
+      let toolsSettings: {
+        allowedTools: string[];
+        disallowedTools: string[];
+        skipPermissions: boolean;
+      } = defaultToolsSettings;
+      if (provider === 'claude') {
+        const raw = safeLocalStorage.getItem('claude-settings');
+        if (raw) {
+          try {
+            const parsed = JSON.parse(raw);
+            toolsSettings = {
+              allowedTools: Array.isArray(parsed?.allowedTools) ? parsed.allowedTools : [],
+              disallowedTools: Array.isArray(parsed?.disallowedTools) ? parsed.disallowedTools : [],
+              skipPermissions: Boolean(parsed?.skipPermissions),
+            };
+          } catch {
+            toolsSettings = defaultToolsSettings;
+          }
+        }
+      }
+
+      const resolvedProjectPath = selectedProject.fullPath || selectedProject.path || '';
+      const newSessionId =
+        typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+          ? crypto.randomUUID()
+          : `fork-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+      sendMessage({
+        type: 'claude-command',
+        command: '',
+        options: {
+          provider: 'claude',
+          model: claudeModel,
+          projectPath: resolvedProjectPath,
+          cwd: resolvedProjectPath,
+          permissionMode,
+          toolsSettings,
+          sessionId: newSessionId,
+          resume: parentSessionId,
+          forkSession: true,
+          resumeSessionAt: messageId,
+        },
+      });
+    },
+    [
+      sessionStore,
+      currentSessionId,
+      selectedProject,
+      provider,
+      claudeModel,
+      permissionMode,
+      sendMessage,
+    ],
+  );
+
   const handleTranscript = useCallback((text: string) => {
     if (!text.trim()) {
       return;
@@ -1016,6 +1092,7 @@ export function useChatComposerState({
     syncInputOverlayScroll,
     handleClearInput,
     handleAbortSession,
+    handleForkFromMessage,
     handleTranscript,
     handlePermissionDecision,
     handleGrantToolPermission,

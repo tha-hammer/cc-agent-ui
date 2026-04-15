@@ -14,6 +14,7 @@ import { ToolRenderer, shouldHideToolResult } from '../../tools';
 import { Markdown } from './Markdown';
 import StructuredMessage from './StructuredMessage';
 import MessageCopyControl from './MessageCopyControl';
+import MessageForkControl from './MessageForkControl';
 
 type DiffLine = {
   type: string;
@@ -33,6 +34,8 @@ type MessageComponentProps = {
   showThinking?: boolean;
   selectedProject?: Project | null;
   provider: Provider | string;
+  messageIndex?: number;
+  onFork?: (messageId: string, messageIndex: number) => void;
 };
 
 type InteractiveOption = {
@@ -44,7 +47,7 @@ type InteractiveOption = {
 type PermissionGrantState = 'idle' | 'granted' | 'error';
 const COPY_HIDDEN_TOOL_NAMES = new Set(['Bash', 'Edit', 'Write', 'ApplyPatch']);
 
-const MessageComponent = memo(({ message, prevMessage, createDiff, onFileOpen, onShowSettings, onGrantToolPermission, autoExpandTools, showRawParameters, showThinking, selectedProject, provider }: MessageComponentProps) => {
+const MessageComponent = memo(({ message, prevMessage, createDiff, onFileOpen, onShowSettings, onGrantToolPermission, autoExpandTools, showRawParameters, showThinking, selectedProject, provider, messageIndex, onFork }: MessageComponentProps) => {
   const { t } = useTranslation('chat');
   const isGrouped = prevMessage && prevMessage.type === message.type &&
     ((prevMessage.type === 'assistant') ||
@@ -468,6 +471,24 @@ const MessageComponent = memo(({ message, prevMessage, createDiff, onFileOpen, o
                 {shouldShowAssistantCopyControl && (
                   <MessageCopyControl content={assistantCopyContent} messageType="assistant" />
                 )}
+                {(() => {
+                  const messageId = (message as any).id as string | undefined;
+                  const canFork =
+                    provider === 'claude' &&
+                    !!messageId &&
+                    !messageId.startsWith('claude_') &&
+                    typeof onFork === 'function' &&
+                    typeof messageIndex === 'number';
+                  if (!canFork) return null;
+                  return (
+                    <MessageForkControl
+                      messageId={messageId as string}
+                      messageIndex={messageIndex as number}
+                      enabled={true}
+                      onFork={onFork as (id: string, idx: number) => void}
+                    />
+                  );
+                })()}
                 {!isGrouped && <span>{formattedTime}</span>}
               </div>
             )}
