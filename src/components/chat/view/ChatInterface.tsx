@@ -202,6 +202,7 @@ function ChatInterface({
     syncInputOverlayScroll,
     handleClearInput,
     handleAbortSession,
+    handleForkFromMessage,
     handleTranscript,
     handlePermissionDecision,
     handleGrantToolPermission,
@@ -358,6 +359,7 @@ function ChatInterface({
           selectedSession={selectedSession}
           currentSessionId={currentSessionId}
           provider={provider}
+          onFork={handleForkFromMessage}
           setProvider={(nextProvider) => setProvider(nextProvider as Provider)}
           textareaRef={textareaRef}
           claudeModel={claudeModel}
