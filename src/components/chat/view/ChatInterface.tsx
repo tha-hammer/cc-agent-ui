@@ -203,8 +203,6 @@ function ChatInterface({
     handleClearInput,
     handleAbortSession,
     handleForkFromMessage,
-    cancelPendingFork,
-    isForkPending,
     handleTranscript,
     handlePermissionDecision,
     handleGrantToolPermission,
@@ -398,21 +396,6 @@ function ChatInterface({
           selectedProject={selectedProject}
           isLoading={isLoading}
         />
-
-        {isForkPending && (
-          <div className="mx-3 mb-2 flex items-center justify-between rounded border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-300">
-            <span>
-              Forking from message — send your first message to create the new session.
-            </span>
-            <button
-              type="button"
-              onClick={cancelPendingFork}
-              className="ml-3 shrink-0 rounded px-2 py-0.5 text-amber-200 hover:bg-amber-500/20"
-            >
-              Cancel
-            </button>
-          </div>
-        )}
 
         <ChatComposer
           pendingPermissionRequests={pendingPermissionRequests}

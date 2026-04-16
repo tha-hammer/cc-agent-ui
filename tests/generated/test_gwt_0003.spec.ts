@@ -1,111 +1,76 @@
-// gwt-0003: fork.handler.arms-then-dispatches-on-next-submit (lazy dispatch / Option B)
-// Verifiers:
-//   - ArmOnClick         (fork click does NOT dispatch sendMessage)
-//   - ChannelReuse       (type === 'claude-command' on subsequent submit)
-//   - ForkMarker         (options.forkSession === true; resume, resumeSessionAt)
-//   - FreshSessionId     (new UUID v4, distinct from parent)
-//   - UserPromptConsumed (command === user input, not empty)
-//   - sendMessage called exactly once (on submit, not on fork)
+// gwt-0003: fork.handler.sends-fork-prepare-on-click (JSONL-slice pivot)
+// Verifies:
+//   - Click dispatches a single `fork-prepare` WS frame with the stripped uuid
+//   - Subsequent submit sends a plain `claude-command` with NO fork fields
+//     (no forkSession, no resumeSessionAt, no caller-minted fork sessionId)
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useChatComposerState } from '../../src/components/chat/hooks/useChatComposerState';
-import { useSessionStore } from '../../src/stores/useSessionStore';
 
-const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+const baseProps = (sendMessage: any) => ({
+  selectedProject: { name: 'p', path: '/home/maceo/Dev/temp_testing', displayName: 'p', fullPath: '/home/maceo/Dev/temp_testing' } as any,
+  selectedSession: null,
+  sendMessage,
+  ws: { current: null } as any,
+  wsReady: true,
+  provider: 'claude' as const,
+  currentSessionId: '11111111-1111-4111-8111-111111111111',
+  pendingViewSessionRef: { current: null } as any,
+  onReplaceTemporarySession: vi.fn(),
+  onNavigateToSession: vi.fn(),
+  setSessionSummary: vi.fn(),
+  sessionSummary: undefined,
+  onTriggerRefresh: vi.fn(),
+  onClearRealtimeMessages: vi.fn(),
+  isLoading: false,
+  setIsLoading: vi.fn(),
+  setCanAbortSession: vi.fn(),
+  canAbortSession: false,
+  setClaudeStatus: vi.fn(),
+  claudeStatus: null,
+  pendingPermissionRequests: [],
+  setPendingPermissionRequests: vi.fn(),
+  onSessionProcessing: vi.fn(),
+  onSessionNotProcessing: vi.fn(),
+  onSessionActive: vi.fn(),
+  onSessionInactive: vi.fn(),
+});
 
-describe('gwt-0003 fork.handler.arms-then-dispatches-on-next-submit', () => {
+describe('gwt-0003 fork.handler.sends-fork-prepare-on-click', () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
-  it('fork click arms pending state; next submit dispatches claude-command with fork options', async () => {
-    const parentId = '11111111-1111-4111-8111-111111111111';
-    const messageId = 'a-uuid-1234';
-
-    // Seed parent via real hook API
-    const { result: storeResult } = renderHook(() => useSessionStore());
-    act(() => {
-      storeResult.current.appendRealtime(parentId, {
-        id: 'u0', sessionId: parentId, provider: 'claude', kind: 'text', role: 'user', content: 'q', timestamp: '',
-      } as any);
-      storeResult.current.appendRealtime(parentId, {
-        id: messageId, sessionId: parentId, provider: 'claude', kind: 'text', role: 'assistant', content: 'r', timestamp: '',
-      } as any);
-    });
-
-    // Deterministic UUID for FreshSessionId assertion
-    const newUUID = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';
-    vi.spyOn(crypto, 'randomUUID').mockReturnValue(newUUID as any);
-
+  it('fork click sends a single fork-prepare frame with stripped parentMessageUuid', () => {
     const sendMessage = vi.fn();
+    const { result } = renderHook(() => useChatComposerState(baseProps(sendMessage) as any));
 
-    const { result } = renderHook(() =>
-      useChatComposerState({
-        currentSessionId: parentId,
-        provider: 'claude',
-        selectedProject: { name: 'proj', displayName: 'proj', fullPath: '/proj', path: '/proj' },
-        permissionMode: 'default',
-        claudeModel: 'claude-sonnet-4.5',
-        cursorModel: '',
-        codexModel: '',
-        geminiModel: '',
-        isLoading: false,
-        canAbortSession: false,
-        tokenBudget: null,
-        sendMessage,
-        cyclePermissionMode: () => {},
-        pendingViewSessionRef: { current: null },
-        scrollToBottom: () => {},
-        addMessage: () => {},
-        clearMessages: () => {},
-        rewindMessages: () => {},
-        setIsLoading: () => {},
-        setCanAbortSession: () => {},
-        setClaudeStatus: () => {},
-        setIsUserScrolledUp: () => {},
-        setPendingPermissionRequests: () => {},
-        selectedSession: null,
-      } as any)
-    );
-
-    // ArmOnClick: Fork click stashes pending fork; does NOT dispatch.
     act(() => {
-      (result.current as any).handleForkFromMessage(messageId, 1);
-    });
-    expect(sendMessage).not.toHaveBeenCalled();
-    expect((result.current as any).isForkPending).toBe(true);
-
-    // Simulate user typing a prompt + submitting.
-    act(() => {
-      (result.current as any).setInput('forked prompt');
-    });
-    act(() => {
-      void (result.current as any).handleSubmit({ preventDefault: () => {} } as any);
+      result.current.handleForkFromMessage('msg_abc_text', 3);
     });
 
-    // sendMessage-called-once on submit.
     expect(sendMessage).toHaveBeenCalledTimes(1);
-    const payload = sendMessage.mock.calls[0][0];
-
-    // ChannelReuse
-    expect(payload.type).toBe('claude-command');
-    // UserPromptConsumed — command is user text, not empty
-    expect(payload.command).toBe('forked prompt');
-    // ForkMarker
-    expect(payload.options).toMatchObject({
-      forkSession: true,
-      resume: parentId,
-      resumeSessionAt: messageId,
+    const frame = sendMessage.mock.calls[0][0];
+    expect(frame.type).toBe('fork-prepare');
+    expect(frame.options).toMatchObject({
+      parentSessionId: '11111111-1111-4111-8111-111111111111',
+      parentMessageUuid: 'msg_abc',
+      projectPath: '/home/maceo/Dev/temp_testing',
     });
-    // FreshSessionId — UUID v4, distinct from parent
-    expect(payload.options.sessionId).toBe(newUUID);
-    expect(payload.options.sessionId).toMatch(UUID_V4);
-    expect(payload.options.sessionId).not.toBe(parentId);
+    expect(frame.options.forkSession).toBeUndefined();
+    expect(frame.options.resumeSessionAt).toBeUndefined();
+  });
 
-    // Pending state cleared after dispatch.
-    expect((result.current as any).isForkPending).toBe(false);
+  it('does not fire when currentSessionId is missing', () => {
+    const sendMessage = vi.fn();
+    const props = { ...baseProps(sendMessage), currentSessionId: '' } as any;
+    const { result } = renderHook(() => useChatComposerState(props));
 
-    vi.restoreAllMocks();
+    act(() => {
+      result.current.handleForkFromMessage('msg_abc_text', 0);
+    });
+
+    expect(sendMessage).not.toHaveBeenCalled();
   });
 });

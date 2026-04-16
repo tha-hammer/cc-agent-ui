@@ -159,17 +159,6 @@ export function useChatComposerState({
   >(null);
   const inputValueRef = useRef(input);
 
-  // Lazy fork dispatch (Option B):
-  // Fork click arms this ref; the next user submit consumes it and builds
-  // the claude-command with forkSession options. CLI rejects empty-prompt
-  // forks, so we never dispatch without a prompt.
-  const pendingForkRef = useRef<{
-    parentSessionId: string;
-    parentMessageUuid: string;
-    newSessionId: string;
-  } | null>(null);
-  const [isForkPending, setIsForkPending] = useState(false);
-
   const handleBuiltInCommand = useCallback(
     (result: CommandExecutionResult) => {
       const { action, data } = result;
@@ -666,22 +655,6 @@ export function useChatComposerState({
           },
         });
       } else {
-        // Consume any armed fork before building options. Fork click stashes
-        // {parentSessionId, parentMessageUuid, newSessionId} into a ref;
-        // the first submit after that click dispatches as a fork.
-        const pendingFork = pendingForkRef.current;
-        const forkOptions = pendingFork
-          ? {
-              sessionId: pendingFork.newSessionId,
-              resume: pendingFork.parentSessionId,
-              forkSession: true as const,
-              resumeSessionAt: pendingFork.parentMessageUuid,
-            }
-          : {
-              sessionId: effectiveSessionId,
-              resume: Boolean(effectiveSessionId),
-            };
-
         sendMessage({
           type: 'claude-command',
           command: messageContent,
@@ -693,22 +666,14 @@ export function useChatComposerState({
             model: claudeModel,
             sessionSummary,
             images: uploadedImages,
-            ...forkOptions,
-            // If a skill was just executed, its expanded template is pending
-            // as a system prompt. Inject it so the SDK receives the skill
-            // instructions as system context, not as user-visible input.
+            sessionId: effectiveSessionId,
+            resume: Boolean(effectiveSessionId),
             ...(pendingSystemPromptRef.current
               ? { appendSystemPrompt: pendingSystemPromptRef.current }
               : {}),
           },
         });
-        // Clear the pending system prompt after sending
         pendingSystemPromptRef.current = null;
-        // Clear pending fork after it's consumed by the dispatch.
-        if (pendingFork) {
-          pendingForkRef.current = null;
-          setIsForkPending(false);
-        }
       }
 
       setInput('');
@@ -934,54 +899,30 @@ export function useChatComposerState({
   }, [canAbortSession, currentSessionId, pendingViewSessionRef, provider, selectedSession?.id, sendMessage]);
 
   const handleForkFromMessage = useCallback(
-    (messageId: string, messageIndex: number) => {
+    (messageId: string, _messageIndex: number) => {
       if (!selectedProject) return;
       const parentSessionId = currentSessionId;
       if (!parentSessionId) return;
+      const projectPath = selectedProject.path;
+      if (!projectPath) return;
 
-      // BC-1: Slice parent merged array up to and including the forked message.
-      // Read-only access — no mutation, no store writes against parent.
-      // Happens on Fork CLICK (before dispatch) so parent view reflects the
-      // intended branch point before the user types their prompt.
-      const parentMessages = sessionStore.getMessages(parentSessionId);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const _slicedHistory = parentMessages.slice(0, messageIndex + 1);
-
-      const newSessionId =
-        typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
-          ? crypto.randomUUID()
-          : `fork-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-
-      // Strip the `_<index>` part-suffix the Claude adapter appends when
-      // it splits a single SDK assistant message into N NormalizedMessages
-      // (one per content part). SDK's resumeSessionAt wants the base UUID.
-      // See server/providers/claude/adapter.js — ids shaped as "<uuid>_0".
+      // Strip the `_<index>` / `_text` / `_tr_<id>` part-suffix the Claude
+      // adapter appends when it splits a single SDK assistant message into
+      // N NormalizedMessages. We need the base uuid so the server can find
+      // the exact line in the parent JSONL.
       const parentMessageUuid = messageId.replace(/_(?:\d+|text|tr_.*)$/, '');
 
-      // Arm lazy fork — actual claude-command dispatch happens on next submit.
-      // Claude CLI rejects empty-prompt commands ("Provide a prompt to
-      // continue the conversation"), so we defer until we have a real prompt.
-      pendingForkRef.current = {
-        parentSessionId,
-        parentMessageUuid,
-        newSessionId,
-      };
-      setIsForkPending(true);
-
-      // Focus composer so the user can immediately type their forked prompt.
-      if (typeof window !== 'undefined') {
-        setTimeout(() => {
-          textareaRef.current?.focus();
-        }, 0);
-      }
+      sendMessage({
+        type: 'fork-prepare',
+        options: {
+          parentSessionId,
+          parentMessageUuid,
+          projectPath,
+        },
+      });
     },
-    [sessionStore, currentSessionId, selectedProject],
+    [currentSessionId, selectedProject, sendMessage],
   );
-
-  const cancelPendingFork = useCallback(() => {
-    pendingForkRef.current = null;
-    setIsForkPending(false);
-  }, []);
 
   const handleTranscript = useCallback((text: string) => {
     if (!text.trim()) {
@@ -1100,8 +1041,6 @@ export function useChatComposerState({
     handleClearInput,
     handleAbortSession,
     handleForkFromMessage,
-    cancelPendingFork,
-    isForkPending,
     handleTranscript,
     handlePermissionDecision,
     handleGrantToolPermission,
