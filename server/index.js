@@ -44,8 +44,9 @@ import pty from 'node-pty';
 import fetch from 'node-fetch';
 import mime from 'mime-types';
 
-import { getProjects, getSessions, renameProject, deleteSession, deleteProject, addProjectManually, extractProjectDirectory, clearProjectDirectoryCache, searchConversations } from './projects.js';
+import { getProjects, getSessions, renameProject, deleteSession, deleteProject, addProjectManually, extractProjectDirectory, clearProjectDirectoryCache, searchConversations, encodeProjectPath } from './projects.js';
 import { queryClaudeSDK, abortClaudeSDKSession, isClaudeSDKSessionActive, getActiveClaudeSDKSessions, resolveToolApproval, getPendingApprovalsForSession, reconnectSessionWriter } from './claude-sdk.js';
+import { prepareFork } from './fork.js';
 import { spawnCursor, abortCursorSession, isCursorSessionActive, getActiveCursorSessions } from './cursor-cli.js';
 import { queryCodex, abortCodexSession, isCodexSessionActive, getActiveCodexSessions } from './openai-codex.js';
 import { spawnGemini, abortGeminiSession, isGeminiSessionActive, getActiveGeminiSessions } from './gemini-cli.js';
@@ -1528,6 +1529,28 @@ function handleChatConnection(ws, request) {
 
                 // Use Claude Agents SDK
                 await queryClaudeSDK(data.command, data.options, writer);
+            } else if (data.type === 'fork-prepare') {
+                console.log('[DEBUG] Fork prepare:', data.options?.parentSessionId, '→ uuid', data.options?.parentMessageUuid);
+                await prepareFork({ ...data.options, ws: writer });
+                // Force immediate projects refresh so sidebar sees the new JSONL
+                // before the client navigates to it. The file watcher would fire
+                // eventually (300ms debounce), but that's visible to users as
+                // "nothing happened" — drive the broadcast synchronously.
+                try {
+                    clearProjectDirectoryCache();
+                    const updatedProjects = await getProjects(broadcastProgress);
+                    const updateMessage = JSON.stringify({
+                        type: 'projects_updated',
+                        projects: updatedProjects,
+                        timestamp: new Date().toISOString(),
+                        changeType: 'fork',
+                    });
+                    connectedClients.forEach(client => {
+                        if (client.readyState === WebSocket.OPEN) client.send(updateMessage);
+                    });
+                } catch (err) {
+                    console.error('[ERROR] Failed to broadcast projects after fork:', err.message);
+                }
             } else if (data.type === 'cursor-command') {
                 console.log('[DEBUG] Cursor message:', data.command || '[Continue/Resume]');
                 console.log('📁 Project:', data.options?.cwd || 'Unknown');
@@ -2363,10 +2386,9 @@ app.get('/api/projects/:projectName/sessions/:sessionId/token-usage', authentica
             return res.status(500).json({ error: 'Failed to determine project path' });
         }
 
-        // Construct the JSONL file path
-        // Claude stores session files in ~/.claude/projects/[encoded-project-path]/[session-id].jsonl
-        // The encoding replaces any non-alphanumeric character (except -) with -
-        const encodedPath = projectPath.replace(/[^a-zA-Z0-9-]/g, '-');
+        // Construct the JSONL file path via the canonical SDK encoding rule
+        // (see server/projects.js:encodeProjectPath — single source of truth).
+        const encodedPath = encodeProjectPath(projectPath);
         const projectDir = path.join(homeDir, '.claude', 'projects', encodedPath);
 
         const jsonlPath = path.join(projectDir, `${safeSessionId}.jsonl`);

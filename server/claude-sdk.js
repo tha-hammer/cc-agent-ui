@@ -208,18 +208,27 @@ export function mapCliOptionsToSDK(options = {}) {
   // This loads CLAUDE.md from project, user (~/.config/claude/CLAUDE.md), and local directories
   sdkOptions.settingSources = ['project', 'user', 'local'];
 
-  // Map resume session (legacy path: caller-supplied sessionId → resume)
+  // Map resume session: caller-supplied sessionId → --resume. When no
+  // specific id is provided but the caller wants to pick up where the last
+  // run left off, `continueConversation: true` maps to SDK `continue: true`
+  // (docs: "Resumes the most recent session in the directory, no ID needed").
+  // Explicit id always wins — if both are set, sessionId takes precedence.
   if (sessionId) {
     sdkOptions.resume = sessionId;
+  } else if (options.continueConversation) {
+    sdkOptions.continue = true;
   }
 
-  // Fork-session forwarding (additive — only set when present/truthy)
-  // Overrides legacy sessionId→resume mapping when explicit options.resume provided.
-  if (options.resume) sdkOptions.resume = options.resume;
-  if (options.forkSession) sdkOptions.forkSession = options.forkSession;
-  if (options.resumeSessionAt) sdkOptions.resumeSessionAt = options.resumeSessionAt;
-  // sessionId gated by forkSession per SDK contract (sdk.d.ts:834)
-  if (options.sessionId && options.forkSession) sdkOptions.sessionId = options.sessionId;
+  // G-2: SDK-canonical fork forwarding for end-of-conversation forks.
+  // `resume: <parent> + forkSession: true` creates a new session that starts
+  // with a copy of the parent's full history. This is the ONLY fork flag we
+  // forward — resumeSessionAt and caller-supplied --session-id are deliberately
+  // NOT forwarded (they produce multi-JSONL artifacts; see
+  // thoughts/searchable/shared/research/2026-04-15-conversation-fork-codepath.md).
+  // Mid-conversation forks still route through server/fork.js (JSONL slice).
+  if (options.forkSession && sdkOptions.resume) {
+    sdkOptions.forkSession = true;
+  }
 
   return sdkOptions;
 }
@@ -644,10 +653,23 @@ async function queryClaudeSDK(command, options = {}, ws) {
           ws.setSessionId(capturedSessionId);
         }
 
-        // Send session-created event only once for new sessions
-        if (!sessionId && !sessionCreatedSent) {
+        // Send session_created when either (a) this is a brand-new session
+        // (no caller-supplied sessionId) or (b) this is a tail fork via
+        // --fork-session (the SDK assigns a new id that the client is not yet
+        // aware of). The `fromFork` marker lets the client's handler take the
+        // fork-aware nav branch (see useChatRealtimeHandlers, audit G-4).
+        // Mid-conversation forks via server/fork.js emit their own frame
+        // before queryClaudeSDK runs, so this path is specifically for new
+        // and tail-fork flows.
+        if ((!sessionId || options.forkSession) && !sessionCreatedSent) {
           sessionCreatedSent = true;
-          ws.send(createNormalizedMessage({ kind: 'session_created', newSessionId: capturedSessionId, sessionId: capturedSessionId, provider: 'claude' }));
+          ws.send(createNormalizedMessage({
+            kind: 'session_created',
+            newSessionId: capturedSessionId,
+            sessionId: capturedSessionId,
+            fromFork: Boolean(options.forkSession),
+            provider: 'claude',
+          }));
         }
       } else {
         // session_id already captured
