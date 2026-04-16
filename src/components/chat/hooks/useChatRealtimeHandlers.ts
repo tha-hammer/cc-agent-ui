@@ -243,7 +243,10 @@ export function useChatRealtimeHandlers({
         const newSessionId = msg.newSessionId;
         if (!newSessionId) break;
 
-        if (!currentSessionId || currentSessionId.startsWith('new-session-')) {
+        const isFork = (msg as { fromFork?: boolean }).fromFork === true;
+        const isTempOrNew = !currentSessionId || currentSessionId.startsWith('new-session-');
+
+        if (isTempOrNew) {
           sessionStorage.setItem('pendingSessionId', newSessionId);
           if (pendingViewSessionRef.current && !pendingViewSessionRef.current.sessionId) {
             pendingViewSessionRef.current.sessionId = newSessionId;
@@ -253,6 +256,15 @@ export function useChatRealtimeHandlers({
           setPendingPermissionRequests((prev) =>
             prev.map((r) => (r.sessionId ? r : { ...r, sessionId: newSessionId })),
           );
+        } else if (isFork) {
+          // Fork from an established session: swing currentSessionId to the
+          // new id so downstream fetchFromServer + dispatch target the fork.
+          // Without this, URL changes but state points at the parent and the
+          // UI doesn't hydrate until the next message. See audit G-4.
+          if (pendingViewSessionRef.current) {
+            pendingViewSessionRef.current.sessionId = newSessionId;
+          }
+          setCurrentSessionId(newSessionId);
         }
         onNavigateToSession?.(newSessionId);
         break;

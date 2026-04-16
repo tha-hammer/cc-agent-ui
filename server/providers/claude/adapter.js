@@ -247,7 +247,12 @@ export const claudeAdapter = {
       }
     }
 
-    // Second pass: normalize all messages
+    // Second pass: normalize all messages.
+    // NOTE (G-8): normalizeMessage uses the caller-supplied sessionId rather
+    // than reading raw.sessionId off each line. This is safe because
+    // getSessionMessages in server/projects.js already filters rawMessages by
+    // exact `entry.sessionId === sessionId` match (see projects.js:1013).
+    // See thoughts/searchable/shared/research/2026-04-16-session-handling-audit.md
     const normalized = [];
     for (const raw of rawMessages) {
       const entries = normalizeMessage(raw, sessionId);

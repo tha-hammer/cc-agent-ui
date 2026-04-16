@@ -769,6 +769,18 @@ async function getSessions(projectName, limit = 5, offset = 0) {
   }
 }
 
+/**
+ * NOTE (G-6, 2026-04-16): The installed `@anthropic-ai/claude-agent-sdk`
+ * exposes `listSessions({ dir, limit })` and `getSessionMessages(sessionId, opts)`
+ * which would be the canonical replacement for this function and `getSessionMessages`
+ * below. However the SDK's `SessionMessage` shape is `{ type, uuid, session_id,
+ * message, parent_tool_use_id }` only — it strips `cwd`, `timestamp`, `parentUuid`,
+ * `toolUseResult`, and the full raw entry that our adapter.fetchHistory depends on
+ * for tool-result attachment, sidebar summaries, and subagent detection.
+ * Migration requires a parallel rewrite of server/providers/claude/adapter.js
+ * against the narrower SDK shape — deferred to a follow-up plan. Keep this
+ * hand-rolled parser authoritative until then.
+ */
 async function parseJsonlSessions(filePath) {
   const sessions = new Map();
   const entries = [];
@@ -902,17 +914,19 @@ async function parseJsonlSessions(filePath) {
     const allSessions = Array.from(sessions.values());
     const filteredSessions = allSessions.filter(session => {
       const shouldFilter = session.summary.startsWith('{ "');
-      if (shouldFilter) {
-      }
-      // Log a sample of summaries to debug
-      if (Math.random() < 0.01) { // Log 1% of sessions
-      }
       return !shouldFilter;
     });
 
+    // G-5: exclude both Task-tool subagents and hook/CLI meta-session spawns
+    // from sidebar enumeration. Filenames are all UUIDs (not `agent-*`) so we
+    // can't filter by name. Direct lookup via getSessionMessages is NOT
+    // affected — those paths still resolve for any session id on disk.
+    const isSubagent = isSubagentSession(entries);
+    const isMeta = isMetaSession(entries);
+    const visibleSessions = (isSubagent || isMeta) ? [] : filteredSessions;
 
     return {
-      sessions: filteredSessions,
+      sessions: visibleSessions,
       entries: entries
     };
 
@@ -1221,6 +1235,61 @@ async function deleteProject(projectName, force = false) {
   }
 }
 
+/**
+ * Canonical Claude Agent SDK path encoding (per docs at
+ * https://code.claude.com/docs/en/agent-sdk/sessions):
+ * "absolute working directory with every non-alphanumeric character replaced by -".
+ * This is the single source of truth for the project-dir name under ~/.claude/projects/.
+ * Callers (fork.js, index.js, anywhere else that constructs the path) MUST import this
+ * helper rather than reimplementing the regex — divergence silently routes writes and
+ * reads to different directories (see audit G-1, 2026-04-16).
+ */
+export function encodeProjectPath(absolutePath) {
+  return absolutePath.replace(/[^a-zA-Z0-9]/g, '-');
+}
+
+/**
+ * Detect subagent-spawned sessions (Task-tool invocations) so they can be
+ * excluded from the sidebar. A real user conversation's first `type: 'user'`
+ * entry has `parentUuid === null`; a subagent inherits a `parentUuid` pointer
+ * back into the parent session's message graph. `isSidechain` is false on both
+ * and `parentToolUseID` appears only on later progress/assistant lines — so
+ * the first-user `parentUuid` is the reliable signal. See audit G-5, 2026-04-16.
+ */
+export function isSubagentSession(entries) {
+  for (const entry of entries) {
+    if (entry && entry.type === 'user') {
+      return Boolean(entry.parentUuid);
+    }
+  }
+  return false;
+}
+
+/**
+ * Detect meta-sessions (hook subprocess spawns, CLI-internal title generation,
+ * and similar one-shot claude invocations) that leak into the sidebar. These
+ * share a signature: the CLI spawns a short-lived subprocess for a single
+ * prompt→response, without invoking the SessionStart hook chain the user's
+ * normal conversations have. So they contain zero `progress` entries and at
+ * most a couple of assistant turns. See audit G-5 follow-up, 2026-04-16 smoke.
+ *
+ * Heuristic: zero `progress` entries AND ≤2 assistant entries.
+ * A real user session on this host has SessionStart hooks that emit progress
+ * events on every turn, making the count reliably >0. If a user's environment
+ * lacks SessionStart hooks entirely, this predicate may hide their sessions —
+ * that's a known edge case; they should unset CC_HIDE_META_SESSIONS to opt out.
+ */
+export function isMetaSession(entries) {
+  let progressCount = 0;
+  let assistantCount = 0;
+  for (const entry of entries) {
+    if (!entry) continue;
+    if (entry.type === 'progress') progressCount++;
+    else if (entry.type === 'assistant') assistantCount++;
+  }
+  return progressCount === 0 && assistantCount <= 2;
+}
+
 // Add a project manually to the config (without creating folders)
 async function addProjectManually(projectPath, displayName = null) {
   const absolutePath = path.resolve(projectPath);
@@ -1233,7 +1302,7 @@ async function addProjectManually(projectPath, displayName = null) {
   }
 
   // Generate project name (encode path for use as directory name)
-  const projectName = absolutePath.replace(/[\\/:\s~_]/g, '-');
+  const projectName = encodeProjectPath(absolutePath);
 
   // Check if project already exists in config
   const config = await loadProjectConfig();
