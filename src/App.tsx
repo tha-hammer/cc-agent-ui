@@ -7,6 +7,7 @@ import { TasksSettingsProvider } from './contexts/TasksSettingsContext';
 import { WebSocketProvider } from './contexts/WebSocketContext';
 import { PluginsProvider } from './contexts/PluginsContext';
 import AppContent from './components/app/AppContent';
+import NolmeDemo from './components/demo/view/NolmeDemo';
 import ErrorBoundary from './components/main-content/view/ErrorBoundary';
 import i18n from './i18n/config.js';
 
@@ -20,20 +21,33 @@ export default function App() {
               <PluginsProvider>
                 <TasksSettingsProvider>
                   <TaskMasterProvider>
-                    <ProtectedRoute>
-                      <Router basename={window.__ROUTER_BASENAME__ || ''}>
-                        <Routes>
-                          <Route path="/" element={<AppContent />} />
-                          <Route path="/session/:sessionId" element={<AppContent />} />
-                          {/* Catch-all: any unknown URL (e.g. a stale Safari
-                              autofill like /projects/root/cosmic) redirects to
-                              root so the app never lands on a route that
-                              renders null (which looked like a mobile-only
-                              blank screen because desktop stayed at /). */}
-                          <Route path="*" element={<Navigate to="/" replace />} />
-                        </Routes>
-                      </Router>
-                    </ProtectedRoute>
+                    <Router basename={window.__ROUTER_BASENAME__ || ''}>
+                      <Routes>
+                        <Route path="/demo/nolme" element={<NolmeDemo />} />
+                        <Route
+                          path="/"
+                          element={
+                            <ProtectedRoute>
+                              <AppContent />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/session/:sessionId"
+                          element={
+                            <ProtectedRoute>
+                              <AppContent />
+                            </ProtectedRoute>
+                          }
+                        />
+                        {/* Catch-all: any unknown URL (e.g. a stale Safari
+                            autofill like /projects/root/cosmic) redirects to
+                            root so the app never lands on a route that
+                            renders null (which looked like a mobile-only
+                            blank screen because desktop stayed at /). */}
+                        <Route path="*" element={<Navigate to="/" replace />} />
+                      </Routes>
+                    </Router>
                   </TaskMasterProvider>
                 </TasksSettingsProvider>
               </PluginsProvider>
