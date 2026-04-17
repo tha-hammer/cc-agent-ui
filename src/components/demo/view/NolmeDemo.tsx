@@ -257,7 +257,7 @@ const DEMO_BEATS: Beat[] = [
     assistantCopy:
       'Phase 1 is active. I am packaging the workflow brief and creating the first output bucket so the work becomes tangible immediately.',
     userMessage: 'Looks good. Start phase 1 and keep the summary visible while you work.',
-    thinkingLabel: 'Drafting the workflow brief and pulling the first operating outputs...',
+    thinkingLabel: 'Drafting the workflow brief...',
     quickActions: ['Preview the brief', 'Inspect the estimate', 'Open attached context'],
     approvals: ['Confirm Phase 1', 'Ask a question while working'],
     outputs: [
@@ -634,7 +634,9 @@ export default function NolmeDemo() {
             </div>
           </nav>
 
-          <main className="flex min-w-0 flex-col gap-2 rounded-[22px] border border-[#ddd8ff] bg-[#f0f0f5] p-2 shadow-[0_28px_90px_rgba(60,46,184,0.12)] sm:p-3 xl:h-full xl:min-h-0">
+          <main className="flex min-w-0 flex-col rounded-[22px] border border-[#ddd8ff] bg-[#f0f0f5] p-2 shadow-[0_28px_90px_rgba(60,46,184,0.12)] sm:p-3 xl:h-full xl:min-h-0">
+            <div className="grid min-h-0 flex-1 gap-3 xl:min-h-0 xl:grid-cols-[minmax(0,1fr)_260px]">
+            <div className="flex min-h-0 flex-col gap-2">
             <section className="shrink-0 rounded-[18px] border border-white/80 bg-white px-4 py-3 shadow-[0_10px_30px_rgba(79,62,214,0.06)] sm:px-5">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
@@ -650,7 +652,7 @@ export default function NolmeDemo() {
                 </button>
               </div>
 
-              <div className="mt-3 grid gap-2 md:grid-cols-3">
+              <div className="mt-3 flex gap-6">
                 {WORKFLOW_PHASES.map((phase, index) => {
                   const status = phaseStatuses[index];
                   const isActive = status === 'active';
@@ -659,7 +661,7 @@ export default function NolmeDemo() {
                   return (
                     <div
                       className={cn(
-                        'rounded-[10px] border px-3 py-2 transition',
+                        'h-[69px] w-[200px] shrink-0 rounded-[10px] border px-2 py-[9.5px] transition',
                         isActive && 'demo-phase-active border-[#8470ff] bg-[#f0eeff]',
                         isComplete && 'border-[#d0c9ff] bg-[#f7f5ff]',
                         status === 'idle' && 'border-[#c8c8d6] bg-[#f5f5f8]',
@@ -696,8 +698,8 @@ export default function NolmeDemo() {
               </div>
             </section>
 
-            <div className="grid min-h-0 flex-1 gap-4 xl:min-h-0 xl:grid-cols-[minmax(0,1fr)_260px] xl:overflow-hidden">
-              <section className="flex min-h-0 flex-col gap-3 xl:min-h-0 xl:overflow-hidden">
+              <section className="flex min-h-0 flex-1 flex-col xl:min-h-0">
+                <div className="min-h-0 flex-1 space-y-3 overflow-y-auto">
                 <div className="demo-rise-in rounded-[20px] border border-[#ddd8ff] bg-white shadow-[0_12px_36px_rgba(79,62,214,0.06)]" key={beat.id}>
                   <div className="flex flex-wrap items-center gap-3 rounded-t-[20px] bg-[#f8f8fa] px-4 py-3 sm:px-5">
                     <h2 className="text-[20px] font-bold tracking-[-0.02em] text-[#22222e]">{beat.taskHeading}</h2>
@@ -727,50 +729,24 @@ export default function NolmeDemo() {
                         </div>
                       </div>
                     ) : (
-                      <div
-                        className={cn(
-                          'grid gap-3',
-                          beat.mode === 'venues' ? 'md:grid-cols-2' : beat.outputs.length > 2 ? 'md:grid-cols-2' : 'md:grid-cols-2',
-                        )}
-                      >
+                      <div className="flex flex-wrap gap-6">
                         {beat.outputs.map((output, index) => (
                           <article
                             className={cn(
-                              'demo-resource-enter rounded-[14px] border p-3.5 shadow-[0_6px_18px_rgba(79,62,214,0.04)]',
+                              'demo-resource-enter h-[98px] w-[330px] shrink-0 rounded-[10px] border p-[10px] shadow-[0_4px_12px_rgba(79,62,214,0.04)]',
                               beat.mode === 'venues' ? 'border-[#e8e4d8] bg-[#fdfcf9]' : toneClasses(output.tone),
-                              beat.mode === 'venues' && index === 2 && 'md:col-span-1',
                             )}
                             key={output.id}
                             style={{ ['--demo-delay' as string]: `${index * 80}ms` }}
                           >
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="space-y-1">
-                                {beat.mode !== 'venues' && (
-                                  <div className="inline-flex items-center gap-2 rounded-full bg-white/70 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.16em] text-[#6550f0]">
-                                    {outputIcon(output.icon)}
-                                    Output
-                                  </div>
-                                )}
-                                <h3 className="text-[15px] font-semibold tracking-[-0.01em] text-[#13131a]">{output.title}</h3>
-                                <p className="text-[13px] text-[#54546a]">{output.subtitle}</p>
-                              </div>
-                              {output.cta && (
-                                <button
-                                  className="inline-flex items-center gap-2 rounded-full border border-[#ddd8ff] bg-white px-3 py-1.5 text-[12px] font-medium text-[#4f3ed6]"
-                                  type="button"
-                                >
-                                  {output.cta}
-                                  <ExternalLink className="h-3.5 w-3.5" />
-                                </button>
-                              )}
-                            </div>
-                            <p className="mt-2 text-[12px] leading-[1.5] text-[#22222e]">{output.description}</p>
+                            <h3 className="text-[15px] font-semibold tracking-[-0.01em] text-[#13131a]">{output.title}</h3>
+                            <p className="mt-1 text-[13px] text-[#54546a]">{output.subtitle}</p>
                             {typeof output.rating === 'number' && (
-                              <div className="mt-4 flex items-center gap-2 text-[14px] text-[#22222e]">
+                              <div className="mt-2 flex items-center gap-2 text-[14px] text-[#22222e]">
                                 <span>{output.rating.toFixed(1)}</span>
                                 <div className="flex items-center gap-1 text-[#f59e0b]">
                                   {Array.from({ length: 5 }).map((_, starIndex) => (
-                                    <Star className="h-4 w-4 fill-current" key={`${output.id}-${starIndex}`} />
+                                    <Star className="h-[18px] w-[18px] fill-current" key={`${output.id}-${starIndex}`} />
                                   ))}
                                 </div>
                               </div>
@@ -789,15 +765,16 @@ export default function NolmeDemo() {
                 )}
 
                 {beat.thinkingLabel && (
-                  <div className="demo-rise-in inline-flex items-center gap-2.5 rounded-full bg-[#f9a832] px-3.5 py-1.5 text-[13px] font-medium text-[#22222e]" key={`${beat.id}-thinking`}>
-                    <span className="demo-live-dot flex h-5 w-5 items-center justify-center rounded-full bg-[#4f3ed6]">
+                  <div className="demo-rise-in inline-flex h-[42px] w-[432px] items-center gap-2.5 rounded-full bg-[#f9a832] px-4 py-2 text-[13px] font-medium text-[#22222e]" key={`${beat.id}-thinking`}>
+                    <span className="demo-live-dot flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#4f3ed6]">
                       <span className="text-[9px] font-bold text-white">N</span>
                     </span>
                     {beat.thinkingLabel}
                   </div>
                 )}
 
-                <div className="mt-auto space-y-4">
+                </div>
+                <div className="mt-2 shrink-0 space-y-3">
                   <div className="flex flex-wrap gap-2">
                     {beat.approvals.map((approval) => (
                       <button
@@ -852,6 +829,7 @@ export default function NolmeDemo() {
                   </div>
                 </div>
               </section>
+            </div>{/* close left-column */}
 
               <section className="flex flex-col gap-3 xl:min-h-0 xl:overflow-hidden">
                 <div className="rounded-[16px] border border-[#c4bbff] bg-white p-3 shadow-[0_8px_20px_rgba(79,62,214,0.05)]">
@@ -963,7 +941,7 @@ export default function NolmeDemo() {
                   </div>
                 </div>
               </section>
-            </div>
+            </div>{/* close grid */}
 
             <section className="shrink-0 rounded-[12px] border border-[#d9d3ff] bg-white/90 px-3 py-2 shadow-[0_10px_30px_rgba(79,62,214,0.06)] backdrop-blur">
               <div className="flex flex-wrap items-center gap-2">
