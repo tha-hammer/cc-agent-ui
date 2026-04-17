@@ -1,0 +1,146 @@
+@import url("https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap");
+
+.nolme-demo {
+  font-family: "Satoshi", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.nolme-demo__shell {
+  position: relative;
+  isolation: isolate;
+}
+
+.nolme-demo__shell::before,
+.nolme-demo__shell::after {
+  content: "";
+  position: absolute;
+  inset: auto;
+  border-radius: 9999px;
+  filter: blur(80px);
+  opacity: 0.6;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.nolme-demo__shell::before {
+  top: 5%;
+  right: 10%;
+  width: 18rem;
+  height: 18rem;
+  background: rgba(132, 112, 255, 0.22);
+}
+
+.nolme-demo__shell::after {
+  bottom: 4%;
+  left: 8%;
+  width: 20rem;
+  height: 20rem;
+  background: rgba(249, 168, 50, 0.16);
+}
+
+.demo-rise-in {
+  animation: demo-rise 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.demo-fade-in {
+  animation: demo-fade 320ms ease-out both;
+}
+
+.demo-resource-enter {
+  animation: demo-rise 460ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--demo-delay, 0ms);
+}
+
+.demo-live-dot {
+  animation: demo-pulse 1.3s ease-in-out infinite;
+}
+
+.demo-float {
+  animation: demo-float 7s ease-in-out infinite;
+}
+
+.demo-phase-active {
+  position: relative;
+  overflow: hidden;
+}
+
+.demo-phase-active::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.42) 50%,
+    transparent 70%
+  );
+  transform: translateX(-130%);
+  animation: demo-sweep 2.8s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes demo-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes demo-fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes demo-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.82);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes demo-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes demo-sweep {
+  from {
+    transform: translateX(-130%);
+  }
+
+  to {
+    transform: translateX(130%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .demo-rise-in,
+  .demo-fade-in,
+  .demo-resource-enter,
+  .demo-live-dot,
+  .demo-float,
+  .demo-phase-active::after {
+    animation: none !important;
+  }
+}
