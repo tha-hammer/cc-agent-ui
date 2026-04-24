@@ -9,14 +9,24 @@ const copilotHandler = vi.fn(async (_req: any, res: any) => {
   res.status(200).json({ ok: true, hit: 'copilot' });
 });
 
-vi.mock('@copilotkit/runtime', () => {
+// Mock @copilotkit/runtime/v2: createCopilotExpressHandler returns a real
+// Express Router whose sole middleware forwards every request to our spy
+// handler. This lets the B10 assertions verify (a) authenticateToken runs
+// first, and (b) the CopilotKit mount receives the request for every sub-path.
+import express from 'express';
+
+vi.mock('@copilotkit/runtime/v2', () => {
   class StubCopilotRuntime {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(_opts: any) { /* stubbed */ }
   }
   return {
     CopilotRuntime: StubCopilotRuntime,
-    copilotRuntimeNodeExpressEndpoint: () => copilotHandler,
+    createCopilotExpressHandler: () => {
+      const router = express.Router();
+      router.use((req, res) => copilotHandler(req, res));
+      return router;
+    },
   };
 });
 
