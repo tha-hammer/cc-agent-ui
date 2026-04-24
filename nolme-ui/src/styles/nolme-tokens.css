@@ -1,0 +1,19 @@
+/* Nolme design tokens — subset of the palette used across Phase 4 components.
+ * These are additive CSS variables; component code pulls them via Tailwind
+ * arbitrary values or direct `var(--nolme-*)` reads. */
+:root {
+  --nolme-purple-600: #3c2eb8;
+  --nolme-purple-500: #4f3ed6;
+  --nolme-purple-400: #8470ff;
+  --nolme-purple-200: #ddd8ff;
+  --nolme-purple-100: #f0eeff;
+  --nolme-amber-400: #f9a832;
+  --nolme-amber-500: #e8900a;
+  --nolme-emerald-500: #10b981;
+  --nolme-neutral-900: #13131a;
+  --nolme-neutral-800: #22222e;
+  --nolme-neutral-600: #54546a;
+  --nolme-neutral-500: #767690;
+  --nolme-neutral-400: #a0a0b4;
+  --nolme-neutral-200: #f0f0f5;
+}
