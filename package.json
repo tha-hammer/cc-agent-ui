@@ -60,6 +60,7 @@
   "author": "CloudCLI UI Contributors",
   "license": "AGPL-3.0-or-later",
   "dependencies": {
+    "@ag-ui/client": "0.0.52",
     "@anthropic-ai/claude-agent-sdk": "^0.2.59",
     "@codemirror/lang-css": "^6.3.1",
     "@codemirror/lang-html": "^6.4.9",
@@ -69,6 +70,7 @@
     "@codemirror/lang-python": "^6.2.1",
     "@codemirror/merge": "^6.11.1",
     "@codemirror/theme-one-dark": "^6.1.2",
+    "@copilotkit/runtime": "1.56.3",
     "@iarna/toml": "^2.2.5",
     "@octokit/rest": "^22.0.0",
     "@openai/codex-sdk": "^0.101.0",
@@ -123,6 +125,7 @@
     "@commitlint/config-conventional": "^20.4.3",
     "@eslint/js": "^9.39.3",
     "@release-it/conventional-changelog": "^10.0.5",
+    "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/node": "^22.19.7",
