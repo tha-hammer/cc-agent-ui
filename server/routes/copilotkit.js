@@ -29,9 +29,19 @@ function getRouter() {
   const runtime = new CopilotRuntime({
     agents: { ccu: new CcuSessionAgent({ agentId: 'ccu', description: 'cc-agent-ui session wrapper' }) },
   });
+  // basePath MUST be '/' when the router is mounted via app.use('/api/copilotkit', ...)
+  // because Express strips the mount prefix before the Router sees the request.
+  // createCopilotExpressHandler's source (node_modules/@copilotkit/runtime/dist/v2/
+  // runtime/endpoints/express.mjs:42-45) registers its routes as literally
+  // `${normalizedBase}/*` and `${normalizedBase}` — if basePath is '/api/copilotkit'
+  // and we mounted at '/api/copilotkit', the Router matches /api/copilotkit/info
+  // against a post-strip URL of /info → no match → 404 (exactly the symptom we hit).
+  // With basePath: '/', the Router registers '/' + '*' which matches everything
+  // reaching it, and the inner fetch-handler strips the '/' no-op basePath leaving
+  // /info / /agent/ccu/run etc. intact for its own route table.
   _router = createCopilotExpressHandler({
     runtime,
-    basePath: '/api/copilotkit',
+    basePath: '/',
     // CORS is handled at the app level (app.use(cors(...)) in server/index.js).
     // Passing false here prevents duplicate CORS headers.
     cors: false,
