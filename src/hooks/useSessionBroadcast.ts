@@ -40,7 +40,6 @@ export function useSessionBroadcast(
   const skipPermissions = toolsSettings?.skipPermissions ?? false;
 
   useEffect(() => {
-    if (typeof BroadcastChannel === 'undefined') return;
     if (!selectedSession || !selectedProject) return;
 
     const binding = {
@@ -53,6 +52,20 @@ export function useSessionBroadcast(
       toolsSettings,
       timestamp: Date.now(),
     };
+
+    // Write-through to localStorage so late-joining Nolme tabs (opened after
+    // the selection was made) can read the current binding on mount — the
+    // BroadcastChannel post is fire-and-forget and does not replay for late
+    // subscribers.
+    if (typeof localStorage !== 'undefined') {
+      try {
+        localStorage.setItem('nolme-current-binding', JSON.stringify(binding));
+      } catch {
+        /* quota exceeded or disabled — non-fatal */
+      }
+    }
+
+    if (typeof BroadcastChannel === 'undefined') return;
 
     const channel = new BroadcastChannel('ccu-session');
     channel.postMessage(binding);

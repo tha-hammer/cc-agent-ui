@@ -1,14 +1,18 @@
 /**
  * useCcuSession
  *
- * Resolves the NolmeSessionBinding that Nolme is currently pointed at. Two
- * sources feed it (in order of precedence at mount time):
+ * Resolves the NolmeSessionBinding that Nolme is currently pointed at. Three
+ * sources feed it, in order of precedence at mount time:
  *
  *   1. URL query params — `/nolme/?provider=claude&sessionId=s-1&projectName=-x&projectPath=/x`
- *   2. BroadcastChannel('ccu-session') — a live update from cc-agent-ui when
- *      the operator selects a different session in the main app
+ *   2. localStorage('nolme-current-binding') — the most recent binding that
+ *      cc-agent-ui's useSessionBroadcast wrote (survives across page loads,
+ *      covers the late-join case where Nolme opens AFTER the session was
+ *      already selected in the main app).
+ *   3. BroadcastChannel('ccu-session') — a live update from cc-agent-ui when
+ *      the operator selects a different session in the main app.
  *
- * BroadcastChannel payloads always win over the initial URL value so the UI
+ * BroadcastChannel payloads always win over the initial cached value so the UI
  * stays in sync with cc-agent-ui's sidebar selection.
  */
 import { useEffect, useState } from 'react';
@@ -17,6 +21,7 @@ import { isValidProvider, type NolmeSessionBinding, type SessionProvider, type P
 function readFromUrl(): NolmeSessionBinding | null {
   if (typeof window === 'undefined') return null;
   const params = new URLSearchParams(window.location.search);
+  if (!params.get('sessionId')) return null; // avoid shadowing localStorage with an empty URL
   return validateBinding({
     provider: params.get('provider'),
     sessionId: params.get('sessionId'),
@@ -26,6 +31,21 @@ function readFromUrl(): NolmeSessionBinding | null {
     permissionMode: params.get('permissionMode') ?? undefined,
     skipPermissions: params.get('skipPermissions'),
   });
+}
+
+function readFromLocalStorage(): NolmeSessionBinding | null {
+  if (typeof localStorage === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem('nolme-current-binding');
+    if (!raw) return null;
+    return validateBinding(JSON.parse(raw));
+  } catch {
+    return null;
+  }
+}
+
+function readInitialBinding(): NolmeSessionBinding | null {
+  return readFromUrl() ?? readFromLocalStorage();
 }
 
 function validateBinding(raw: unknown): NolmeSessionBinding | null {
@@ -72,17 +92,39 @@ function validateBinding(raw: unknown): NolmeSessionBinding | null {
 }
 
 export function useCcuSession(): NolmeSessionBinding | null {
-  const [binding, setBinding] = useState<NolmeSessionBinding | null>(() => readFromUrl());
+  const [binding, setBinding] = useState<NolmeSessionBinding | null>(() => readInitialBinding());
 
   useEffect(() => {
-    if (typeof BroadcastChannel === 'undefined') return;
-    const channel = new BroadcastChannel('ccu-session');
-    channel.onmessage = (ev: { data: unknown }) => {
-      const next = validateBinding(ev.data);
-      if (next) setBinding(next);
+    // Also listen to the storage event so a change in another tab's
+    // localStorage-write surfaces here even if BroadcastChannel is unavailable
+    // (Safari's older quirks, for example).
+    const handleStorage = (ev: StorageEvent) => {
+      if (ev.key !== 'nolme-current-binding' || !ev.newValue) return;
+      try {
+        const next = validateBinding(JSON.parse(ev.newValue));
+        if (next) setBinding(next);
+      } catch {
+        /* ignore */
+      }
     };
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', handleStorage);
+    }
+
+    let channel: BroadcastChannel | null = null;
+    if (typeof BroadcastChannel !== 'undefined') {
+      channel = new BroadcastChannel('ccu-session');
+      channel.onmessage = (ev: { data: unknown }) => {
+        const next = validateBinding(ev.data);
+        if (next) setBinding(next);
+      };
+    }
+
     return () => {
-      channel.close();
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('storage', handleStorage);
+      }
+      channel?.close();
     };
   }, []);
 
