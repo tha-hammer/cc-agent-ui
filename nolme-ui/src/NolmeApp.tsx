@@ -16,6 +16,7 @@
 import { CopilotKit } from '@copilotkit/react-core';
 import { useCcuSession } from './hooks/useCcuSession';
 import { useHydratedState } from './hooks/useHydratedState';
+import { NolmeDashboard } from './components/NolmeDashboard';
 
 function NoSessionPlaceholder() {
   return (
@@ -46,15 +47,6 @@ function HydrationErrorPlaceholder({ error }: { error: Error | undefined }) {
   );
 }
 
-function NolmeDashboardStub() {
-  return (
-    <main className="nolme-root min-h-dvh bg-white p-6 text-nolme-neutral-800">
-      <h1 className="text-3xl font-bold tracking-tight">Nolme</h1>
-      <p className="mt-2 text-nolme-neutral-600">Session connected. Phase 4/5 renders real chrome here.</p>
-    </main>
-  );
-}
-
 function getAuthHeaders(): Record<string, string> | undefined {
   if (typeof localStorage === 'undefined') return undefined;
   const token = localStorage.getItem('auth-token');
@@ -80,10 +72,8 @@ export function NolmeApp() {
   if (headers) providerProps.headers = headers;
 
   return (
-    // @ts-expect-error — CopilotKit prop types vary across major versions;
-    // the spread is runtime-verified by the B15 test.
-    <CopilotKit {...providerProps}>
-      <NolmeDashboardStub />
+    <CopilotKit {...(providerProps as Record<string, never>)}>
+      <NolmeDashboard />
     </CopilotKit>
   );
 }

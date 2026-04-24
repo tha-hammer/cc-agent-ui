@@ -11,8 +11,7 @@ const { copilotKitSpy, useCcuSessionMock, useHydratedStateMock } = vi.hoisted(()
 vi.mock('@copilotkit/react-core', () => ({
   CopilotKit: (props: { children?: unknown }) => {
     copilotKitSpy(props);
-    // @ts-expect-error test-only passthrough
-    return props.children;
+    return props.children as React.ReactElement;
   },
 }));
 
@@ -22,6 +21,14 @@ vi.mock('../../src/hooks/useCcuSession', () => ({
 
 vi.mock('../../src/hooks/useHydratedState', () => ({
   useHydratedState: useHydratedStateMock,
+}));
+
+// NolmeDashboard exercises a chain of CopilotKit hooks (useFrontendTool /
+// useHumanInTheLoop / useRenderToolCall / useCoAgent / useCopilotChat /
+// useCopilotChatSuggestions). B15's contract is the CopilotKit provider wire,
+// not the dashboard — stub the dashboard so the B15 assertions stay focused.
+vi.mock('../../src/components/NolmeDashboard', () => ({
+  NolmeDashboard: () => null,
 }));
 
 import { NolmeApp } from '../../src/NolmeApp';
