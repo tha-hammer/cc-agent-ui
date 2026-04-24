@@ -7,6 +7,8 @@ import { useWebSocket } from '../../contexts/WebSocketContext';
 import { useDeviceSettings } from '../../hooks/useDeviceSettings';
 import { useSessionProtection } from '../../hooks/useSessionProtection';
 import { useProjectsState } from '../../hooks/useProjectsState';
+import { useSessionBroadcast } from '../../hooks/useSessionBroadcast';
+import type { SessionProvider } from '../../types/app';
 import MobileNav from './MobileNav';
 
 export default function AppContent() {
@@ -49,6 +51,22 @@ export default function AppContent() {
     isMobile,
     activeSessions,
   });
+
+  // Publishes the active session binding on BroadcastChannel('ccu-session') so
+  // the sibling Nolme UI (/nolme/) can stay pointed at the same session. Additive
+  // only — see hooks/useSessionBroadcast.ts. The hook reads provider from
+  // selectedSession.__provider when present; the prop is a fallback default.
+  const broadcastProviderDefault = (
+    (typeof localStorage !== 'undefined' && localStorage.getItem('selected-provider')) || 'claude'
+  ) as SessionProvider;
+  useSessionBroadcast(
+    selectedProject ?? null,
+    selectedSession ?? null,
+    broadcastProviderDefault,
+    undefined,
+    undefined,
+    undefined,
+  );
 
   useEffect(() => {
     // Expose a non-blocking refresh for chat/session flows.
