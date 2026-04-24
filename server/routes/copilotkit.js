@@ -29,19 +29,27 @@ function getRouter() {
   const runtime = new CopilotRuntime({
     agents: { ccu: new CcuSessionAgent({ agentId: 'ccu', description: 'cc-agent-ui session wrapper' }) },
   });
-  // basePath MUST be '/' when the router is mounted via app.use('/api/copilotkit', ...)
-  // because Express strips the mount prefix before the Router sees the request.
-  // createCopilotExpressHandler's source (node_modules/@copilotkit/runtime/dist/v2/
-  // runtime/endpoints/express.mjs:42-45) registers its routes as literally
-  // `${normalizedBase}/*` and `${normalizedBase}` — if basePath is '/api/copilotkit'
-  // and we mounted at '/api/copilotkit', the Router matches /api/copilotkit/info
-  // against a post-strip URL of /info → no match → 404 (exactly the symptom we hit).
-  // With basePath: '/', the Router registers '/' + '*' which matches everything
-  // reaching it, and the inner fetch-handler strips the '/' no-op basePath leaving
-  // /info / /agent/ccu/run etc. intact for its own route table.
+  // Mode + basePath geometry explained:
+  //
+  // The v1.56.3 @copilotkit/react-core client probes POST {basePath} (bare, no
+  // suffix) with a JSON envelope `{ method, params, body }` as its FIRST
+  // handshake step. That's single-route mode. v2's multi-route mode does not
+  // register a handler at the bare base URL, so the probe 404s even when
+  // GET {basePath}/info also exists.
+  //
+  // Using single-route accepts the envelope on POST and dispatches all
+  // operations (info, agent/run, agent/connect, agent/stop) through method
+  // names in the body. Matches what the client tries first.
+  //
+  // basePath '/' is required because Express strips the '/api/copilotkit'
+  // mount prefix before the Router sees the request (see express.mjs:42-45
+  // in the package for router.post(normalizedBase, handler) registration —
+  // if basePath were '/api/copilotkit', the Router would try to match POST
+  // /api/copilotkit against a post-strip URL of '/' → no match → 404).
   _router = createCopilotExpressHandler({
     runtime,
     basePath: '/',
+    mode: 'single-route',
     // CORS is handled at the app level (app.use(cors(...)) in server/index.js).
     // Passing false here prevents duplicate CORS headers.
     cors: false,
