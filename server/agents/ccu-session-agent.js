@@ -143,7 +143,11 @@ export class CcuSessionAgent extends AbstractAgent {
         return;
       }
 
-      const cursor = createCursor();
+      // Seed the translator cursor with the binding's sessionId as the primary,
+      // so frames with mismatched sessionId (subagent/meta leaks) are filtered
+      // out at translation time. Empty binding.sessionId leaves primary null;
+      // the first session_created frame will bootstrap it.
+      const cursor = createCursor({ primarySessionId: binding.sessionId || null });
       let runErrorEmitted = false;
 
       const writer = createNolmeAgUiWriter({

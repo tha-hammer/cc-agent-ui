@@ -6,9 +6,7 @@
  * the AG-UI BaseEvent shapes consumed by CopilotKit.
  *
  * This file is a PURE function plus a stateful `translate()` helper. All state
- * lives in the `TranslatorCursor` object owned by the caller (B2 constructs one
- * per run). Subsequent phases expand the `translate()` switch; B2 ships only the
- * minimum envelope (stream_delta, stream_end, complete, error).
+ * lives in the `TranslatorCursor` object owned by the caller.
  *
  * @module agents/ag-ui-event-translator
  */
@@ -18,16 +16,28 @@
 /**
  * Caller-owned cursor. Fresh per run.
  * @typedef {{
+ *   primarySessionId: string | null,
  *   currentMessageId: string | null,
  *   currentToolId: string | null,
+ *   sawSessionCreated: boolean,
  *   sawComplete: boolean,
  *   sawError: boolean,
  * }} TranslatorCursor
  */
 
-/** @returns {TranslatorCursor} */
-export function createCursor() {
-  return { currentMessageId: null, currentToolId: null, sawComplete: false, sawError: false };
+/**
+ * @param {{ primarySessionId?: string | null }} [init]
+ * @returns {TranslatorCursor}
+ */
+export function createCursor(init = {}) {
+  return {
+    primarySessionId: init.primarySessionId || null,
+    currentMessageId: null,
+    currentToolId: null,
+    sawSessionCreated: false,
+    sawComplete: false,
+    sawError: false,
+  };
 }
 
 let messageIdSeq = 0;
@@ -36,14 +46,47 @@ function nextMessageId() {
   return `msg_${Date.now()}_${messageIdSeq}`;
 }
 
+let toolIdSeq = 0;
+function nextToolId() {
+  toolIdSeq += 1;
+  return `tool_${Date.now()}_${toolIdSeq}`;
+}
+
+/**
+ * session_created is evaluated separately — its newSessionId either bootstraps
+ * the primary id (when none is set) or indicates a subagent spawn (drop).
+ */
+function passesSessionFilter(frame, cursor) {
+  if (frame.kind === 'session_created') return true;
+  if (!frame.sessionId) return true;
+  if (cursor.primarySessionId === null) return true;
+  return frame.sessionId === cursor.primarySessionId;
+}
+
+/**
+ * Emit a full text-message triad in a single translate() call. Used by `text`
+ * (complete, non-streamed) and `thinking` kinds.
+ */
+function emitTextTriad(content, cursor, { thinking = false } = {}) {
+  const messageId = nextMessageId();
+  const start = { type: 'TEXT_MESSAGE_START', messageId, role: 'assistant' };
+  if (thinking) start.thinking = true;
+  return [
+    start,
+    { type: 'TEXT_MESSAGE_CONTENT', messageId, delta: content },
+    { type: 'TEXT_MESSAGE_END', messageId },
+  ];
+}
+
 /**
  * Translate a single frame to 0..N AG-UI events.
- * @param {any} frame - NormalizedMessage-like (see server/providers/types.js:22)
+ * @param {any} frame
  * @param {TranslatorCursor} cursor
  * @returns {Array<{ type: AgUiEventType, [k: string]: any }>}
  */
 export function translate(frame, cursor) {
   if (!frame || typeof frame !== 'object' || !frame.kind) return [];
+  if (!passesSessionFilter(frame, cursor)) return [];
 
   switch (frame.kind) {
     case 'stream_delta': {
@@ -68,10 +111,108 @@ export function translate(frame, cursor) {
       return [];
     }
 
+    case 'text': {
+      const content = typeof frame.content === 'string' ? frame.content : '';
+      return emitTextTriad(content, cursor);
+    }
+
+    case 'thinking': {
+      const content = typeof frame.content === 'string' ? frame.content : '';
+      return emitTextTriad(content, cursor, { thinking: true });
+    }
+
+    case 'tool_use': {
+      const toolCallId = frame.toolId || nextToolId();
+      cursor.currentToolId = toolCallId;
+      const toolCallName = frame.toolName || 'unknown';
+      const toolInput = frame.toolInput ?? {};
+      return [
+        { type: 'TOOL_CALL_START', toolCallId, toolCallName, parentMessageId: cursor.currentMessageId ?? null },
+        { type: 'TOOL_CALL_ARGS', toolCallId, delta: JSON.stringify(toolInput) },
+      ];
+    }
+
+    case 'tool_result': {
+      const toolCallId = frame.toolId || cursor.currentToolId;
+      if (!toolCallId) return [];
+      if (cursor.currentToolId === toolCallId) cursor.currentToolId = null;
+      return [{ type: 'TOOL_CALL_END', toolCallId }];
+    }
+
+    case 'permission_request': {
+      const toolCallId = `perm_${frame.requestId ?? nextToolId()}`;
+      cursor.currentToolId = toolCallId;
+      const inputPayload = { toolName: frame.toolName ?? null, input: frame.input ?? null, context: frame.context ?? null };
+      return [
+        { type: 'TOOL_CALL_START', toolCallId, toolCallName: 'requestPermission', parentMessageId: cursor.currentMessageId ?? null },
+        { type: 'TOOL_CALL_ARGS', toolCallId, delta: JSON.stringify(inputPayload) },
+      ];
+    }
+
+    case 'permission_cancelled': {
+      const toolCallId = frame.requestId ? `perm_${frame.requestId}` : cursor.currentToolId;
+      if (!toolCallId) return [];
+      if (cursor.currentToolId === toolCallId) cursor.currentToolId = null;
+      return [{ type: 'TOOL_CALL_END', toolCallId }];
+    }
+
+    case 'status': {
+      const text = typeof frame.text === 'string' ? frame.text : '';
+      if (cursor.currentToolId) {
+        return [
+          { type: 'TOOL_CALL_ARGS', toolCallId: cursor.currentToolId, delta: JSON.stringify({ status: text }) },
+        ];
+      }
+      return [
+        {
+          type: 'STATE_DELTA',
+          delta: [{ op: 'replace', path: '/statusText', value: text }],
+        },
+      ];
+    }
+
+    case 'interactive_prompt': {
+      const toolCallId = nextToolId();
+      cursor.currentToolId = toolCallId;
+      const content = typeof frame.content === 'string' ? frame.content : '';
+      return [
+        { type: 'TOOL_CALL_START', toolCallId, toolCallName: 'askQuestion', parentMessageId: cursor.currentMessageId ?? null },
+        { type: 'TOOL_CALL_ARGS', toolCallId, delta: JSON.stringify({ question: content }) },
+      ];
+    }
+
+    case 'task_notification': {
+      return [
+        {
+          type: 'STATE_DELTA',
+          delta: [
+            {
+              op: 'add',
+              path: '/taskNotifications/-',
+              value: { status: frame.status ?? 'unknown', summary: frame.summary ?? '', ts: Date.now() },
+            },
+          ],
+        },
+      ];
+    }
+
+    case 'session_created': {
+      if (cursor.sawSessionCreated) return [];
+      cursor.sawSessionCreated = true;
+      if (frame.newSessionId && cursor.primarySessionId === null) {
+        cursor.primarySessionId = frame.newSessionId;
+      }
+      return [
+        {
+          type: 'STATE_SNAPSHOT',
+          snapshot: { sessionId: frame.newSessionId ?? cursor.primarySessionId },
+        },
+      ];
+    }
+
     case 'complete': {
       cursor.sawComplete = true;
-      // RUN_FINISHED is emitted by the caller (CcuSessionAgent.run) so it can
-      // pair with the RUN_STARTED it issued.
+      // RUN_FINISHED is emitted by the caller so it pairs with RUN_STARTED.
       return [];
     }
 
@@ -81,10 +222,6 @@ export function translate(frame, cursor) {
     }
 
     default:
-      // Unhandled kinds are a no-op in B2. B4 expands this switch to cover
-      // text / thinking / tool_use / tool_result / permission_request /
-      // permission_cancelled / session_created / status / interactive_prompt /
-      // task_notification plus the three state-mutation tools.
       return [];
   }
 }
