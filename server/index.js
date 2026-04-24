@@ -67,6 +67,9 @@ import codexRoutes from './routes/codex.js';
 import geminiRoutes from './routes/gemini.js';
 import pluginsRoutes from './routes/plugins.js';
 import messagesRoutes from './routes/messages.js';
+import nolmeStateRouter from './routes/nolme-state.js';
+import { mountCopilotKit } from './routes/copilotkit.js';
+import { mountNolmeStatic } from './routes/nolme-static.js';
 import { createNormalizedMessage } from './providers/types.js';
 import { startEnabledPluginServers, stopAllPlugins, getPluginPort } from './utils/plugin-process-manager.js';
 import { initializeDatabase, sessionNamesDb, applyCustomSessionNames } from './database/db.js';
@@ -433,6 +436,21 @@ app.use('/api/sessions', authenticateToken, messagesRoutes);
 
 // Agent API Routes (uses API key authentication)
 app.use('/api/agent', agentRoutes);
+
+// ─── Nolme routes (plan B10 / B11 / B16 server half) ─────────────────────────
+// /api/copilotkit/* — CopilotKit runtime endpoint behind authenticateToken.
+// authenticateToken is applied BEFORE mountCopilotKit registers the handler so
+// every sub-path (/agent/ccu/run, /agent/ccu/connect, /agent/ccu/stop/:threadId)
+// inherits the auth gate.
+app.use('/api/copilotkit', authenticateToken);
+mountCopilotKit(app);
+// /api/nolme/state/:sessionId — per-session NolmeAgentState sidecar reader.
+app.use('/api/nolme', authenticateToken, nolmeStateRouter);
+// /nolme/* — static-serve the built Nolme bundle (cc-agent-ui/nolme-ui/dist/)
+// with SPA fallback to index.html. No auth: the HTML+JS are public; the Nolme
+// UI's data fetches hit /api/* which IS protected.
+mountNolmeStatic(app);
+// ─────────────────────────────────────────────────────────────────────────────
 
 // Serve public files (like api-docs.html)
 app.use(express.static(path.join(__dirname, '../public')));

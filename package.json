@@ -24,6 +24,10 @@
   },
   "scripts": {
     "dev": "concurrently --kill-others \"npm run server\" \"npm run client\"",
+    "dev:nolme": "npm --prefix nolme-ui run dev",
+    "dev:all": "concurrently --kill-others \"npm run server\" \"npm run client\" \"npm run dev:nolme\"",
+    "build:nolme": "npm --prefix nolme-ui run build",
+    "build:all": "npm run build && npm run build:nolme",
     "test": "vitest run",
     "test:watch": "vitest",
     "server": "node server/index.js",
