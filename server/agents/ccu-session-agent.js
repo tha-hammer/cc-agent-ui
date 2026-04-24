@@ -12,9 +12,11 @@ import { queryClaudeSDK } from '../claude-sdk.js';
 import { spawnCursor } from '../cursor-cli.js';
 import { queryCodex } from '../openai-codex.js';
 import { spawnGemini } from '../gemini-cli.js';
+import { getProvider } from '../providers/registry.js';
 
 import { createNolmeAgUiWriter } from './nolme-ag-ui-writer.js';
 import { createCursor, translate } from './ag-ui-event-translator.js';
+import { readState } from './nolme-state-store.js';
 
 // Re-exported for B1 regression check; intentionally unused at runtime so it
 // doesn't pollute the agent's public surface.
@@ -197,6 +199,80 @@ export class CcuSessionAgent extends AbstractAgent {
         .finally(() => {
           writer.close();
         });
+    });
+  }
+
+  /**
+   * Hydration entrypoint. CopilotKit's runtime routes POST /agent/:agentId/connect
+   * to this method. It replays prior messages from the provider's adapter and
+   * surfaces persisted NolmeAgentState so the UI can render the full session
+   * context before the operator issues a new prompt.
+   *
+   * Event envelope:
+   *   RUN_STARTED
+   *   (for each prior NormalizedMessage) translate(msg, cursor) → TEXT_MESSAGE_* / TOOL_CALL_* / …
+   *   STATE_SNAPSHOT { snapshot: NolmeAgentState }
+   *   RUN_FINISHED
+   *
+   * Errors (missing binding, fetchHistory rejection, sidecar read failure) are
+   * surfaced as RUN_ERROR so the client gets a clear signal rather than a hung
+   * stream.
+   *
+   * @param {import('@ag-ui/core').RunAgentInput} input
+   * @returns {Observable<import('@ag-ui/core').BaseEvent>}
+   */
+  connect(input) {
+    const binding = input?.forwardedProps?.binding;
+    const threadId = input?.threadId ?? binding?.sessionId ?? '';
+    const runId = input?.runId ?? '';
+
+    return new Observable((observer) => {
+      if (!binding) {
+        observer.next({ type: 'RUN_STARTED', threadId, runId });
+        observer.next({ type: 'RUN_ERROR', message: 'CcuSessionAgent.connect: missing forwardedProps.binding' });
+        observer.complete();
+        return;
+      }
+
+      observer.next({ type: 'RUN_STARTED', threadId, runId });
+
+      (async () => {
+        const adapter = getProvider(binding.provider);
+        if (!adapter || typeof adapter.fetchHistory !== 'function') {
+          observer.next({ type: 'RUN_ERROR', message: `No adapter for provider: ${binding.provider}` });
+          observer.complete();
+          return;
+        }
+
+        const history = await adapter.fetchHistory(binding.sessionId, {
+          projectName: binding.projectName,
+          projectPath: binding.projectPath,
+          limit: null,
+          offset: 0,
+        });
+
+        const cursor = createCursor({ primarySessionId: binding.sessionId || null });
+        for (const msg of history?.messages ?? []) {
+          const events = translate(msg, cursor);
+          for (const event of events) observer.next(event);
+        }
+
+        // Close any open message span before the STATE_SNAPSHOT so it doesn't
+        // intermix weirdly with the state event.
+        if (cursor.currentMessageId !== null) {
+          observer.next({ type: 'TEXT_MESSAGE_END', messageId: cursor.currentMessageId });
+          cursor.currentMessageId = null;
+        }
+
+        const state = await readState(binding);
+        observer.next({ type: 'STATE_SNAPSHOT', snapshot: state });
+
+        observer.next({ type: 'RUN_FINISHED', threadId, runId });
+        observer.complete();
+      })().catch((err) => {
+        observer.next({ type: 'RUN_ERROR', message: err instanceof Error ? err.message : String(err) });
+        observer.complete();
+      });
     });
   }
 }
