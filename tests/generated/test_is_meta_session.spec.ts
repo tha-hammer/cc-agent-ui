@@ -14,7 +14,14 @@ describe('isMetaSession', () => {
     const entries = [
       { type: 'queue-operation' },
       { type: 'queue-operation' },
-      { type: 'user', parentUuid: null },
+      {
+        type: 'user',
+        parentUuid: null,
+        message: {
+          role: 'user',
+          content: 'CONTEXT:\nUser: prior question\nAssistant: prior answer\n\nCURRENT MESSAGE:\nwhat does the Cloudflare skill do?',
+        },
+      },
       { type: 'ai-title' },
       { type: 'assistant' },
       { type: 'assistant' },
@@ -23,16 +30,45 @@ describe('isMetaSession', () => {
     expect(isMetaSession(entries)).toBe(true);
   });
 
-  it('returns true for a stalled meta spawn (1 user, 0 assistant, 0 progress)', () => {
-    // Shape observed in 4eb333cd-*.jsonl — user msg, never got a response.
+  it('returns false for a stalled root user session (1 user, 0 assistant, 0 progress)', () => {
+    // Shape observed in 4eb333cd-*.jsonl — plain user msg, never got a response.
     const entries = [
       { type: 'queue-operation' },
       { type: 'queue-operation' },
-      { type: 'user', parentUuid: null },
+      {
+        type: 'user',
+        parentUuid: null,
+        message: {
+          role: 'user',
+          content: 'what does the Cloudflare skill do?',
+        },
+      },
       { type: 'ai-title' },
       { type: 'last-prompt' },
     ];
-    expect(isMetaSession(entries)).toBe(true);
+    expect(isMetaSession(entries)).toBe(false);
+  });
+
+  it('returns false for a short tool-completion root session (1 user, 2 assistant, 0 progress)', () => {
+    // Shape observed in 8b4cd2b4-*.jsonl — root session started from the UI,
+    // but the first user payload is a tool completion summary.
+    const entries = [
+      { type: 'queue-operation' },
+      { type: 'queue-operation' },
+      {
+        type: 'user',
+        parentUuid: null,
+        message: {
+          role: 'user',
+          content: 'a1cec9316dd041073 toolu_01L6ZwK3WXzcWwaUFr2ByDVc completed Agent completed --- SUMMARY: Comprehensive laundromat acquisition research...',
+        },
+      },
+      { type: 'ai-title' },
+      { type: 'assistant' },
+      { type: 'assistant' },
+      { type: 'last-prompt' },
+    ];
+    expect(isMetaSession(entries)).toBe(false);
   });
 
   it('returns false for a real conversation (many turns + progress entries)', () => {

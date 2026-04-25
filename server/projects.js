@@ -1270,24 +1270,51 @@ export function isSubagentSession(entries) {
  * and similar one-shot claude invocations) that leak into the sidebar. These
  * share a signature: the CLI spawns a short-lived subprocess for a single
  * prompt→response, without invoking the SessionStart hook chain the user's
- * normal conversations have. So they contain zero `progress` entries and at
- * most a couple of assistant turns. See audit G-5 follow-up, 2026-04-16 smoke.
+ * normal conversations have. The earlier "0 progress + <=2 assistant" rule
+ * was too broad and hid legitimate root sessions in temp_testing (for example,
+ * stalled prompts and tool-completion root sessions). Keep the hide logic
+ * narrow to the observed context-wrapped subprocess prompts instead.
  *
- * Heuristic: zero `progress` entries AND ≤2 assistant entries.
- * A real user session on this host has SessionStart hooks that emit progress
- * events on every turn, making the count reliably >0. If a user's environment
- * lacks SessionStart hooks entirely, this predicate may hide their sessions —
- * that's a known edge case; they should unset CC_HIDE_META_SESSIONS to opt out.
+ * Heuristic: zero `progress` entries AND ≤2 assistant entries AND the first
+ * user prompt is a context-wrapped synthetic request (`CONTEXT: ... CURRENT
+ * MESSAGE:`). Plain root prompts must remain visible even when they are short
+ * or stalled.
  */
 export function isMetaSession(entries) {
   let progressCount = 0;
   let assistantCount = 0;
+  let firstUserMessage = null;
   for (const entry of entries) {
     if (!entry) continue;
     if (entry.type === 'progress') progressCount++;
     else if (entry.type === 'assistant') assistantCount++;
+    else if (!firstUserMessage && entry.type === 'user') {
+      const content = entry.message?.content;
+      if (typeof content === 'string') {
+        firstUserMessage = content;
+      } else if (Array.isArray(content)) {
+        firstUserMessage = content
+          .filter((part) => part && part.type === 'text' && typeof part.text === 'string')
+          .map((part) => part.text)
+          .join('\n');
+      }
+    }
   }
-  return progressCount === 0 && assistantCount <= 2;
+
+  if (progressCount > 0 || assistantCount > 2) {
+    return false;
+  }
+
+  if (typeof firstUserMessage !== 'string') {
+    return true;
+  }
+
+  const normalizedPrompt = firstUserMessage.trim();
+  if (!normalizedPrompt) {
+    return true;
+  }
+
+  return normalizedPrompt.startsWith('CONTEXT:') && normalizedPrompt.includes('CURRENT MESSAGE:');
 }
 
 // Add a project manually to the config (without creating folders)
