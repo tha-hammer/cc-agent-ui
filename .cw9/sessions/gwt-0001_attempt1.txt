@@ -1,0 +1,190 @@
+════ SAI | NATIVE MODE ═══════════════════════
+🗒️ TASK: Generate PlusCal spec for fork prop threading
+📃 CONTENT:
+
+---- MODULE ForkPanePassesIndexAndOnFork ----
+
+EXTENDS Integers, Sequences, TLC
+
+CONSTANTS
+    MessageCount,
+    OnForkRef,
+    OtherPropVal
+
+\* CFG entries (each invariant independently checkable):
+\* SPECIFICATION Spec
+\* CONSTANT MessageCount = 3
+\* CONSTANT OnForkRef = "onForkRef"
+\* CONSTANT OtherPropVal = "otherPropVal"
+\* INVARIANT IndexFidelity
+\* INVARIANT CallbackIdentity
+\* INVARIANT PropAdditivity
+\* INVARIANT NoSideEffects
+\* INVARIANT ChildCountComplete
+
+(* --algorithm ForkPanePassesIndexAndOnFork
+
+variables
+    visibleMessages = [i \in 1..MessageCount |-> [id |-> i, content |-> "msg"]],
+    renderedChildren = <<>>,
+    currentIndex = 0,
+    paneRendered = FALSE;
+
+define
+
+    IndexFidelity ==
+        \A i \in 1..Len(renderedChildren) :
+            renderedChildren[i].messageIndex = i - 1
+
+    CallbackIdentity ==
+        \A i \in 1..Len(renderedChildren) :
+            renderedChildren[i].onFork = OnForkRef
+
+    PropAdditivity ==
+        \A i \in 1..Len(renderedChildren) :
+            /\ renderedChildren[i].message = visibleMessages[i]
+            /\ renderedChildren[i].otherProp = OtherPropVal
+
+    NoSideEffects ==
+        visibleMessages = [i \in 1..MessageCount |-> [id |-> i, content |-> "msg"]]
+
+    ChildCountComplete ==
+        paneRendered => Len(renderedChildren) = MessageCount
+
+    AllInvariants ==
+        /\ IndexFidelity
+        /\ CallbackIdentity
+        /\ PropAdditivity
+        /\ NoSideEffects
+        /\ ChildCountComplete
+
+end define;
+
+fair process renderer = "ChatMessagesPane"
+begin
+    RenderPane:
+        while currentIndex < MessageCount do
+            renderedChildren := Append(
+                renderedChildren,
+                [ messageIndex |-> currentIndex,
+                  onFork       |-> OnForkRef,
+                  message      |-> visibleMessages[currentIndex + 1],
+                  otherProp    |-> OtherPropVal ]
+            );
+            currentIndex := currentIndex + 1;
+        end while;
+    Finish:
+        paneRendered := TRUE;
+end process;
+
+end algorithm; *)
+
+====
+
+🔧 CHANGE:
+- Module name: ForkPanePassesIndexAndOnFork
+- Five named invariants covering all four behavioral constraints
+- Nondeterminism via CONSTANTS (TLC explores all MessageCount values per cfg)
+- visibleMessages never mutated → NoSideEffects holds trivially but verifiably
+- Finish label used (Done avoided per pcal.trans rules)
+✅ VERIFY:
+- No `Done` label used; Finish used for terminal step
+- No decorative = or - comment separators inside module body
+- Each invariant independently named per cfg invariant rules
+- while loop body executes atomically: Append + increment per iteration
+🗣️ Silmari: PlusCal spec models prop-threading invariants across all message indices.
+════ SAI | NATIVE MODE ═══════════════════════
+🗒️ TASK: Generate PlusCal spec for fork prop threading
+📃 CONTENT:
+
+---- MODULE ForkPanePassesIndexAndOnFork ----
+
+EXTENDS Integers, Sequences, TLC
+
+CONSTANTS
+    MessageCount,
+    OnForkRef,
+    OtherPropVal
+
+\* CFG entries (each invariant independently checkable):
+\* SPECIFICATION Spec
+\* CONSTANT MessageCount = 3
+\* CONSTANT OnForkRef = "onForkRef"
+\* CONSTANT OtherPropVal = "otherPropVal"
+\* INVARIANT IndexFidelity
+\* INVARIANT CallbackIdentity
+\* INVARIANT PropAdditivity
+\* INVARIANT NoSideEffects
+\* INVARIANT ChildCountComplete
+
+(* --algorithm ForkPanePassesIndexAndOnFork
+
+variables
+    visibleMessages = [i \in 1..MessageCount |-> [id |-> i, content |-> "msg"]],
+    renderedChildren = <<>>,
+    currentIndex = 0,
+    paneRendered = FALSE;
+
+define
+
+    IndexFidelity ==
+        \A i \in 1..Len(renderedChildren) :
+            renderedChildren[i].messageIndex = i - 1
+
+    CallbackIdentity ==
+        \A i \in 1..Len(renderedChildren) :
+            renderedChildren[i].onFork = OnForkRef
+
+    PropAdditivity ==
+        \A i \in 1..Len(renderedChildren) :
+            /\ renderedChildren[i].message = visibleMessages[i]
+            /\ renderedChildren[i].otherProp = OtherPropVal
+
+    NoSideEffects ==
+        visibleMessages = [i \in 1..MessageCount |-> [id |-> i, content |-> "msg"]]
+
+    ChildCountComplete ==
+        paneRendered => Len(renderedChildren) = MessageCount
+
+    AllInvariants ==
+        /\ IndexFidelity
+        /\ CallbackIdentity
+        /\ PropAdditivity
+        /\ NoSideEffects
+        /\ ChildCountComplete
+
+end define;
+
+fair process renderer = "ChatMessagesPane"
+begin
+    RenderPane:
+        while currentIndex < MessageCount do
+            renderedChildren := Append(
+                renderedChildren,
+                [ messageIndex |-> currentIndex,
+                  onFork       |-> OnForkRef,
+                  message      |-> visibleMessages[currentIndex + 1],
+                  otherProp    |-> OtherPropVal ]
+            );
+            currentIndex := currentIndex + 1;
+        end while;
+    Finish:
+        paneRendered := TRUE;
+end process;
+
+end algorithm; *)
+
+====
+
+🔧 CHANGE:
+- Module name: ForkPanePassesIndexAndOnFork
+- Five named invariants covering all four behavioral constraints
+- Nondeterminism via CONSTANTS (TLC explores all MessageCount values per cfg)
+- visibleMessages never mutated → NoSideEffects holds trivially but verifiably
+- Finish label used (Done avoided per pcal.trans rules)
+✅ VERIFY:
+- No `Done` label used; Finish used for terminal step
+- No decorative = or - comment separators inside module body
+- Each invariant independently named per cfg invariant rules
+- while loop body executes atomically: Append + increment per iteration
+🗣️ Silmari: PlusCal spec models prop-threading invariants across all message indices.

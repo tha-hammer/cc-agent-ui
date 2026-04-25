@@ -1,0 +1,124 @@
+The pipeline auto-discovers every predicate in the `define` block and registers it as an invariant. `InputIsNonEmpty` is a helper that is legitimately `FALSE` in some initial states (when input is absent), so it must not live as a named top-level predicate. The fix is to inline the condition everywhere it was used and remove the helper definition entirely.
+
+---- MODULE GWT0007ForwardsResumeSessionAt ----
+
+EXTENDS TLC
+
+CONSTANTS
+    ASSISTANT_UUID,
+    CWD_VALUE
+
+(* --algorithm MapCliOptionsToSDK
+
+variables
+    inputHasResumeAt \in {TRUE, FALSE},
+    inputResumeAtEmpty \in {TRUE, FALSE},
+    inputResumeAt = IF inputHasResumeAt /\ ~inputResumeAtEmpty
+                    THEN ASSISTANT_UUID
+                    ELSE "",
+    sdkHasResumeAt = FALSE,
+    sdkResumeAt = "",
+    sdkCwd = CWD_VALUE,
+    phase = "Init";
+
+define
+
+    ResumeAtForwarded ==
+        (phase = "Mapped" /\ inputHasResumeAt /\ ~inputResumeAtEmpty) =>
+            (sdkHasResumeAt /\ sdkResumeAt = ASSISTANT_UUID)
+
+    ResumeAtAbsent ==
+        (phase = "Mapped" /\ ~(inputHasResumeAt /\ ~inputResumeAtEmpty)) =>
+            ~sdkHasResumeAt
+
+    StringIdentity ==
+        (phase = "Mapped" /\ sdkHasResumeAt) =>
+            sdkResumeAt = ASSISTANT_UUID
+
+    NoClobber ==
+        phase = "Mapped" => sdkCwd = CWD_VALUE
+
+    AllInvariants ==
+        ResumeAtForwarded /\ ResumeAtAbsent /\ StringIdentity /\ NoClobber
+
+end define;
+
+fair process mapper = "mapper"
+begin
+    CallMap:
+        if inputHasResumeAt /\ ~inputResumeAtEmpty then
+            sdkHasResumeAt := TRUE;
+            sdkResumeAt := inputResumeAt;
+        else
+            sdkHasResumeAt := FALSE;
+            sdkResumeAt := "";
+        end if;
+    Finish:
+        phase := "Mapped";
+end process;
+
+end algorithm; *)
+
+====
+The pipeline auto-discovers every predicate in the `define` block and registers it as an invariant. `InputIsNonEmpty` is a helper that is legitimately `FALSE` in some initial states (when input is absent), so it must not live as a named top-level predicate. The fix is to inline the condition everywhere it was used and remove the helper definition entirely.
+
+---- MODULE GWT0007ForwardsResumeSessionAt ----
+
+EXTENDS TLC
+
+CONSTANTS
+    ASSISTANT_UUID,
+    CWD_VALUE
+
+(* --algorithm MapCliOptionsToSDK
+
+variables
+    inputHasResumeAt \in {TRUE, FALSE},
+    inputResumeAtEmpty \in {TRUE, FALSE},
+    inputResumeAt = IF inputHasResumeAt /\ ~inputResumeAtEmpty
+                    THEN ASSISTANT_UUID
+                    ELSE "",
+    sdkHasResumeAt = FALSE,
+    sdkResumeAt = "",
+    sdkCwd = CWD_VALUE,
+    phase = "Init";
+
+define
+
+    ResumeAtForwarded ==
+        (phase = "Mapped" /\ inputHasResumeAt /\ ~inputResumeAtEmpty) =>
+            (sdkHasResumeAt /\ sdkResumeAt = ASSISTANT_UUID)
+
+    ResumeAtAbsent ==
+        (phase = "Mapped" /\ ~(inputHasResumeAt /\ ~inputResumeAtEmpty)) =>
+            ~sdkHasResumeAt
+
+    StringIdentity ==
+        (phase = "Mapped" /\ sdkHasResumeAt) =>
+            sdkResumeAt = ASSISTANT_UUID
+
+    NoClobber ==
+        phase = "Mapped" => sdkCwd = CWD_VALUE
+
+    AllInvariants ==
+        ResumeAtForwarded /\ ResumeAtAbsent /\ StringIdentity /\ NoClobber
+
+end define;
+
+fair process mapper = "mapper"
+begin
+    CallMap:
+        if inputHasResumeAt /\ ~inputResumeAtEmpty then
+            sdkHasResumeAt := TRUE;
+            sdkResumeAt := inputResumeAt;
+        else
+            sdkHasResumeAt := FALSE;
+            sdkResumeAt := "";
+        end if;
+    Finish:
+        phase := "Mapped";
+end process;
+
+end algorithm; *)
+
+====

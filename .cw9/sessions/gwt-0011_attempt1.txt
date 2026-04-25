@@ -1,0 +1,170 @@
+---- MODULE ForkParentUnchanged ----
+EXTENDS Integers, Sequences, TLC
+
+CONSTANTS P, NEW_ID, N
+
+ASSUME P # NEW_ID
+ASSUME N \in Nat
+
+(*--algorithm ForkParentUnchanged
+
+variables
+  store = (P   :> << [msgId |-> 1, sid |-> P],
+                     [msgId |-> 2, sid |-> P],
+                     [msgId |-> 3, sid |-> P] >>)
+       @@ (NEW_ID :> <<>>),
+  preForkParentMerged = << [msgId |-> 1, sid |-> P],
+                            [msgId |-> 2, sid |-> P],
+                            [msgId |-> 3, sid |-> P] >>,
+  writesLog  = <<>>,
+  phase      = "Idle",
+  replayIndex = 0;
+
+define
+
+  ParentMergedFrozen ==
+    phase \in {"ForkDispatched", "SessionCreated", "Replaying", "NavigatedToNew"}
+    => store[P] = preForkParentMerged
+
+  NoParentWrites ==
+    \A i \in 1..Len(writesLog) : writesLog[i].sid # P
+
+  NewSessionIsolated ==
+    \A i \in 1..Len(writesLog) : writesLog[i].sid = NEW_ID
+
+  ParentLengthPreserved ==
+    Len(store[P]) = 3
+
+  ReplayTargetsNewSession ==
+    phase = "NavigatedToNew" => Len(store[NEW_ID]) = 2
+
+  AllInvariants ==
+    /\ ParentMergedFrozen
+    /\ NoParentWrites
+    /\ NewSessionIsolated
+    /\ ParentLengthPreserved
+    /\ ReplayTargetsNewSession
+
+end define;
+
+fair process forkLifecycle = "fork"
+begin
+  DispatchFork:
+    phase := "ForkDispatched";
+
+  ReceiveSessionCreated:
+    phase := "SessionCreated";
+
+  ReplayFirst:
+    store      := [store EXCEPT ![NEW_ID] = Append(store[NEW_ID], [msgId |-> 1, sid |-> NEW_ID])];
+    writesLog  := Append(writesLog, [sid |-> NEW_ID, op |-> "appendRealtime"]);
+    replayIndex := replayIndex + 1;
+    phase      := "Replaying";
+
+  ReplaySecond:
+    store      := [store EXCEPT ![NEW_ID] = Append(store[NEW_ID], [msgId |-> 2, sid |-> NEW_ID])];
+    writesLog  := Append(writesLog, [sid |-> NEW_ID, op |-> "appendRealtime"]);
+    replayIndex := replayIndex + 1;
+
+  NavigateToNew:
+    phase := "NavigatedToNew";
+
+  Terminate:
+    skip;
+
+end process;
+
+end algorithm; *)
+
+INVARIANT ParentMergedFrozen
+INVARIANT NoParentWrites
+INVARIANT NewSessionIsolated
+INVARIANT ParentLengthPreserved
+INVARIANT ReplayTargetsNewSession
+
+====
+---- MODULE ForkParentUnchanged ----
+EXTENDS Integers, Sequences, TLC
+
+CONSTANTS P, NEW_ID, N
+
+ASSUME P # NEW_ID
+ASSUME N \in Nat
+
+(*--algorithm ForkParentUnchanged
+
+variables
+  store = (P   :> << [msgId |-> 1, sid |-> P],
+                     [msgId |-> 2, sid |-> P],
+                     [msgId |-> 3, sid |-> P] >>)
+       @@ (NEW_ID :> <<>>),
+  preForkParentMerged = << [msgId |-> 1, sid |-> P],
+                            [msgId |-> 2, sid |-> P],
+                            [msgId |-> 3, sid |-> P] >>,
+  writesLog  = <<>>,
+  phase      = "Idle",
+  replayIndex = 0;
+
+define
+
+  ParentMergedFrozen ==
+    phase \in {"ForkDispatched", "SessionCreated", "Replaying", "NavigatedToNew"}
+    => store[P] = preForkParentMerged
+
+  NoParentWrites ==
+    \A i \in 1..Len(writesLog) : writesLog[i].sid # P
+
+  NewSessionIsolated ==
+    \A i \in 1..Len(writesLog) : writesLog[i].sid = NEW_ID
+
+  ParentLengthPreserved ==
+    Len(store[P]) = 3
+
+  ReplayTargetsNewSession ==
+    phase = "NavigatedToNew" => Len(store[NEW_ID]) = 2
+
+  AllInvariants ==
+    /\ ParentMergedFrozen
+    /\ NoParentWrites
+    /\ NewSessionIsolated
+    /\ ParentLengthPreserved
+    /\ ReplayTargetsNewSession
+
+end define;
+
+fair process forkLifecycle = "fork"
+begin
+  DispatchFork:
+    phase := "ForkDispatched";
+
+  ReceiveSessionCreated:
+    phase := "SessionCreated";
+
+  ReplayFirst:
+    store      := [store EXCEPT ![NEW_ID] = Append(store[NEW_ID], [msgId |-> 1, sid |-> NEW_ID])];
+    writesLog  := Append(writesLog, [sid |-> NEW_ID, op |-> "appendRealtime"]);
+    replayIndex := replayIndex + 1;
+    phase      := "Replaying";
+
+  ReplaySecond:
+    store      := [store EXCEPT ![NEW_ID] = Append(store[NEW_ID], [msgId |-> 2, sid |-> NEW_ID])];
+    writesLog  := Append(writesLog, [sid |-> NEW_ID, op |-> "appendRealtime"]);
+    replayIndex := replayIndex + 1;
+
+  NavigateToNew:
+    phase := "NavigatedToNew";
+
+  Terminate:
+    skip;
+
+end process;
+
+end algorithm; *)
+
+INVARIANT ParentMergedFrozen
+INVARIANT NoParentWrites
+INVARIANT NewSessionIsolated
+INVARIANT ParentLengthPreserved
+INVARIANT ReplayTargetsNewSession
+
+====

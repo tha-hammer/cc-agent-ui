@@ -1,0 +1,236 @@
+{
+  "gwt_id": "gwt-0006",
+  "module_name": "ForkSessionForward",
+  "data_structures": {
+    "ForkSessionForwardState": {
+      "function_id": "fn-ForkSessionForward-state",
+      "acceptance_criteria_id": "ac-ForkSessionForward-state",
+      "fields": {
+        "pc": {
+          "type": "shared/data_types/Record",
+          "required": true,
+          "unique": false,
+          "default": "[self \\in ProcSet |-> \"CallMap\"]",
+          "validation": [
+            "NotNull"
+          ]
+        },
+        "inputForkSession": {
+          "type": "shared/data_types/String",
+          "required": true,
+          "unique": false,
+          "default": "null",
+          "validation": [
+            "NotNull"
+          ]
+        },
+        "inputCwd": {
+          "type": "shared/data_types/String",
+          "required": true,
+          "unique": false,
+          "default": "CWD_VALUE",
+          "validation": [
+            "IsString"
+          ]
+        },
+        "inputAllowedTools": {
+          "type": "shared/data_types/Sequence",
+          "required": true,
+          "unique": false,
+          "default": "<< >>",
+          "validation": [
+            "NotNull"
+          ]
+        },
+        "phase": {
+          "type": "shared/data_types/String",
+          "required": true,
+          "unique": false,
+          "default": "Init",
+          "validation": [
+            "IsString"
+          ]
+        },
+        "sdkForkSessionSet": {
+          "type": "shared/data_types/Boolean",
+          "required": true,
+          "unique": false,
+          "default": "false",
+          "validation": [
+            "IsBoolean"
+          ]
+        },
+        "sdkForkSessionValue": {
+          "type": "shared/data_types/Boolean",
+          "required": true,
+          "unique": false,
+          "default": "false",
+          "validation": [
+            "IsBoolean"
+          ]
+        },
+        "sdkCwd": {
+          "type": "shared/data_types/String",
+          "required": true,
+          "unique": false,
+          "default": "unset",
+          "validation": [
+            "IsString"
+          ]
+        },
+        "sdkAllowedTools": {
+          "type": "shared/data_types/Sequence",
+          "required": true,
+          "unique": false,
+          "default": "<< >>",
+          "validation": [
+            "NotNull"
+          ]
+        }
+      },
+      "relations": {},
+      "description": "State model derived from ForkSessionForward TLA+ spec"
+    }
+  },
+  "operations": {
+    "CallMap": {
+      "function_id": "fn-ForkSessionForward-CallMap",
+      "acceptance_criteria_id": "ac-ForkSessionForward-CallMap",
+      "parameters": {},
+      "returns": "shared/data_types/Record",
+      "error_types": [],
+      "error_handling": "none",
+      "description": "Action CallMap from ForkSessionForward spec"
+    },
+    "CopyForkSession": {
+      "function_id": "fn-ForkSessionForward-CopyForkSession",
+      "acceptance_criteria_id": "ac-ForkSessionForward-CopyForkSession",
+      "parameters": {},
+      "returns": "shared/data_types/Record",
+      "error_types": [],
+      "error_handling": "none",
+      "description": "Action CopyForkSession from ForkSessionForward spec"
+    },
+    "Terminate": {
+      "function_id": "fn-ForkSessionForward-Terminate",
+      "acceptance_criteria_id": "ac-ForkSessionForward-Terminate",
+      "parameters": {},
+      "returns": "shared/data_types/Record",
+      "error_types": [],
+      "error_handling": "none",
+      "description": "Action Terminate from ForkSessionForward spec"
+    }
+  },
+  "verifiers": {
+    "ForkForwardedTrue": {
+      "function_id": "fn-ForkSessionForward-verify-ForkForwardedTrue",
+      "acceptance_criteria_id": "ac-ForkSessionForward-ForkForwardedTrue",
+      "conditions": [
+        "phase = \"Complete\"",
+        "inputForkSession = \"true\") =>\n        (sdkForkSessionSet = TRUE",
+        "sdkForkSessionValue = TRUE"
+      ],
+      "message": "ForkForwardedTrue violation: (phase = \"Complete\" /\\ inputForkSession = \"true\") =>\n        (sdkForkSessionSet = TRUE /\\ sdkForkSessionValue = TRUE)",
+      "applies_to": [
+        "inputForkSession",
+        "phase",
+        "sdkForkSessionSet",
+        "sdkForkSessionValue"
+      ],
+      "tlc_checked": true,
+      "description": "Verifier for invariant ForkForwardedTrue from ForkSessionForward spec"
+    },
+    "ForkAbsentByDefault": {
+      "function_id": "fn-ForkSessionForward-verify-ForkAbsentByDefault",
+      "acceptance_criteria_id": "ac-ForkSessionForward-ForkAbsentByDefault",
+      "conditions": [
+        "phase = \"Complete\"",
+        "inputForkSession \\in {\"false\", \"missing\"}) =>\n        sdkForkSessionSet = FALSE"
+      ],
+      "message": "ForkAbsentByDefault violation: (phase = \"Complete\" /\\ inputForkSession \\in {\"false\", \"missing\"}) =>\n        sdkForkSessionSet = FALSE",
+      "applies_to": [
+        "inputForkSession",
+        "phase",
+        "sdkForkSessionSet"
+      ],
+      "tlc_checked": true,
+      "description": "Verifier for invariant ForkAbsentByDefault from ForkSessionForward spec"
+    },
+    "NoClobberCwd": {
+      "function_id": "fn-ForkSessionForward-verify-NoClobberCwd",
+      "acceptance_criteria_id": "ac-ForkSessionForward-NoClobberCwd",
+      "conditions": [
+        "phase = \"Complete\" => sdkCwd = inputCwd"
+      ],
+      "message": "NoClobberCwd violation: phase = \"Complete\" => sdkCwd = inputCwd",
+      "applies_to": [
+        "inputCwd",
+        "phase",
+        "sdkCwd"
+      ],
+      "tlc_checked": true,
+      "description": "Verifier for invariant NoClobberCwd from ForkSessionForward spec"
+    },
+    "NoClobberAllowedTools": {
+      "function_id": "fn-ForkSessionForward-verify-NoClobberAllowedTools",
+      "acceptance_criteria_id": "ac-ForkSessionForward-NoClobberAllowedTools",
+      "conditions": [
+        "phase = \"Complete\" => sdkAllowedTools = inputAllowedTools"
+      ],
+      "message": "NoClobberAllowedTools violation: phase = \"Complete\" => sdkAllowedTools = inputAllowedTools",
+      "applies_to": [
+        "inputAllowedTools",
+        "phase",
+        "sdkAllowedTools"
+      ],
+      "tlc_checked": true,
+      "description": "Verifier for invariant NoClobberAllowedTools from ForkSessionForward spec"
+    },
+    "AllInvariants": {
+      "function_id": "fn-ForkSessionForward-verify-AllInvariants",
+      "acceptance_criteria_id": "ac-ForkSessionForward-AllInvariants",
+      "conditions": [
+        "ForkForwardedTrue",
+        "ForkAbsentByDefault",
+        "NoClobberCwd",
+        "NoClobberAllowedTools"
+      ],
+      "message": "AllInvariants violation: /\\ ForkForwardedTrue\n    /\\ ForkAbsentByDefault\n    /\\ NoClobberCwd\n    /\\ NoClobberAllowedTools",
+      "applies_to": [
+        "ForkSessionForward"
+      ],
+      "tlc_checked": false,
+      "description": "Verifier for invariant AllInvariants from ForkSessionForward spec"
+    }
+  },
+  "assertions": {
+    "assert_ForkForwardedTrue": {
+      "condition": "(phase = \"Complete\" and inputForkSession = \"true\") implies\n        (sdkForkSessionSet = TRUE and sdkForkSessionValue = TRUE)",
+      "message": "Assertion failed: ForkForwardedTrue \u2014 (phase = \"Complete\" /\\ inputForkSession = \"true\") =>\n        (sdkForkSessionSet = TRUE /\\ sdkForkSessionValue = TRUE)",
+      "description": "Test assertion for ForkForwardedTrue from ForkSessionForward spec"
+    },
+    "assert_ForkAbsentByDefault": {
+      "condition": "(phase = \"Complete\" and inputForkSession in {\"false\", \"missing\"}) implies\n        sdkForkSessionSet = FALSE",
+      "message": "Assertion failed: ForkAbsentByDefault \u2014 (phase = \"Complete\" /\\ inputForkSession \\in {\"false\", \"missing\"}) =>\n        sdkForkSessionSet = FALSE",
+      "description": "Test assertion for ForkAbsentByDefault from ForkSessionForward spec"
+    },
+    "assert_NoClobberCwd": {
+      "condition": "phase = \"Complete\" implies sdkCwd = inputCwd",
+      "message": "Assertion failed: NoClobberCwd \u2014 phase = \"Complete\" => sdkCwd = inputCwd",
+      "description": "Test assertion for NoClobberCwd from ForkSessionForward spec"
+    },
+    "assert_NoClobberAllowedTools": {
+      "condition": "phase = \"Complete\" implies sdkAllowedTools = inputAllowedTools",
+      "message": "Assertion failed: NoClobberAllowedTools \u2014 phase = \"Complete\" => sdkAllowedTools = inputAllowedTools",
+      "description": "Test assertion for NoClobberAllowedTools from ForkSessionForward spec"
+    },
+    "assert_AllInvariants": {
+      "condition": "and ForkForwardedTrue\n    and ForkAbsentByDefault\n    and NoClobberCwd\n    and NoClobberAllowedTools",
+      "message": "Assertion failed: AllInvariants \u2014 /\\ ForkForwardedTrue\n    /\\ ForkAbsentByDefault\n    /\\ NoClobberCwd\n    /\\ NoClobberAllowedTools",
+      "description": "Test assertion for AllInvariants from ForkSessionForward spec"
+    }
+  },
+  "test_scenarios": [],
+  "boundary_contracts": [],
+  "simulation_traces": []
+}

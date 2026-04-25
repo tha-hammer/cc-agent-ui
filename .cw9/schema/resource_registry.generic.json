@@ -1,0 +1,98 @@
+{
+  "$schema": "resource_registry/v1",
+  "description": "Nolme UI + backend resource registry — CW9 mapping for TDD plan 2026-04-24-tdd-nolme-ui-copilot-v2.md",
+  "resources": {
+    "rr.nolme.session_binding": {
+      "kind": "client-type",
+      "path": "cc-agent-ui/nolme-ui/src/lib/types.ts:20-29",
+      "alias": "NolmeSessionBinding",
+      "schema": "types.ts#NolmeSessionBinding"
+    },
+    "rr.nolme.session_binding_store": {
+      "kind": "client-hook",
+      "path": "cc-agent-ui/nolme-ui/src/hooks/useCcuSession.ts:94",
+      "alias": "useCcuSession"
+    },
+    "rr.nolme.session_binding_mutator": {
+      "kind": "client-hook",
+      "path": "cc-agent-ui/nolme-ui/src/hooks/useCcuSessionState.ts",
+      "alias": "useCcuSessionState",
+      "mirrors": "cc-agent-ui/src/hooks/useSessionBroadcast.ts:26"
+    },
+    "rr.nolme.copilotkit_properties": {
+      "kind": "api-contract",
+      "path": "cc-agent-ui/nolme-ui/node_modules/@copilotkit/react-core/src/components/copilot-provider/copilotkit-props.tsx:90",
+      "alias": "CopilotKitProps.properties"
+    },
+    "rr.nolme.forwarded_props": {
+      "kind": "server-input",
+      "path": "cc-agent-ui/server/agents/ccu-session-agent.js:136,225",
+      "alias": "input.forwardedProps.binding"
+    },
+    "rr.nolme.chat_thread": {
+      "kind": "concept",
+      "alias": "thread",
+      "notes": "threadId === binding.sessionId"
+    },
+    "rr.nolme.assistant_message": {
+      "kind": "render-surface",
+      "path": "cc-agent-ui/nolme-ui/src/components/NolmeAssistantMessage.tsx",
+      "schema": "@copilotkit/react-core/v2#CopilotChatAssistantMessageProps"
+    },
+    "rr.nolme.user_message": {
+      "kind": "render-surface",
+      "path": "cc-agent-ui/nolme-ui/src/components/NolmeUserMessage.tsx",
+      "schema": "@copilotkit/react-core/v2#CopilotChatUserMessageProps"
+    },
+    "rr.nolme.reasoning_message": {
+      "kind": "render-surface-suppressed",
+      "schema": "@copilotkit/react-core/v2#CopilotChatReasoningMessageProps",
+      "notes": "dropped server-side at ag-ui-event-translator.js case 'thinking'"
+    },
+    "rr.nolme.ag_ui_translator": {
+      "kind": "server-module",
+      "path": "cc-agent-ui/server/agents/ag-ui-event-translator.js:87",
+      "alias": "translate(frame, cursor)"
+    },
+    "rr.nolme.attachment": {
+      "kind": "shared-type",
+      "path": "cc-agent-ui/nolme-ui/node_modules/@copilotkit/shared/src/attachments/types.ts:40",
+      "alias": "Attachment",
+      "schema": "{ source: InputContentSource, filename?, status }"
+    },
+    "rr.nolme.attachment_upload_endpoint": {
+      "kind": "http-route",
+      "path": "cc-agent-ui/server/index.js:2207",
+      "alias": "POST /api/projects/:projectName/upload-images",
+      "response": "{ images: [{ name, data: 'data:mime;base64,...', size, mimeType }] }"
+    },
+    "rr.nolme.nolme_fetch": {
+      "kind": "client-helper",
+      "path": "cc-agent-ui/nolme-ui/src/lib/fetch.ts:10",
+      "alias": "nolmeFetch"
+    },
+    "rr.nolme.model_id": {
+      "kind": "provider-model-tuple",
+      "schema": "{ provider: 'claude'|'cursor'|'codex'|'gemini', model: string }"
+    },
+    "rr.nolme.model_dispatch": {
+      "kind": "server-module",
+      "path": "cc-agent-ui/server/agents/ccu-session-agent.js:32-94"
+    },
+    "rr.nolme.workflow_phase_state": {
+      "kind": "sidecar-state",
+      "path": "cc-agent-ui/server/agents/nolme-state-store.js",
+      "alias": "NolmeAgentState"
+    },
+    "rr.nolme.design_token": {
+      "kind": "style-token",
+      "path": "cc-agent-ui/nolme-ui/tailwind.config.js"
+    },
+    "rr.nolme.v2_style_custom_props": {
+      "kind": "css-contract",
+      "path": "cc-agent-ui/nolme-ui/src/styles/index.css",
+      "alias": "--cpk-*"
+    }
+  },
+  "conditional_resources": {}
+}

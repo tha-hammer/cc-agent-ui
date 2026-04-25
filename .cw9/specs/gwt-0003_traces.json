@@ -1,0 +1,17 @@
+[
+  {
+    "invariant_violated": "AllInvariants",
+    "states": [
+      {
+        "sendMessageCallCount": "0",
+        "inheritedProvider": "\"claude\"",
+        "phase": "\"Idle\"",
+        "pc": "[forkHandler |-> \"InvokeFork\"]",
+        "lastSentPayload": "[ type |-> \"none\",",
+        "settingsResolved": "TRUE",
+        "sendMessageCalled": "FALSE",
+        "inheritedPermissionMode": "\"default\""
+      }
+    ]
+  }
+]

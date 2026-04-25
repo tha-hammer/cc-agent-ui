@@ -1,0 +1,120 @@
+The violation is `DistinctFromParent == NEW_ID # PARENT_ID` evaluating FALSE in the initial state because TLC assigns both uninterpreted CONSTANTS the same default model value. Fix: replace CONSTANTS with operator definitions inside `define`, giving them concrete distinct string values so TLC never conflates them.
+
+---- MODULE GWT0010ForkNavSessionCreated ----
+
+EXTENDS TLC
+
+(* --algorithm GWT0010ForkNavSessionCreated
+
+variables
+    currentSessionIsTemp \in {TRUE, FALSE},
+    newSessionIdPresent  \in {TRUE, FALSE},
+    navigateCalled = FALSE,
+    navigatedTo    = "none",
+    replaceCalled  = FALSE,
+    phase          = "Idle";
+
+define
+
+    PARENT_ID == "parent_session_id"
+    NEW_ID    == "new_session_id"
+
+    NavigateAlways ==
+        (phase = "Handled" /\ newSessionIdPresent) =>
+            (navigateCalled = TRUE /\ navigatedTo = NEW_ID)
+
+    NoParentReplaceOnFork ==
+        (phase = "Handled" /\ ~currentSessionIsTemp) => ~replaceCalled
+
+    DistinctFromParent ==
+        NEW_ID # PARENT_ID
+
+    NavigateCalledAtMostOnce ==
+        navigateCalled => navigatedTo = NEW_ID
+
+    AllInvariants ==
+        /\ NavigateAlways
+        /\ NoParentReplaceOnFork
+        /\ DistinctFromParent
+        /\ NavigateCalledAtMostOnce
+
+end define;
+
+fair process handler = "handler"
+begin
+    ReceiveSessionCreated:
+        if newSessionIdPresent then
+            navigateCalled := TRUE;
+            navigatedTo    := NEW_ID;
+        end if;
+    CheckReplace:
+        if currentSessionIsTemp then
+            replaceCalled := TRUE;
+        end if;
+    Finish:
+        phase := "Handled";
+end process;
+
+end algorithm; *)
+
+====
+The violation is `DistinctFromParent == NEW_ID # PARENT_ID` evaluating FALSE in the initial state because TLC assigns both uninterpreted CONSTANTS the same default model value. Fix: replace CONSTANTS with operator definitions inside `define`, giving them concrete distinct string values so TLC never conflates them.
+
+---- MODULE GWT0010ForkNavSessionCreated ----
+
+EXTENDS TLC
+
+(* --algorithm GWT0010ForkNavSessionCreated
+
+variables
+    currentSessionIsTemp \in {TRUE, FALSE},
+    newSessionIdPresent  \in {TRUE, FALSE},
+    navigateCalled = FALSE,
+    navigatedTo    = "none",
+    replaceCalled  = FALSE,
+    phase          = "Idle";
+
+define
+
+    PARENT_ID == "parent_session_id"
+    NEW_ID    == "new_session_id"
+
+    NavigateAlways ==
+        (phase = "Handled" /\ newSessionIdPresent) =>
+            (navigateCalled = TRUE /\ navigatedTo = NEW_ID)
+
+    NoParentReplaceOnFork ==
+        (phase = "Handled" /\ ~currentSessionIsTemp) => ~replaceCalled
+
+    DistinctFromParent ==
+        NEW_ID # PARENT_ID
+
+    NavigateCalledAtMostOnce ==
+        navigateCalled => navigatedTo = NEW_ID
+
+    AllInvariants ==
+        /\ NavigateAlways
+        /\ NoParentReplaceOnFork
+        /\ DistinctFromParent
+        /\ NavigateCalledAtMostOnce
+
+end define;
+
+fair process handler = "handler"
+begin
+    ReceiveSessionCreated:
+        if newSessionIdPresent then
+            navigateCalled := TRUE;
+            navigatedTo    := NEW_ID;
+        end if;
+    CheckReplace:
+        if currentSessionIsTemp then
+            replaceCalled := TRUE;
+        end if;
+    Finish:
+        phase := "Handled";
+end process;
+
+end algorithm; *)
+
+====

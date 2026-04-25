@@ -1,0 +1,176 @@
+The root cause: `PLAN_TOOLS` is an abstract CONSTANT with no concrete value bound in the model. TLC cannot evaluate `PLAN_TOOLS \subseteq outAllowedTools` even when the antecedent is false, because TLC's `=>` does not short-circuit set operations on uninstantiated constants. Fix: eliminate all abstract CONSTANTS and define `PlanTools` as a concrete module-level operator so TLC always has a ground value to evaluate.
+
+---- MODULE gwt_0009_no_regression_normal ----
+
+EXTENDS Integers, FiniteSets, TLC
+
+PlanTools == {"Read", "Task", "exit_plan_mode", "TodoRead", "TodoWrite", "WebFetch", "WebSearch"}
+
+(* --algorithm MapCliOptionsToSDK
+
+variables
+    hasCwd           \in {TRUE, FALSE},
+    permissionModeIn \in {"default", "plan", "bypassPermissions", "acceptEdits"},
+    skipPermissions  \in {TRUE, FALSE},
+    allowedToolsIn   \in { {"Bash"}, {} },
+    phase            = "Init",
+    outAllowedTools  = {},
+    outHasCwd        = FALSE,
+    outHasPerm       = FALSE,
+    outPermMode      = "none",
+    outForkLeaked    = FALSE;
+
+define
+
+    NoForkFieldsWhenAbsent ==
+        phase = "Complete" => ~outForkLeaked
+
+    NormalShapePreserved ==
+        phase = "Complete" =>
+            (outHasPerm =>
+                outPermMode \in {"plan", "bypassPermissions", "acceptEdits"})
+
+    PlanModeToolsUnion ==
+        (phase = "Complete" /\ permissionModeIn = "plan") =>
+            PlanTools \subseteq outAllowedTools
+
+    BypassPermissionsSetCorrectly ==
+        (phase = "Complete" /\ skipPermissions /\ permissionModeIn # "plan") =>
+            (outHasPerm /\ outPermMode = "bypassPermissions")
+
+    DefaultPermissionModeNotWritten ==
+        (phase = "Complete" /\ permissionModeIn = "default" /\ ~skipPermissions) =>
+            ~outHasPerm
+
+    AllInvariants ==
+        NoForkFieldsWhenAbsent
+        /\ NormalShapePreserved
+        /\ PlanModeToolsUnion
+        /\ BypassPermissionsSetCorrectly
+        /\ DefaultPermissionModeNotWritten
+
+end define;
+
+fair process Actor = "main"
+begin
+    SetCwd:
+        if hasCwd then
+            outHasCwd := TRUE;
+        end if;
+    SetAllowedTools:
+        if permissionModeIn = "plan" then
+            outAllowedTools := allowedToolsIn \union PlanTools;
+        else
+            outAllowedTools := allowedToolsIn;
+        end if;
+    SetPermissionMode:
+        if skipPermissions /\ permissionModeIn # "plan" then
+            outHasPerm  := TRUE;
+            outPermMode := "bypassPermissions";
+        elsif permissionModeIn \in {"plan", "bypassPermissions", "acceptEdits"} then
+            outHasPerm  := TRUE;
+            outPermMode := permissionModeIn;
+        end if;
+    Complete:
+        phase := "Complete";
+end process;
+
+end algorithm; *)
+
+\* gwt_0009_no_regression_normal.cfg
+\*
+\* INVARIANT NoForkFieldsWhenAbsent
+\* INVARIANT NormalShapePreserved
+\* INVARIANT PlanModeToolsUnion
+\* INVARIANT BypassPermissionsSetCorrectly
+\* INVARIANT DefaultPermissionModeNotWritten
+
+====
+The root cause: `PLAN_TOOLS` is an abstract CONSTANT with no concrete value bound in the model. TLC cannot evaluate `PLAN_TOOLS \subseteq outAllowedTools` even when the antecedent is false, because TLC's `=>` does not short-circuit set operations on uninstantiated constants. Fix: eliminate all abstract CONSTANTS and define `PlanTools` as a concrete module-level operator so TLC always has a ground value to evaluate.
+
+---- MODULE gwt_0009_no_regression_normal ----
+
+EXTENDS Integers, FiniteSets, TLC
+
+PlanTools == {"Read", "Task", "exit_plan_mode", "TodoRead", "TodoWrite", "WebFetch", "WebSearch"}
+
+(* --algorithm MapCliOptionsToSDK
+
+variables
+    hasCwd           \in {TRUE, FALSE},
+    permissionModeIn \in {"default", "plan", "bypassPermissions", "acceptEdits"},
+    skipPermissions  \in {TRUE, FALSE},
+    allowedToolsIn   \in { {"Bash"}, {} },
+    phase            = "Init",
+    outAllowedTools  = {},
+    outHasCwd        = FALSE,
+    outHasPerm       = FALSE,
+    outPermMode      = "none",
+    outForkLeaked    = FALSE;
+
+define
+
+    NoForkFieldsWhenAbsent ==
+        phase = "Complete" => ~outForkLeaked
+
+    NormalShapePreserved ==
+        phase = "Complete" =>
+            (outHasPerm =>
+                outPermMode \in {"plan", "bypassPermissions", "acceptEdits"})
+
+    PlanModeToolsUnion ==
+        (phase = "Complete" /\ permissionModeIn = "plan") =>
+            PlanTools \subseteq outAllowedTools
+
+    BypassPermissionsSetCorrectly ==
+        (phase = "Complete" /\ skipPermissions /\ permissionModeIn # "plan") =>
+            (outHasPerm /\ outPermMode = "bypassPermissions")
+
+    DefaultPermissionModeNotWritten ==
+        (phase = "Complete" /\ permissionModeIn = "default" /\ ~skipPermissions) =>
+            ~outHasPerm
+
+    AllInvariants ==
+        NoForkFieldsWhenAbsent
+        /\ NormalShapePreserved
+        /\ PlanModeToolsUnion
+        /\ BypassPermissionsSetCorrectly
+        /\ DefaultPermissionModeNotWritten
+
+end define;
+
+fair process Actor = "main"
+begin
+    SetCwd:
+        if hasCwd then
+            outHasCwd := TRUE;
+        end if;
+    SetAllowedTools:
+        if permissionModeIn = "plan" then
+            outAllowedTools := allowedToolsIn \union PlanTools;
+        else
+            outAllowedTools := allowedToolsIn;
+        end if;
+    SetPermissionMode:
+        if skipPermissions /\ permissionModeIn # "plan" then
+            outHasPerm  := TRUE;
+            outPermMode := "bypassPermissions";
+        elsif permissionModeIn \in {"plan", "bypassPermissions", "acceptEdits"} then
+            outHasPerm  := TRUE;
+            outPermMode := permissionModeIn;
+        end if;
+    Complete:
+        phase := "Complete";
+end process;
+
+end algorithm; *)
+
+\* gwt_0009_no_regression_normal.cfg
+\*
+\* INVARIANT NoForkFieldsWhenAbsent
+\* INVARIANT NormalShapePreserved
+\* INVARIANT PlanModeToolsUnion
+\* INVARIANT BypassPermissionsSetCorrectly
+\* INVARIANT DefaultPermissionModeNotWritten
+
+====

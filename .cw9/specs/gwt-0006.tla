@@ -1,0 +1,123 @@
+---- MODULE ForkSessionForwarding ----
+
+EXTENDS Integers, TLC
+
+(*
+ * Behavioral spec for gwt-0006: fork.server.forwards-fork-session
+ * Models mapCliOptionsToSDK additive copy of forkSession field.
+ *
+ * Required cfg entries:
+ *   INVARIANT ForkForwardedTrue
+ *   INVARIANT ForkAbsentByDefault
+ *   INVARIANT NoClobber
+ *   INVARIANT AllInvariants
+ *)
+
+(* --algorithm ForkSessionForwarding
+
+variables
+    inputForkSession \in {"TRUE", "FALSE", "UNDEFINED"},
+    sdkForkSession = "ABSENT",
+    sdkCwd = "CWD_PRESERVED",
+    sdkAllowedTools = "TOOLS_PRESERVED",
+    phase = "Init";
+
+define
+
+    ForkForwardedTrue ==
+        (phase = "Mapped" /\ inputForkSession = "TRUE") => sdkForkSession = "TRUE"
+
+    ForkAbsentByDefault ==
+        (phase = "Mapped" /\ inputForkSession /= "TRUE") => sdkForkSession = "ABSENT"
+
+    NoClobber ==
+        phase = "Mapped" =>
+            /\ sdkCwd = "CWD_PRESERVED"
+            /\ sdkAllowedTools = "TOOLS_PRESERVED"
+
+    AllInvariants ==
+        /\ ForkForwardedTrue
+        /\ ForkAbsentByDefault
+        /\ NoClobber
+
+end define;
+
+fair process mapper = "mapper"
+begin
+    CallMap:
+        if inputForkSession = "TRUE" then
+            sdkForkSession := "TRUE";
+        end if;
+        phase := "Mapped";
+    Finish:
+        skip;
+end process;
+
+end algorithm; *)
+\* BEGIN TRANSLATION (chksum(pcal) = "1b4cb4b" /\ chksum(tla) = "cc8d7736")
+VARIABLES pc, inputForkSession, sdkForkSession, sdkCwd, sdkAllowedTools, 
+          phase
+
+(* define statement *)
+ForkForwardedTrue ==
+    (phase = "Mapped" /\ inputForkSession = "TRUE") => sdkForkSession = "TRUE"
+
+ForkAbsentByDefault ==
+    (phase = "Mapped" /\ inputForkSession /= "TRUE") => sdkForkSession = "ABSENT"
+
+NoClobber ==
+    phase = "Mapped" =>
+        /\ sdkCwd = "CWD_PRESERVED"
+        /\ sdkAllowedTools = "TOOLS_PRESERVED"
+
+AllInvariants ==
+    /\ ForkForwardedTrue
+    /\ ForkAbsentByDefault
+    /\ NoClobber
+
+
+vars == << pc, inputForkSession, sdkForkSession, sdkCwd, sdkAllowedTools, 
+           phase >>
+
+ProcSet == {"mapper"}
+
+Init == (* Global variables *)
+        /\ inputForkSession \in {"TRUE", "FALSE", "UNDEFINED"}
+        /\ sdkForkSession = "ABSENT"
+        /\ sdkCwd = "CWD_PRESERVED"
+        /\ sdkAllowedTools = "TOOLS_PRESERVED"
+        /\ phase = "Init"
+        /\ pc = [self \in ProcSet |-> "CallMap"]
+
+CallMap == /\ pc["mapper"] = "CallMap"
+           /\ IF inputForkSession = "TRUE"
+                 THEN /\ sdkForkSession' = "TRUE"
+                 ELSE /\ TRUE
+                      /\ UNCHANGED sdkForkSession
+           /\ phase' = "Mapped"
+           /\ pc' = [pc EXCEPT !["mapper"] = "Finish"]
+           /\ UNCHANGED << inputForkSession, sdkCwd, sdkAllowedTools >>
+
+Finish == /\ pc["mapper"] = "Finish"
+          /\ TRUE
+          /\ pc' = [pc EXCEPT !["mapper"] = "Done"]
+          /\ UNCHANGED << inputForkSession, sdkForkSession, sdkCwd, 
+                          sdkAllowedTools, phase >>
+
+mapper == CallMap \/ Finish
+
+(* Allow infinite stuttering to prevent deadlock on termination. *)
+Terminating == /\ \A self \in ProcSet: pc[self] = "Done"
+               /\ UNCHANGED vars
+
+Next == mapper
+           \/ Terminating
+
+Spec == /\ Init /\ [][Next]_vars
+        /\ WF_vars(mapper)
+
+Termination == <>(\A self \in ProcSet: pc[self] = "Done")
+
+\* END TRANSLATION 
+
+====

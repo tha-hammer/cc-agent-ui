@@ -1,0 +1,38 @@
+[
+  {
+    "invariant_violated": "AllInvariants",
+    "states": [
+      {
+        "phase": "\"Init\"",
+        "normalizedMsgs": "<<>>",
+        "forkErr": "FALSE",
+        "pc": "[consumer |-> \"CheckFork\"]",
+        "forkValid": "TRUE",
+        "observedSids": "{}",
+        "streamDone": "FALSE",
+        "curEv": "[etype |-> \"\", esid |-> \"\", isReplay |-> FALSE, euuid |-> \"\"]",
+        "adapterErr": "FALSE",
+        "eventIndex": "1"
+      }
+    ]
+  },
+  {
+    "invariant_violated": "ParentIdNotLeaked",
+    "states": [
+      {
+        "phase": "\"Init\"",
+        "nmMalformed": "FALSE",
+        "parentSidLeaked": "FALSE",
+        "forkErr": "FALSE",
+        "newSidSeen": "FALSE",
+        "pc": "[consumer |-> \"CheckFork\"]",
+        "forkValid": "TRUE",
+        "streamDone": "FALSE",
+        "curEv": "[etype |-> \"\", esid |-> \"\", isReplay |-> FALSE, euuid |-> \"\"]",
+        "adapterErr": "FALSE",
+        "replayBadId": "FALSE",
+        "eventIndex": "1"
+      }
+    ]
+  }
+]

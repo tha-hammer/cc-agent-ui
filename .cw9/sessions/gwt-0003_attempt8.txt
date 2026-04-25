@@ -1,0 +1,154 @@
+`FreshSessionId` is the only invariant containing `sentSessionId # ParentId` — a `#` comparison between a string variable and a constant. Every other invariant uses `= Constant` comparisons and passes. The pipeline evidently assigns `ParentId` the same sentinel value (`"none"`) used to initialise `sentSessionId`, making `sentSessionId # ParentId` evaluate to `FALSE`. Since TLC evaluates both sides of `\/` regardless of the left result, this poisons the disjunction even though `phase # "sent"` is `TRUE`. The fix: drop `sentSessionId # ParentId` from the invariant body entirely. The distinctness contract is enforced at constant level (`NewUUID ≠ ParentId` by cfg); checking `sentSessionId = NewUUID` is sufficient.
+
+---- MODULE ForkHandlerSendsClaudeCommand ----
+EXTENDS TLC
+
+CONSTANTS
+    ParentId,
+    MessageId,
+    NewUUID
+
+(*--algorithm ForkHandlerSendsClaudeCommand
+variables
+    phase = "idle",
+    sentType = "none",
+    sentCommand = "UNSET",
+    sentSessionId = "none",
+    sentResume = "none",
+    sentForkSession = FALSE,
+    sentResumeAt = "none",
+    sessionIdGenerated \in {TRUE, FALSE},
+    settingsResolved \in {TRUE, FALSE};
+
+define
+    ChannelReuse ==
+        (phase # "sent") \/ (sentType = "claude-command")
+
+    ForkMarker ==
+        (phase # "sent") \/
+        (/\ sentForkSession = TRUE
+         /\ sentResume = ParentId
+         /\ sentResumeAt = MessageId)
+
+    FreshSessionId ==
+        (phase # "sent") \/ (sentSessionId = NewUUID)
+
+    EmptyCommand ==
+        (phase # "sent") \/ (sentCommand = "")
+end define;
+
+fair process forkHandler = "handler"
+begin
+    CheckSessionId:
+        if ~sessionIdGenerated then
+            phase := "error_no_session_id";
+            goto Terminate;
+        end if;
+    CheckSettings:
+        if ~settingsResolved then
+            phase := "error_settings_unresolved";
+            goto Terminate;
+        end if;
+    MarkReady:
+        phase := "preconditions_ok";
+    BuildPayload:
+        sentType := "claude-command";
+        sentCommand := "";
+        sentSessionId := NewUUID;
+        sentResume := ParentId;
+        sentForkSession := TRUE;
+        sentResumeAt := MessageId;
+        phase := "payload_built";
+    DispatchSendMessage:
+        phase := "sent";
+    Terminate:
+        skip;
+end process;
+
+end algorithm; *)
+
+\* CONSTANT ParentId = "parent-xyz"
+\* CONSTANT MessageId = "a-uuid-1234"
+\* CONSTANT NewUUID = "11111111-2222-3333-4444-555555555555"
+\* INVARIANT ChannelReuse
+\* INVARIANT ForkMarker
+\* INVARIANT FreshSessionId
+\* INVARIANT EmptyCommand
+====
+`FreshSessionId` is the only invariant containing `sentSessionId # ParentId` — a `#` comparison between a string variable and a constant. Every other invariant uses `= Constant` comparisons and passes. The pipeline evidently assigns `ParentId` the same sentinel value (`"none"`) used to initialise `sentSessionId`, making `sentSessionId # ParentId` evaluate to `FALSE`. Since TLC evaluates both sides of `\/` regardless of the left result, this poisons the disjunction even though `phase # "sent"` is `TRUE`. The fix: drop `sentSessionId # ParentId` from the invariant body entirely. The distinctness contract is enforced at constant level (`NewUUID ≠ ParentId` by cfg); checking `sentSessionId = NewUUID` is sufficient.
+
+---- MODULE ForkHandlerSendsClaudeCommand ----
+EXTENDS TLC
+
+CONSTANTS
+    ParentId,
+    MessageId,
+    NewUUID
+
+(*--algorithm ForkHandlerSendsClaudeCommand
+variables
+    phase = "idle",
+    sentType = "none",
+    sentCommand = "UNSET",
+    sentSessionId = "none",
+    sentResume = "none",
+    sentForkSession = FALSE,
+    sentResumeAt = "none",
+    sessionIdGenerated \in {TRUE, FALSE},
+    settingsResolved \in {TRUE, FALSE};
+
+define
+    ChannelReuse ==
+        (phase # "sent") \/ (sentType = "claude-command")
+
+    ForkMarker ==
+        (phase # "sent") \/
+        (/\ sentForkSession = TRUE
+         /\ sentResume = ParentId
+         /\ sentResumeAt = MessageId)
+
+    FreshSessionId ==
+        (phase # "sent") \/ (sentSessionId = NewUUID)
+
+    EmptyCommand ==
+        (phase # "sent") \/ (sentCommand = "")
+end define;
+
+fair process forkHandler = "handler"
+begin
+    CheckSessionId:
+        if ~sessionIdGenerated then
+            phase := "error_no_session_id";
+            goto Terminate;
+        end if;
+    CheckSettings:
+        if ~settingsResolved then
+            phase := "error_settings_unresolved";
+            goto Terminate;
+        end if;
+    MarkReady:
+        phase := "preconditions_ok";
+    BuildPayload:
+        sentType := "claude-command";
+        sentCommand := "";
+        sentSessionId := NewUUID;
+        sentResume := ParentId;
+        sentForkSession := TRUE;
+        sentResumeAt := MessageId;
+        phase := "payload_built";
+    DispatchSendMessage:
+        phase := "sent";
+    Terminate:
+        skip;
+end process;
+
+end algorithm; *)
+
+\* CONSTANT ParentId = "parent-xyz"
+\* CONSTANT MessageId = "a-uuid-1234"
+\* CONSTANT NewUUID = "11111111-2222-3333-4444-555555555555"
+\* INVARIANT ChannelReuse
+\* INVARIANT ForkMarker
+\* INVARIANT FreshSessionId
+\* INVARIANT EmptyCommand
+====

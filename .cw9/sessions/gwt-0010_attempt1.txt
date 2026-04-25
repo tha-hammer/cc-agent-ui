@@ -1,0 +1,122 @@
+---- MODULE GWT0010ForkNavSessionCreated ----
+
+EXTENDS TLC
+
+CONSTANTS
+    PARENT_ID,
+    NEW_ID
+
+ASSUME NEW_ID # PARENT_ID
+
+(* --algorithm GWT0010ForkNavSessionCreated
+
+variables
+    currentSessionIsTemp \in {TRUE, FALSE},
+    newSessionIdPresent  \in {TRUE, FALSE},
+    navigateCalled = FALSE,
+    navigatedTo    = "none",
+    replaceCalled  = FALSE,
+    phase          = "Idle";
+
+define
+
+    NavigateAlways ==
+        (phase = "Handled" /\ newSessionIdPresent) =>
+            (navigateCalled = TRUE /\ navigatedTo = NEW_ID)
+
+    NoParentReplaceOnFork ==
+        (phase = "Handled" /\ ~currentSessionIsTemp) => ~replaceCalled
+
+    DistinctFromParent ==
+        NEW_ID # PARENT_ID
+
+    NavigateCalledAtMostOnce ==
+        navigateCalled => navigatedTo = NEW_ID
+
+    AllInvariants ==
+        /\ NavigateAlways
+        /\ NoParentReplaceOnFork
+        /\ DistinctFromParent
+        /\ NavigateCalledAtMostOnce
+
+end define;
+
+fair process handler = "handler"
+begin
+    ReceiveSessionCreated:
+        if newSessionIdPresent then
+            navigateCalled := TRUE;
+            navigatedTo    := NEW_ID;
+        end if;
+    CheckReplace:
+        if currentSessionIsTemp then
+            replaceCalled := TRUE;
+        end if;
+    Finish:
+        phase := "Handled";
+end process;
+
+end algorithm; *)
+
+====
+---- MODULE GWT0010ForkNavSessionCreated ----
+
+EXTENDS TLC
+
+CONSTANTS
+    PARENT_ID,
+    NEW_ID
+
+ASSUME NEW_ID # PARENT_ID
+
+(* --algorithm GWT0010ForkNavSessionCreated
+
+variables
+    currentSessionIsTemp \in {TRUE, FALSE},
+    newSessionIdPresent  \in {TRUE, FALSE},
+    navigateCalled = FALSE,
+    navigatedTo    = "none",
+    replaceCalled  = FALSE,
+    phase          = "Idle";
+
+define
+
+    NavigateAlways ==
+        (phase = "Handled" /\ newSessionIdPresent) =>
+            (navigateCalled = TRUE /\ navigatedTo = NEW_ID)
+
+    NoParentReplaceOnFork ==
+        (phase = "Handled" /\ ~currentSessionIsTemp) => ~replaceCalled
+
+    DistinctFromParent ==
+        NEW_ID # PARENT_ID
+
+    NavigateCalledAtMostOnce ==
+        navigateCalled => navigatedTo = NEW_ID
+
+    AllInvariants ==
+        /\ NavigateAlways
+        /\ NoParentReplaceOnFork
+        /\ DistinctFromParent
+        /\ NavigateCalledAtMostOnce
+
+end define;
+
+fair process handler = "handler"
+begin
+    ReceiveSessionCreated:
+        if newSessionIdPresent then
+            navigateCalled := TRUE;
+            navigatedTo    := NEW_ID;
+        end if;
+    CheckReplace:
+        if currentSessionIsTemp then
+            replaceCalled := TRUE;
+        end if;
+    Finish:
+        phase := "Handled";
+end process;
+
+end algorithm; *)
+
+====

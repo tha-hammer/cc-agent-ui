@@ -1,0 +1,142 @@
+---- MODULE ForkHandlerSlicesParentMessages ----
+
+EXTENDS Integers, Sequences, TLC
+
+CONSTANTS
+    ParentMessages,
+    ForkIdx
+
+(* --algorithm ForkHandlerSlicesParentMessages
+
+variables
+    parentMerged = ParentMessages,
+    originalParentMerged = ParentMessages,
+    handlerSliceResult = <<>>,
+    phase = "idle",
+    forkIdxValid \in {TRUE, FALSE};
+
+define
+
+    SliceUpToAndIncluding ==
+        phase = "Complete" =>
+            /\ Len(handlerSliceResult) = ForkIdx + 1
+            /\ handlerSliceResult = SubSeq(originalParentMerged, 1, ForkIdx + 1)
+
+    ParentImmutable ==
+        parentMerged = originalParentMerged
+
+    ReadOnlyAccess ==
+        phase = "Complete" => parentMerged = originalParentMerged
+
+    AllInvariants ==
+        /\ SliceUpToAndIncluding
+        /\ ParentImmutable
+        /\ ReadOnlyAccess
+
+end define;
+
+fair process forkHandler = "handler"
+begin
+    InvokeFork:
+        if forkIdxValid /\ ForkIdx >= 0 /\ ForkIdx < Len(parentMerged) then
+            phase := "reading";
+        else
+            phase := "InvalidIndex";
+            goto Terminate;
+        end if;
+
+    ReadParent:
+        handlerSliceResult := SubSeq(parentMerged, 1, ForkIdx + 1);
+        phase := "sliced";
+
+    Complete:
+        phase := "Complete";
+
+    Terminate:
+        skip;
+end process;
+
+end algorithm; *)
+
+\* ForkHandlerSlicesParentMessages.cfg
+\*
+\* CONSTANTS
+\*   ParentMessages <- ParentMessagesValue
+\*   ForkIdx = 1
+\*
+\* INVARIANT SliceUpToAndIncluding
+\* INVARIANT ParentImmutable
+\* INVARIANT ReadOnlyAccess
+
+====
+---- MODULE ForkHandlerSlicesParentMessages ----
+
+EXTENDS Integers, Sequences, TLC
+
+CONSTANTS
+    ParentMessages,
+    ForkIdx
+
+(* --algorithm ForkHandlerSlicesParentMessages
+
+variables
+    parentMerged = ParentMessages,
+    originalParentMerged = ParentMessages,
+    handlerSliceResult = <<>>,
+    phase = "idle",
+    forkIdxValid \in {TRUE, FALSE};
+
+define
+
+    SliceUpToAndIncluding ==
+        phase = "Complete" =>
+            /\ Len(handlerSliceResult) = ForkIdx + 1
+            /\ handlerSliceResult = SubSeq(originalParentMerged, 1, ForkIdx + 1)
+
+    ParentImmutable ==
+        parentMerged = originalParentMerged
+
+    ReadOnlyAccess ==
+        phase = "Complete" => parentMerged = originalParentMerged
+
+    AllInvariants ==
+        /\ SliceUpToAndIncluding
+        /\ ParentImmutable
+        /\ ReadOnlyAccess
+
+end define;
+
+fair process forkHandler = "handler"
+begin
+    InvokeFork:
+        if forkIdxValid /\ ForkIdx >= 0 /\ ForkIdx < Len(parentMerged) then
+            phase := "reading";
+        else
+            phase := "InvalidIndex";
+            goto Terminate;
+        end if;
+
+    ReadParent:
+        handlerSliceResult := SubSeq(parentMerged, 1, ForkIdx + 1);
+        phase := "sliced";
+
+    Complete:
+        phase := "Complete";
+
+    Terminate:
+        skip;
+end process;
+
+end algorithm; *)
+
+\* ForkHandlerSlicesParentMessages.cfg
+\*
+\* CONSTANTS
+\*   ParentMessages <- ParentMessagesValue
+\*   ForkIdx = 1
+\*
+\* INVARIANT SliceUpToAndIncluding
+\* INVARIANT ParentImmutable
+\* INVARIANT ReadOnlyAccess
+
+====

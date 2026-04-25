@@ -1,0 +1,291 @@
+{
+  "gwt_id": "gwt-0012",
+  "module_name": "gwt_0012_fork_settings_localStorage_not_cleared_on_nav",
+  "data_structures": {
+    "gwt_0012_fork_settings_localStorage_not_cleared_on_navState": {
+      "function_id": "fn-gwt_0012_fork_settings_localStorage_not_cleared_on_nav-state",
+      "acceptance_criteria_id": "ac-gwt_0012_fork_settings_localStorage_not_cleared_on_nav-state",
+      "fields": {
+        "pc": {
+          "type": "shared/data_types/Record",
+          "required": true,
+          "unique": false,
+          "default": "[self \\in ProcSet |-> \"InitLocalStore\"]",
+          "validation": [
+            "NotNull"
+          ]
+        },
+        "storeHasValues": {
+          "type": "shared/data_types/String",
+          "required": true,
+          "unique": false,
+          "default": "null",
+          "validation": [
+            "NotNull"
+          ]
+        },
+        "localStore": {
+          "type": "shared/data_types/Record",
+          "required": true,
+          "unique": false,
+          "default": "[k \\in WatchedKeys |-> InitValue]",
+          "validation": [
+            "NotNull"
+          ]
+        },
+        "snapshot": {
+          "type": "shared/data_types/Record",
+          "required": true,
+          "unique": false,
+          "default": "[k \\in WatchedKeys |-> InitValue]",
+          "validation": [
+            "NotNull"
+          ]
+        },
+        "removedKeys": {
+          "type": "shared/data_types/Set",
+          "required": true,
+          "unique": false,
+          "default": "empty_set",
+          "validation": [
+            "IsSet"
+          ]
+        },
+        "clearedAll": {
+          "type": "shared/data_types/Boolean",
+          "required": true,
+          "unique": false,
+          "default": "false",
+          "validation": [
+            "IsBoolean"
+          ]
+        },
+        "overwrittenKeys": {
+          "type": "shared/data_types/Set",
+          "required": true,
+          "unique": false,
+          "default": "empty_set",
+          "validation": [
+            "IsSet"
+          ]
+        },
+        "sessionStorageSet": {
+          "type": "shared/data_types/Boolean",
+          "required": true,
+          "unique": false,
+          "default": "false",
+          "validation": [
+            "IsBoolean"
+          ]
+        },
+        "navExecuted": {
+          "type": "shared/data_types/Boolean",
+          "required": true,
+          "unique": false,
+          "default": "false",
+          "validation": [
+            "IsBoolean"
+          ]
+        },
+        "currentSession": {
+          "type": "shared/data_types/String",
+          "required": true,
+          "unique": false,
+          "default": "ParentSession",
+          "validation": [
+            "IsString"
+          ]
+        },
+        "phase": {
+          "type": "shared/data_types/String",
+          "required": true,
+          "unique": false,
+          "default": "init",
+          "validation": [
+            "IsString"
+          ]
+        }
+      },
+      "relations": {},
+      "description": "State model derived from gwt_0012_fork_settings_localStorage_not_cleared_on_nav TLA+ spec"
+    }
+  },
+  "operations": {
+    "InitLocalStore": {
+      "function_id": "fn-gwt_0012_fork_settings_localStorage_not_cleared_on_nav-InitLocalStore",
+      "acceptance_criteria_id": "ac-gwt_0012_fork_settings_localStorage_not_cleared_on_nav-InitLocalStore",
+      "parameters": {},
+      "returns": "shared/data_types/Record",
+      "error_types": [],
+      "error_handling": "none",
+      "description": "Action InitLocalStore from gwt_0012_fork_settings_localStorage_not_cleared_on_nav spec"
+    },
+    "SnapshotStore": {
+      "function_id": "fn-gwt_0012_fork_settings_localStorage_not_cleared_on_nav-SnapshotStore",
+      "acceptance_criteria_id": "ac-gwt_0012_fork_settings_localStorage_not_cleared_on_nav-SnapshotStore",
+      "parameters": {},
+      "returns": "shared/data_types/Record",
+      "error_types": [],
+      "error_handling": "none",
+      "description": "Action SnapshotStore from gwt_0012_fork_settings_localStorage_not_cleared_on_nav spec"
+    },
+    "ReceiveSessionCreatedEvent": {
+      "function_id": "fn-gwt_0012_fork_settings_localStorage_not_cleared_on_nav-ReceiveSessionCreatedEvent",
+      "acceptance_criteria_id": "ac-gwt_0012_fork_settings_localStorage_not_cleared_on_nav-ReceiveSessionCreatedEvent",
+      "parameters": {},
+      "returns": "shared/data_types/Record",
+      "error_types": [],
+      "error_handling": "none",
+      "description": "Action ReceiveSessionCreatedEvent from gwt_0012_fork_settings_localStorage_not_cleared_on_nav spec"
+    },
+    "WriteSessionStorage": {
+      "function_id": "fn-gwt_0012_fork_settings_localStorage_not_cleared_on_nav-WriteSessionStorage",
+      "acceptance_criteria_id": "ac-gwt_0012_fork_settings_localStorage_not_cleared_on_nav-WriteSessionStorage",
+      "parameters": {},
+      "returns": "shared/data_types/Record",
+      "error_types": [],
+      "error_handling": "none",
+      "description": "Action WriteSessionStorage from gwt_0012_fork_settings_localStorage_not_cleared_on_nav spec"
+    },
+    "MarkNavComplete": {
+      "function_id": "fn-gwt_0012_fork_settings_localStorage_not_cleared_on_nav-MarkNavComplete",
+      "acceptance_criteria_id": "ac-gwt_0012_fork_settings_localStorage_not_cleared_on_nav-MarkNavComplete",
+      "parameters": {},
+      "returns": "shared/data_types/Record",
+      "error_types": [],
+      "error_handling": "none",
+      "description": "Action MarkNavComplete from gwt_0012_fork_settings_localStorage_not_cleared_on_nav spec"
+    },
+    "Terminate": {
+      "function_id": "fn-gwt_0012_fork_settings_localStorage_not_cleared_on_nav-Terminate",
+      "acceptance_criteria_id": "ac-gwt_0012_fork_settings_localStorage_not_cleared_on_nav-Terminate",
+      "parameters": {},
+      "returns": "shared/data_types/Record",
+      "error_types": [],
+      "error_handling": "none",
+      "description": "Action Terminate from gwt_0012_fork_settings_localStorage_not_cleared_on_nav spec"
+    }
+  },
+  "verifiers": {
+    "LocalStoragePersistAcrossNav": {
+      "function_id": "fn-gwt_0012_fork_settings_localStorage_not_cleared_on_nav-verify-LocalStoragePersistAcrossNav",
+      "acceptance_criteria_id": "ac-gwt_0012_fork_settings_localStorage_not_cleared_on_nav-LocalStoragePersistAcrossNav",
+      "conditions": [
+        "navExecuted =>\n        \\A k \\in WatchedKeys : localStore[k] = snapshot[k]"
+      ],
+      "message": "LocalStoragePersistAcrossNav violation: navExecuted =>\n        \\A k \\in WatchedKeys : localStore[k] = snapshot[k]",
+      "applies_to": [
+        "localStore",
+        "navExecuted",
+        "snapshot"
+      ],
+      "tlc_checked": true,
+      "description": "Verifier for invariant LocalStoragePersistAcrossNav from gwt_0012_fork_settings_localStorage_not_cleared_on_nav spec"
+    },
+    "NoRemoveItemOnWatchedKeys": {
+      "function_id": "fn-gwt_0012_fork_settings_localStorage_not_cleared_on_nav-verify-NoRemoveItemOnWatchedKeys",
+      "acceptance_criteria_id": "ac-gwt_0012_fork_settings_localStorage_not_cleared_on_nav-NoRemoveItemOnWatchedKeys",
+      "conditions": [
+        "removedKeys \\cap WatchedKeys = {}"
+      ],
+      "message": "NoRemoveItemOnWatchedKeys violation: removedKeys \\cap WatchedKeys = {}",
+      "applies_to": [
+        "removedKeys"
+      ],
+      "tlc_checked": true,
+      "description": "Verifier for invariant NoRemoveItemOnWatchedKeys from gwt_0012_fork_settings_localStorage_not_cleared_on_nav spec"
+    },
+    "NoClearAllCalled": {
+      "function_id": "fn-gwt_0012_fork_settings_localStorage_not_cleared_on_nav-verify-NoClearAllCalled",
+      "acceptance_criteria_id": "ac-gwt_0012_fork_settings_localStorage_not_cleared_on_nav-NoClearAllCalled",
+      "conditions": [
+        "~clearedAll"
+      ],
+      "message": "NoClearAllCalled violation: ~clearedAll",
+      "applies_to": [
+        "clearedAll"
+      ],
+      "tlc_checked": true,
+      "description": "Verifier for invariant NoClearAllCalled from gwt_0012_fork_settings_localStorage_not_cleared_on_nav spec"
+    },
+    "NoSetItemOnWatchedKeys": {
+      "function_id": "fn-gwt_0012_fork_settings_localStorage_not_cleared_on_nav-verify-NoSetItemOnWatchedKeys",
+      "acceptance_criteria_id": "ac-gwt_0012_fork_settings_localStorage_not_cleared_on_nav-NoSetItemOnWatchedKeys",
+      "conditions": [
+        "overwrittenKeys \\cap WatchedKeys = {}"
+      ],
+      "message": "NoSetItemOnWatchedKeys violation: overwrittenKeys \\cap WatchedKeys = {}",
+      "applies_to": [
+        "overwrittenKeys"
+      ],
+      "tlc_checked": true,
+      "description": "Verifier for invariant NoSetItemOnWatchedKeys from gwt_0012_fork_settings_localStorage_not_cleared_on_nav spec"
+    },
+    "SessionStorageScopedToPendingId": {
+      "function_id": "fn-gwt_0012_fork_settings_localStorage_not_cleared_on_nav-verify-SessionStorageScopedToPendingId",
+      "acceptance_criteria_id": "ac-gwt_0012_fork_settings_localStorage_not_cleared_on_nav-SessionStorageScopedToPendingId",
+      "conditions": [
+        "sessionStorageSet =>\n        phase \\in { \"pending_session_id_set\",\n                    \"callback_invoked\",\n                    \"nav_complete\",\n                    \"complete\" }"
+      ],
+      "message": "SessionStorageScopedToPendingId violation: sessionStorageSet =>\n        phase \\in { \"pending_session_id_set\",\n                    \"callback_invoked\",\n          ...",
+      "applies_to": [
+        "phase",
+        "sessionStorageSet"
+      ],
+      "tlc_checked": true,
+      "description": "Verifier for invariant SessionStorageScopedToPendingId from gwt_0012_fork_settings_localStorage_not_cleared_on_nav spec"
+    },
+    "AllInvariants": {
+      "function_id": "fn-gwt_0012_fork_settings_localStorage_not_cleared_on_nav-verify-AllInvariants",
+      "acceptance_criteria_id": "ac-gwt_0012_fork_settings_localStorage_not_cleared_on_nav-AllInvariants",
+      "conditions": [
+        "LocalStoragePersistAcrossNav",
+        "NoRemoveItemOnWatchedKeys",
+        "NoClearAllCalled",
+        "NoSetItemOnWatchedKeys",
+        "SessionStorageScopedToPendingId"
+      ],
+      "message": "AllInvariants violation: /\\ LocalStoragePersistAcrossNav\n    /\\ NoRemoveItemOnWatchedKeys\n    /\\ NoClearAllCalled\n    /\\ NoSetItemOnWatchedKey...",
+      "applies_to": [
+        "gwt_0012_fork_settings_localStorage_not_cleared_on_nav"
+      ],
+      "tlc_checked": false,
+      "description": "Verifier for invariant AllInvariants from gwt_0012_fork_settings_localStorage_not_cleared_on_nav spec"
+    }
+  },
+  "assertions": {
+    "assert_LocalStoragePersistAcrossNav": {
+      "condition": "navExecuted implies\n        \\A k in WatchedKeys : localStore[k] = snapshot[k]",
+      "message": "Assertion failed: LocalStoragePersistAcrossNav \u2014 navExecuted =>\n        \\A k \\in WatchedKeys : localStore[k] = snapshot[k]",
+      "description": "Test assertion for LocalStoragePersistAcrossNav from gwt_0012_fork_settings_localStorage_not_cleared_on_nav spec"
+    },
+    "assert_NoRemoveItemOnWatchedKeys": {
+      "condition": "removedKeys \\cap WatchedKeys = {}",
+      "message": "Assertion failed: NoRemoveItemOnWatchedKeys \u2014 removedKeys \\cap WatchedKeys = {}",
+      "description": "Test assertion for NoRemoveItemOnWatchedKeys from gwt_0012_fork_settings_localStorage_not_cleared_on_nav spec"
+    },
+    "assert_NoClearAllCalled": {
+      "condition": "~clearedAll",
+      "message": "Assertion failed: NoClearAllCalled \u2014 ~clearedAll",
+      "description": "Test assertion for NoClearAllCalled from gwt_0012_fork_settings_localStorage_not_cleared_on_nav spec"
+    },
+    "assert_NoSetItemOnWatchedKeys": {
+      "condition": "overwrittenKeys \\cap WatchedKeys = {}",
+      "message": "Assertion failed: NoSetItemOnWatchedKeys \u2014 overwrittenKeys \\cap WatchedKeys = {}",
+      "description": "Test assertion for NoSetItemOnWatchedKeys from gwt_0012_fork_settings_localStorage_not_cleared_on_nav spec"
+    },
+    "assert_SessionStorageScopedToPendingId": {
+      "condition": "sessionStorageSet implies\n        phase in { \"pending_session_id_set\",\n                    \"callback_invoked\",\n                    \"nav_complete\",\n                    \"complete\" }",
+      "message": "Assertion failed: SessionStorageScopedToPendingId \u2014 sessionStorageSet =>\n        phase \\in { \"pending_session_id_set\",\n                    \"callback_invoked\",\n          ...",
+      "description": "Test assertion for SessionStorageScopedToPendingId from gwt_0012_fork_settings_localStorage_not_cleared_on_nav spec"
+    },
+    "assert_AllInvariants": {
+      "condition": "and LocalStoragePersistAcrossNav\n    and NoRemoveItemOnWatchedKeys\n    and NoClearAllCalled\n    and NoSetItemOnWatchedKeys\n    and SessionStorageScopedToPendingId",
+      "message": "Assertion failed: AllInvariants \u2014 /\\ LocalStoragePersistAcrossNav\n    /\\ NoRemoveItemOnWatchedKeys\n    /\\ NoClearAllCalled\n    /\\ NoSetItemOnWatchedKey...",
+      "description": "Test assertion for AllInvariants from gwt_0012_fork_settings_localStorage_not_cleared_on_nav spec"
+    }
+  },
+  "test_scenarios": [],
+  "boundary_contracts": [],
+  "simulation_traces": []
+}

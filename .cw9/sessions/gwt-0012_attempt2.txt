@@ -1,0 +1,182 @@
+---- MODULE gwt_0012_fork_settings_localStorage_not_cleared_on_nav ----
+
+EXTENDS Sequences, FiniteSets, TLC
+
+CONSTANTS
+    WatchedKeys,
+    ParentSession,
+    ForkedSession,
+    InitValue
+
+(* --algorithm ForkSettingsLocalStorageNotClearedOnNav
+
+variables
+    storeHasValues \in {TRUE, FALSE},
+    localStore     = [k \in WatchedKeys |-> InitValue],
+    snapshot       = [k \in WatchedKeys |-> InitValue],
+    removedKeys       = {},
+    clearedAll        = FALSE,
+    overwrittenKeys   = {},
+    sessionStorageSet = FALSE,
+    navExecuted       = FALSE,
+    currentSession    = ParentSession,
+    phase             = "init";
+
+define
+
+    LocalStoragePersistAcrossNav ==
+        navExecuted =>
+            \A k \in WatchedKeys : localStore[k] = snapshot[k]
+
+    NoRemoveItemOnWatchedKeys ==
+        removedKeys \cap WatchedKeys = {}
+
+    NoClearAllCalled ==
+        ~clearedAll
+
+    NoSetItemOnWatchedKeys ==
+        overwrittenKeys \cap WatchedKeys = {}
+
+    SessionStorageScopedToPendingId ==
+        sessionStorageSet =>
+            phase \in { "pending_session_id_set",
+                        "callback_invoked",
+                        "nav_complete",
+                        "complete" }
+
+    AllInvariants ==
+        /\ LocalStoragePersistAcrossNav
+        /\ NoRemoveItemOnWatchedKeys
+        /\ NoClearAllCalled
+        /\ NoSetItemOnWatchedKeys
+        /\ SessionStorageScopedToPendingId
+
+end define;
+
+fair process navigator = "nav"
+begin
+    InitLocalStore:
+        if storeHasValues then
+            localStore := [k \in WatchedKeys |-> InitValue];
+        else
+            localStore := [k \in WatchedKeys |-> "absent"];
+        end if;
+
+    SnapshotStore:
+        snapshot := localStore;
+        phase    := "snapshotted";
+
+    ReceiveSessionCreatedEvent:
+        phase := "session_created";
+
+    WriteSessionStorage:
+        sessionStorageSet := TRUE;
+        phase := "pending_session_id_set";
+
+    InvokeNavCallback:
+        currentSession := ForkedSession;
+        phase := "callback_invoked";
+
+    MarkNavComplete:
+        navExecuted := TRUE;
+        phase := "nav_complete";
+
+    Terminate:
+        phase := "complete";
+
+end process;
+
+end algorithm; *)
+
+====
+---- MODULE gwt_0012_fork_settings_localStorage_not_cleared_on_nav ----
+
+EXTENDS Sequences, FiniteSets, TLC
+
+CONSTANTS
+    WatchedKeys,
+    ParentSession,
+    ForkedSession,
+    InitValue
+
+(* --algorithm ForkSettingsLocalStorageNotClearedOnNav
+
+variables
+    storeHasValues \in {TRUE, FALSE},
+    localStore     = [k \in WatchedKeys |-> InitValue],
+    snapshot       = [k \in WatchedKeys |-> InitValue],
+    removedKeys       = {},
+    clearedAll        = FALSE,
+    overwrittenKeys   = {},
+    sessionStorageSet = FALSE,
+    navExecuted       = FALSE,
+    currentSession    = ParentSession,
+    phase             = "init";
+
+define
+
+    LocalStoragePersistAcrossNav ==
+        navExecuted =>
+            \A k \in WatchedKeys : localStore[k] = snapshot[k]
+
+    NoRemoveItemOnWatchedKeys ==
+        removedKeys \cap WatchedKeys = {}
+
+    NoClearAllCalled ==
+        ~clearedAll
+
+    NoSetItemOnWatchedKeys ==
+        overwrittenKeys \cap WatchedKeys = {}
+
+    SessionStorageScopedToPendingId ==
+        sessionStorageSet =>
+            phase \in { "pending_session_id_set",
+                        "callback_invoked",
+                        "nav_complete",
+                        "complete" }
+
+    AllInvariants ==
+        /\ LocalStoragePersistAcrossNav
+        /\ NoRemoveItemOnWatchedKeys
+        /\ NoClearAllCalled
+        /\ NoSetItemOnWatchedKeys
+        /\ SessionStorageScopedToPendingId
+
+end define;
+
+fair process navigator = "nav"
+begin
+    InitLocalStore:
+        if storeHasValues then
+            localStore := [k \in WatchedKeys |-> InitValue];
+        else
+            localStore := [k \in WatchedKeys |-> "absent"];
+        end if;
+
+    SnapshotStore:
+        snapshot := localStore;
+        phase    := "snapshotted";
+
+    ReceiveSessionCreatedEvent:
+        phase := "session_created";
+
+    WriteSessionStorage:
+        sessionStorageSet := TRUE;
+        phase := "pending_session_id_set";
+
+    InvokeNavCallback:
+        currentSession := ForkedSession;
+        phase := "callback_invoked";
+
+    MarkNavComplete:
+        navExecuted := TRUE;
+        phase := "nav_complete";
+
+    Terminate:
+        phase := "complete";
+
+end process;
+
+end algorithm; *)
+
+====

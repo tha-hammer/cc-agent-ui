@@ -1,0 +1,148 @@
+---- MODULE GWT0005ForwardsResume ----
+
+EXTENDS Sequences, TLC
+
+CONSTANTS
+    RESUME_VALUE,
+    CWD_VALUE,
+    MODEL_VALUE,
+    UNSET
+
+(* --algorithm GWT0005ForwardsResume
+
+variables
+    resumePresent \in {TRUE, FALSE},
+    inputResume = IF resumePresent THEN RESUME_VALUE ELSE "",
+    inputCwd    = CWD_VALUE,
+    inputModel  = MODEL_VALUE,
+    sdkResume   = UNSET,
+    sdkCwd      = UNSET,
+    sdkModel    = UNSET,
+    phase       = "Init";
+
+define
+
+    ResumeForwarded ==
+        (resumePresent /\ phase = "Complete") =>
+            sdkResume = RESUME_VALUE
+
+    ResumeAbsent ==
+        ((~resumePresent) /\ phase = "Complete") =>
+            sdkResume = UNSET
+
+    NoClobberCwd ==
+        phase = "Complete" =>
+            sdkCwd = inputCwd
+
+    NoClobberModel ==
+        phase = "Complete" =>
+            sdkModel = inputModel
+
+    AllInvariants ==
+        ResumeForwarded /\ ResumeAbsent /\ NoClobberCwd /\ NoClobberModel
+
+end define;
+
+fair process mapper = "mapper"
+begin
+    BuildBase:
+        sdkCwd   := inputCwd;
+        sdkModel := inputModel;
+        phase    := "BaseBuilt";
+    CopyResume:
+        if resumePresent /\ inputResume # "" then
+            sdkResume := inputResume;
+        end if;
+    Complete:
+        phase := "Complete";
+end process;
+
+end algorithm; *)
+
+====
+
+\* INVARIANT ResumeForwarded
+\* INVARIANT ResumeAbsent
+\* INVARIANT NoClobberCwd
+\* INVARIANT NoClobberModel
+\*
+\* CONSTANT RESUME_VALUE <- "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
+\* CONSTANT CWD_VALUE    <- "/repo"
+\* CONSTANT MODEL_VALUE  <- "claude-3-opus-20240229"
+\* CONSTANT UNSET        <- "UNSET"
+
+====
+---- MODULE GWT0005ForwardsResume ----
+
+EXTENDS Sequences, TLC
+
+CONSTANTS
+    RESUME_VALUE,
+    CWD_VALUE,
+    MODEL_VALUE,
+    UNSET
+
+(* --algorithm GWT0005ForwardsResume
+
+variables
+    resumePresent \in {TRUE, FALSE},
+    inputResume = IF resumePresent THEN RESUME_VALUE ELSE "",
+    inputCwd    = CWD_VALUE,
+    inputModel  = MODEL_VALUE,
+    sdkResume   = UNSET,
+    sdkCwd      = UNSET,
+    sdkModel    = UNSET,
+    phase       = "Init";
+
+define
+
+    ResumeForwarded ==
+        (resumePresent /\ phase = "Complete") =>
+            sdkResume = RESUME_VALUE
+
+    ResumeAbsent ==
+        ((~resumePresent) /\ phase = "Complete") =>
+            sdkResume = UNSET
+
+    NoClobberCwd ==
+        phase = "Complete" =>
+            sdkCwd = inputCwd
+
+    NoClobberModel ==
+        phase = "Complete" =>
+            sdkModel = inputModel
+
+    AllInvariants ==
+        ResumeForwarded /\ ResumeAbsent /\ NoClobberCwd /\ NoClobberModel
+
+end define;
+
+fair process mapper = "mapper"
+begin
+    BuildBase:
+        sdkCwd   := inputCwd;
+        sdkModel := inputModel;
+        phase    := "BaseBuilt";
+    CopyResume:
+        if resumePresent /\ inputResume # "" then
+            sdkResume := inputResume;
+        end if;
+    Complete:
+        phase := "Complete";
+end process;
+
+end algorithm; *)
+
+====
+
+\* INVARIANT ResumeForwarded
+\* INVARIANT ResumeAbsent
+\* INVARIANT NoClobberCwd
+\* INVARIANT NoClobberModel
+\*
+\* CONSTANT RESUME_VALUE <- "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
+\* CONSTANT CWD_VALUE    <- "/repo"
+\* CONSTANT MODEL_VALUE  <- "claude-3-opus-20240229"
+\* CONSTANT UNSET        <- "UNSET"
+
+====

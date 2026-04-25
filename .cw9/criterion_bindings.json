@@ -1,0 +1,16 @@
+{
+  "gwt:fork.pane.passes-index-and-onfork": "gwt-0001",
+  "gwt:fork.handler.slices-parent-messages": "gwt-0002",
+  "gwt:fork.handler.sends-claude-command-with-fork-options": "gwt-0003",
+  "gwt:fork.handler.inherits-settings": "gwt-0004",
+  "gwt:fork.server.forwards-resume": "gwt-0005",
+  "gwt:fork.server.forwards-fork-session": "gwt-0006",
+  "gwt:fork.server.forwards-resume-session-at": "gwt-0007",
+  "gwt:fork.server.forwards-session-id-only-when-forking": "gwt-0008",
+  "gwt:fork.server.no-regression-normal-commands": "gwt-0009",
+  "gwt:fork.nav.navigates-on-session-created": "gwt-0010",
+  "gwt:fork.parent.session-unchanged-after-fork": "gwt-0011",
+  "gwt:fork.settings.localStorage-not-cleared-on-nav": "gwt-0012",
+  "gwt:fork.spike.sdk-replay-events-arrive": "gwt-0013",
+  "gwt:fork.spike.error-path-on-bad-uuid": "gwt-0014"
+}

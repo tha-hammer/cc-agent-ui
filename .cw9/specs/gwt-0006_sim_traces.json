@@ -1,0 +1,6082 @@
+[
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"FALSE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"TRUE\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"TRUE\""
+      }
+    }
+  ],
+  [
+    {
+      "state_num": 1,
+      "label": "Init",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Init\"",
+        "pc": "[mapper |-> \"CallMap\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 2,
+      "label": "CallMap",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Finish\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    },
+    {
+      "state_num": 3,
+      "label": "Finish",
+      "vars": {
+        "sdkCwd": "\"CWD_PRESERVED\"",
+        "sdkForkSession": "\"ABSENT\"",
+        "phase": "\"Mapped\"",
+        "pc": "[mapper |-> \"Done\"]",
+        "sdkAllowedTools": "\"TOOLS_PRESERVED\"",
+        "inputForkSession": "\"UNDEFINED\""
+      }
+    }
+  ]
+]

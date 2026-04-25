@@ -1,0 +1,260 @@
+{
+  "gwt_id": "gwt-0014",
+  "module_name": "gwt0014ErrorPathOnBadUUID",
+  "data_structures": {
+    "gwt0014ErrorPathOnBadUUIDState": {
+      "function_id": "fn-gwt0014ErrorPathOnBadUUID-state",
+      "acceptance_criteria_id": "ac-gwt0014ErrorPathOnBadUUID-state",
+      "fields": {
+        "pc": {
+          "type": "shared/data_types/Record",
+          "required": true,
+          "unique": false,
+          "default": "[self \\in ProcSet |-> \"MapOptions\"]",
+          "validation": [
+            "NotNull"
+          ]
+        },
+        "sdkWillThrow": {
+          "type": "shared/data_types/String",
+          "required": true,
+          "unique": false,
+          "default": "null",
+          "validation": [
+            "NotNull"
+          ]
+        },
+        "wsOut": {
+          "type": "shared/data_types/Sequence",
+          "required": true,
+          "unique": false,
+          "default": "empty_sequence",
+          "validation": [
+            "NotNull"
+          ]
+        },
+        "errorCount": {
+          "type": "shared/data_types/Integer",
+          "required": true,
+          "unique": false,
+          "default": "0",
+          "validation": [
+            "IsInteger"
+          ]
+        },
+        "completeCount": {
+          "type": "shared/data_types/Integer",
+          "required": true,
+          "unique": false,
+          "default": "0",
+          "validation": [
+            "IsInteger"
+          ]
+        },
+        "phase": {
+          "type": "shared/data_types/String",
+          "required": true,
+          "unique": false,
+          "default": "Idle",
+          "validation": [
+            "IsString"
+          ]
+        },
+        "mappedResumeAt": {
+          "type": "shared/data_types/String",
+          "required": true,
+          "unique": false,
+          "default": "",
+          "validation": [
+            "IsString"
+          ]
+        }
+      },
+      "relations": {},
+      "description": "State model derived from gwt0014ErrorPathOnBadUUID TLA+ spec"
+    }
+  },
+  "operations": {
+    "MapOptions": {
+      "function_id": "fn-gwt0014ErrorPathOnBadUUID-MapOptions",
+      "acceptance_criteria_id": "ac-gwt0014ErrorPathOnBadUUID-MapOptions",
+      "parameters": {},
+      "returns": "shared/data_types/Record",
+      "error_types": [],
+      "error_handling": "none",
+      "description": "Action MapOptions from gwt0014ErrorPathOnBadUUID spec"
+    },
+    "StartQuery": {
+      "function_id": "fn-gwt0014ErrorPathOnBadUUID-StartQuery",
+      "acceptance_criteria_id": "ac-gwt0014ErrorPathOnBadUUID-StartQuery",
+      "parameters": {},
+      "returns": "shared/data_types/Record",
+      "error_types": [],
+      "error_handling": "none",
+      "description": "Action StartQuery from gwt0014ErrorPathOnBadUUID spec"
+    },
+    "SDKIterateOrThrow": {
+      "function_id": "fn-gwt0014ErrorPathOnBadUUID-SDKIterateOrThrow",
+      "acceptance_criteria_id": "ac-gwt0014ErrorPathOnBadUUID-SDKIterateOrThrow",
+      "parameters": {},
+      "returns": "shared/data_types/Record",
+      "error_types": [],
+      "error_handling": "none",
+      "description": "Action SDKIterateOrThrow from gwt0014ErrorPathOnBadUUID spec"
+    },
+    "CatchEmit": {
+      "function_id": "fn-gwt0014ErrorPathOnBadUUID-CatchEmit",
+      "acceptance_criteria_id": "ac-gwt0014ErrorPathOnBadUUID-CatchEmit",
+      "parameters": {},
+      "returns": "shared/data_types/Record",
+      "error_types": [
+        "shared/error_definitions/CatchEmitError",
+        "shared/error_definitions/CatchEmitError"
+      ],
+      "error_handling": "raise",
+      "description": "Action CatchEmit from gwt0014ErrorPathOnBadUUID spec"
+    },
+    "Rethrown": {
+      "function_id": "fn-gwt0014ErrorPathOnBadUUID-Rethrown",
+      "acceptance_criteria_id": "ac-gwt0014ErrorPathOnBadUUID-Rethrown",
+      "parameters": {},
+      "returns": "shared/data_types/Record",
+      "error_types": [],
+      "error_handling": "none",
+      "description": "Action Rethrown from gwt0014ErrorPathOnBadUUID spec"
+    },
+    "Finish": {
+      "function_id": "fn-gwt0014ErrorPathOnBadUUID-Finish",
+      "acceptance_criteria_id": "ac-gwt0014ErrorPathOnBadUUID-Finish",
+      "parameters": {},
+      "returns": "shared/data_types/Record",
+      "error_types": [],
+      "error_handling": "none",
+      "description": "Action Finish from gwt0014ErrorPathOnBadUUID spec"
+    }
+  },
+  "verifiers": {
+    "ValidPhase": {
+      "function_id": "fn-gwt0014ErrorPathOnBadUUID-verify-ValidPhase",
+      "acceptance_criteria_id": "ac-gwt0014ErrorPathOnBadUUID-ValidPhase",
+      "conditions": [
+        "phase \\in {\"Idle\", \"Mapped\", \"Iterating\", \"CatchEmitted\", \"Finished\"}"
+      ],
+      "message": "ValidPhase violation: phase \\in {\"Idle\", \"Mapped\", \"Iterating\", \"CatchEmitted\", \"Finished\"}",
+      "applies_to": [
+        "phase"
+      ],
+      "tlc_checked": true,
+      "description": "Verifier for invariant ValidPhase from gwt0014ErrorPathOnBadUUID spec"
+    },
+    "ErrorEmittedOnThrow": {
+      "function_id": "fn-gwt0014ErrorPathOnBadUUID-verify-ErrorEmittedOnThrow",
+      "acceptance_criteria_id": "ac-gwt0014ErrorPathOnBadUUID-ErrorEmittedOnThrow",
+      "conditions": [
+        "sdkWillThrow",
+        "phase = \"Finished\") => errorCount = 1"
+      ],
+      "message": "ErrorEmittedOnThrow violation: (sdkWillThrow /\\ phase = \"Finished\") => errorCount = 1",
+      "applies_to": [
+        "errorCount",
+        "phase",
+        "sdkWillThrow"
+      ],
+      "tlc_checked": true,
+      "description": "Verifier for invariant ErrorEmittedOnThrow from gwt0014ErrorPathOnBadUUID spec"
+    },
+    "NoHalfState": {
+      "function_id": "fn-gwt0014ErrorPathOnBadUUID-verify-NoHalfState",
+      "acceptance_criteria_id": "ac-gwt0014ErrorPathOnBadUUID-NoHalfState",
+      "conditions": [
+        "errorCount > 0 => completeCount = 0"
+      ],
+      "message": "NoHalfState violation: errorCount > 0 => completeCount = 0",
+      "applies_to": [
+        "completeCount",
+        "errorCount"
+      ],
+      "tlc_checked": true,
+      "description": "Verifier for invariant NoHalfState from gwt0014ErrorPathOnBadUUID spec"
+    },
+    "ErrorContentIsMessage": {
+      "function_id": "fn-gwt0014ErrorPathOnBadUUID-verify-ErrorContentIsMessage",
+      "acceptance_criteria_id": "ac-gwt0014ErrorPathOnBadUUID-ErrorContentIsMessage",
+      "conditions": [
+        "\\A i \\in 1..Len(wsOut) :\n        wsOut[i].kind = \"error\" => wsOut[i].content = THROWN_MSG"
+      ],
+      "message": "ErrorContentIsMessage violation: \\A i \\in 1..Len(wsOut) :\n        wsOut[i].kind = \"error\" => wsOut[i].content = THROWN_MSG",
+      "applies_to": [
+        "wsOut"
+      ],
+      "tlc_checked": true,
+      "description": "Verifier for invariant ErrorContentIsMessage from gwt0014ErrorPathOnBadUUID spec"
+    },
+    "NoPreflightNeeded": {
+      "function_id": "fn-gwt0014ErrorPathOnBadUUID-verify-NoPreflightNeeded",
+      "acceptance_criteria_id": "ac-gwt0014ErrorPathOnBadUUID-NoPreflightNeeded",
+      "conditions": [
+        "phase /= \"Idle\" => mappedResumeAt = BAD_UUID"
+      ],
+      "message": "NoPreflightNeeded violation: phase /= \"Idle\" => mappedResumeAt = BAD_UUID",
+      "applies_to": [
+        "mappedResumeAt",
+        "phase"
+      ],
+      "tlc_checked": true,
+      "description": "Verifier for invariant NoPreflightNeeded from gwt0014ErrorPathOnBadUUID spec"
+    },
+    "AllInvariants": {
+      "function_id": "fn-gwt0014ErrorPathOnBadUUID-verify-AllInvariants",
+      "acceptance_criteria_id": "ac-gwt0014ErrorPathOnBadUUID-AllInvariants",
+      "conditions": [
+        "ValidPhase",
+        "ErrorEmittedOnThrow",
+        "NoHalfState",
+        "ErrorContentIsMessage",
+        "NoPreflightNeeded"
+      ],
+      "message": "AllInvariants violation: /\\ ValidPhase\n    /\\ ErrorEmittedOnThrow\n    /\\ NoHalfState\n    /\\ ErrorContentIsMessage\n    /\\ NoPreflightNeeded",
+      "applies_to": [
+        "gwt0014ErrorPathOnBadUUID"
+      ],
+      "tlc_checked": false,
+      "description": "Verifier for invariant AllInvariants from gwt0014ErrorPathOnBadUUID spec"
+    }
+  },
+  "assertions": {
+    "assert_ValidPhase": {
+      "condition": "phase in {\"Idle\", \"Mapped\", \"Iterating\", \"CatchEmitted\", \"Finished\"}",
+      "message": "Assertion failed: ValidPhase \u2014 phase \\in {\"Idle\", \"Mapped\", \"Iterating\", \"CatchEmitted\", \"Finished\"}",
+      "description": "Test assertion for ValidPhase from gwt0014ErrorPathOnBadUUID spec"
+    },
+    "assert_ErrorEmittedOnThrow": {
+      "condition": "(sdkWillThrow and phase = \"Finished\") implies errorCount = 1",
+      "message": "Assertion failed: ErrorEmittedOnThrow \u2014 (sdkWillThrow /\\ phase = \"Finished\") => errorCount = 1",
+      "description": "Test assertion for ErrorEmittedOnThrow from gwt0014ErrorPathOnBadUUID spec"
+    },
+    "assert_NoHalfState": {
+      "condition": "errorCount > 0 implies completeCount = 0",
+      "message": "Assertion failed: NoHalfState \u2014 errorCount > 0 => completeCount = 0",
+      "description": "Test assertion for NoHalfState from gwt0014ErrorPathOnBadUUID spec"
+    },
+    "assert_ErrorContentIsMessage": {
+      "condition": "\\A i in 1..Len(wsOut) :\n        wsOut[i].kind = \"error\" implies wsOut[i].content = THROWN_MSG",
+      "message": "Assertion failed: ErrorContentIsMessage \u2014 \\A i \\in 1..Len(wsOut) :\n        wsOut[i].kind = \"error\" => wsOut[i].content = THROWN_MSG",
+      "description": "Test assertion for ErrorContentIsMessage from gwt0014ErrorPathOnBadUUID spec"
+    },
+    "assert_NoPreflightNeeded": {
+      "condition": "phase /= \"Idle\" implies mappedResumeAt = BAD_UUID",
+      "message": "Assertion failed: NoPreflightNeeded \u2014 phase /= \"Idle\" => mappedResumeAt = BAD_UUID",
+      "description": "Test assertion for NoPreflightNeeded from gwt0014ErrorPathOnBadUUID spec"
+    },
+    "assert_AllInvariants": {
+      "condition": "and ValidPhase\n    and ErrorEmittedOnThrow\n    and NoHalfState\n    and ErrorContentIsMessage\n    and NoPreflightNeeded",
+      "message": "Assertion failed: AllInvariants \u2014 /\\ ValidPhase\n    /\\ ErrorEmittedOnThrow\n    /\\ NoHalfState\n    /\\ ErrorContentIsMessage\n    /\\ NoPreflightNeeded",
+      "description": "Test assertion for AllInvariants from gwt0014ErrorPathOnBadUUID spec"
+    }
+  },
+  "test_scenarios": [],
+  "boundary_contracts": [],
+  "simulation_traces": []
+}

@@ -1,0 +1,236 @@
+---- MODULE ForkHandlerInheritsSettings ----
+EXTENDS Integers, Sequences, TLC
+
+CONSTANTS
+    COMPOSER_PROVIDER,
+    COMPOSER_PERMISSION_MODE,
+    COMPOSER_PROJECT_PATH,
+    STORED_CLAUDE_SETTINGS
+
+(* --algorithm ForkHandlerInheritsSettings
+
+variables
+    phase                = "idle",
+    payloadProvider      = "UNSET",
+    payloadPermissionMode = "UNSET",
+    payloadProjectPath   = "UNSET",
+    payloadCwd           = "UNSET",
+    payloadToolsSettings = "UNSET",
+    toolsSettingsSource  = "UNSET",
+    dialogsOpen          = FALSE,
+    storageKeyUsed       = "NONE",
+    composerStateRead    = FALSE,
+    storageRead          = FALSE,
+    localStorageHasValue \in {TRUE, FALSE};
+
+define
+
+    NoDialog ==
+        dialogsOpen = FALSE
+
+    LocalStorageRead ==
+        phase = "Finish" => storageKeyUsed = "claude-settings"
+
+    ComposerStatePull ==
+        phase = "Finish" =>
+            /\ payloadProvider       = COMPOSER_PROVIDER
+            /\ payloadPermissionMode = COMPOSER_PERMISSION_MODE
+            /\ payloadProjectPath    = COMPOSER_PROJECT_PATH
+            /\ payloadCwd            = COMPOSER_PROJECT_PATH
+
+    ProviderKey ==
+        storageKeyUsed # "NONE" => storageKeyUsed = "claude-settings"
+
+    ToolsSettingsSourced ==
+        phase = "Finish" =>
+            toolsSettingsSource \in {"localStorage", "default"}
+
+    PayloadComplete ==
+        phase = "Finish" =>
+            /\ payloadProvider       # "UNSET"
+            /\ payloadPermissionMode # "UNSET"
+            /\ payloadProjectPath    # "UNSET"
+            /\ payloadCwd            # "UNSET"
+            /\ payloadToolsSettings  # "UNSET"
+            /\ storageRead           = TRUE
+            /\ composerStateRead     = TRUE
+
+    AllInvariants ==
+        /\ NoDialog
+        /\ LocalStorageRead
+        /\ ComposerStatePull
+        /\ ProviderKey
+        /\ ToolsSettingsSourced
+        /\ PayloadComplete
+
+end define;
+
+fair process forkHandler = "forkHandler"
+begin
+    InvokeFork:
+        phase := "forking";
+
+    ReadComposerState:
+        payloadProvider       := COMPOSER_PROVIDER;
+        payloadPermissionMode := COMPOSER_PERMISSION_MODE;
+        payloadProjectPath    := COMPOSER_PROJECT_PATH;
+        payloadCwd            := COMPOSER_PROJECT_PATH;
+        composerStateRead     := TRUE;
+
+    GetToolsSettings:
+        storageKeyUsed := "claude-settings";
+        if localStorageHasValue then
+            payloadToolsSettings := STORED_CLAUDE_SETTINGS;
+            toolsSettingsSource  := "localStorage";
+        else
+            payloadToolsSettings := "DEFAULT_TOOLS";
+            toolsSettingsSource  := "default";
+        end if;
+
+    AfterStorage:
+        storageRead := TRUE;
+
+    BuildPayload:
+        phase := "payloadBuilt";
+
+    Finish:
+        phase := "Finish";
+
+end process;
+
+end algorithm; *)
+
+\* cfg for ForkHandlerInheritsSettings.cfg:
+\*
+\* CONSTANTS
+\*   COMPOSER_PROVIDER        = COMPOSER_PROVIDER
+\*   COMPOSER_PERMISSION_MODE = COMPOSER_PERMISSION_MODE
+\*   COMPOSER_PROJECT_PATH    = COMPOSER_PROJECT_PATH
+\*   STORED_CLAUDE_SETTINGS   = STORED_CLAUDE_SETTINGS
+\*
+\* INVARIANT NoDialog
+\* INVARIANT LocalStorageRead
+\* INVARIANT ComposerStatePull
+\* INVARIANT ProviderKey
+\* INVARIANT ToolsSettingsSourced
+\* INVARIANT PayloadComplete
+
+====
+---- MODULE ForkHandlerInheritsSettings ----
+EXTENDS Integers, Sequences, TLC
+
+CONSTANTS
+    COMPOSER_PROVIDER,
+    COMPOSER_PERMISSION_MODE,
+    COMPOSER_PROJECT_PATH,
+    STORED_CLAUDE_SETTINGS
+
+(* --algorithm ForkHandlerInheritsSettings
+
+variables
+    phase                = "idle",
+    payloadProvider      = "UNSET",
+    payloadPermissionMode = "UNSET",
+    payloadProjectPath   = "UNSET",
+    payloadCwd           = "UNSET",
+    payloadToolsSettings = "UNSET",
+    toolsSettingsSource  = "UNSET",
+    dialogsOpen          = FALSE,
+    storageKeyUsed       = "NONE",
+    composerStateRead    = FALSE,
+    storageRead          = FALSE,
+    localStorageHasValue \in {TRUE, FALSE};
+
+define
+
+    NoDialog ==
+        dialogsOpen = FALSE
+
+    LocalStorageRead ==
+        phase = "Finish" => storageKeyUsed = "claude-settings"
+
+    ComposerStatePull ==
+        phase = "Finish" =>
+            /\ payloadProvider       = COMPOSER_PROVIDER
+            /\ payloadPermissionMode = COMPOSER_PERMISSION_MODE
+            /\ payloadProjectPath    = COMPOSER_PROJECT_PATH
+            /\ payloadCwd            = COMPOSER_PROJECT_PATH
+
+    ProviderKey ==
+        storageKeyUsed # "NONE" => storageKeyUsed = "claude-settings"
+
+    ToolsSettingsSourced ==
+        phase = "Finish" =>
+            toolsSettingsSource \in {"localStorage", "default"}
+
+    PayloadComplete ==
+        phase = "Finish" =>
+            /\ payloadProvider       # "UNSET"
+            /\ payloadPermissionMode # "UNSET"
+            /\ payloadProjectPath    # "UNSET"
+            /\ payloadCwd            # "UNSET"
+            /\ payloadToolsSettings  # "UNSET"
+            /\ storageRead           = TRUE
+            /\ composerStateRead     = TRUE
+
+    AllInvariants ==
+        /\ NoDialog
+        /\ LocalStorageRead
+        /\ ComposerStatePull
+        /\ ProviderKey
+        /\ ToolsSettingsSourced
+        /\ PayloadComplete
+
+end define;
+
+fair process forkHandler = "forkHandler"
+begin
+    InvokeFork:
+        phase := "forking";
+
+    ReadComposerState:
+        payloadProvider       := COMPOSER_PROVIDER;
+        payloadPermissionMode := COMPOSER_PERMISSION_MODE;
+        payloadProjectPath    := COMPOSER_PROJECT_PATH;
+        payloadCwd            := COMPOSER_PROJECT_PATH;
+        composerStateRead     := TRUE;
+
+    GetToolsSettings:
+        storageKeyUsed := "claude-settings";
+        if localStorageHasValue then
+            payloadToolsSettings := STORED_CLAUDE_SETTINGS;
+            toolsSettingsSource  := "localStorage";
+        else
+            payloadToolsSettings := "DEFAULT_TOOLS";
+            toolsSettingsSource  := "default";
+        end if;
+
+    AfterStorage:
+        storageRead := TRUE;
+
+    BuildPayload:
+        phase := "payloadBuilt";
+
+    Finish:
+        phase := "Finish";
+
+end process;
+
+end algorithm; *)
+
+\* cfg for ForkHandlerInheritsSettings.cfg:
+\*
+\* CONSTANTS
+\*   COMPOSER_PROVIDER        = COMPOSER_PROVIDER
+\*   COMPOSER_PERMISSION_MODE = COMPOSER_PERMISSION_MODE
+\*   COMPOSER_PROJECT_PATH    = COMPOSER_PROJECT_PATH
+\*   STORED_CLAUDE_SETTINGS   = STORED_CLAUDE_SETTINGS
+\*
+\* INVARIANT NoDialog
+\* INVARIANT LocalStorageRead
+\* INVARIANT ComposerStatePull
+\* INVARIANT ProviderKey
+\* INVARIANT ToolsSettingsSourced
+\* INVARIANT PayloadComplete
+
+====

@@ -1,0 +1,186 @@
+---- MODULE gwt_0009_no_regression_normal ----
+
+EXTENDS Integers, FiniteSets, TLC
+
+CONSTANTS
+    PLAN_TOOLS,
+    LEGACY_KEYS,
+    FORK_FIELDS
+
+(* --algorithm MapCliOptionsToSDK
+
+variables
+    hasCwd           \in {TRUE, FALSE},
+    permissionModeIn \in {"default", "plan", "bypassPermissions", "acceptEdits"},
+    skipPermissions  \in {TRUE, FALSE},
+    allowedToolsIn   \in { {"Bash"}, {} },
+    phase            = "Init",
+    outAllowedTools  = {},
+    outHasCwd        = FALSE,
+    outHasPerm       = FALSE,
+    outPermMode      = "none",
+    outForkLeaked    = FALSE;
+
+define
+
+    NoForkFieldsWhenAbsent ==
+        phase = "Complete" => ~outForkLeaked
+
+    NormalShapePreserved ==
+        phase = "Complete" =>
+            (outHasPerm =>
+                outPermMode \in {"plan", "bypassPermissions", "acceptEdits"})
+
+    PlanModeToolsUnion ==
+        (phase = "Complete" /\ permissionModeIn = "plan") =>
+            PLAN_TOOLS \subseteq outAllowedTools
+
+    BypassPermissionsSetCorrectly ==
+        (phase = "Complete" /\ skipPermissions /\ permissionModeIn # "plan") =>
+            (outHasPerm /\ outPermMode = "bypassPermissions")
+
+    DefaultPermissionModeNotWritten ==
+        (phase = "Complete" /\ permissionModeIn = "default" /\ ~skipPermissions) =>
+            ~outHasPerm
+
+    AllInvariants ==
+        NoForkFieldsWhenAbsent
+        /\ NormalShapePreserved
+        /\ PlanModeToolsUnion
+        /\ BypassPermissionsSetCorrectly
+        /\ DefaultPermissionModeNotWritten
+
+end define;
+
+fair process Actor = "main"
+begin
+    SetCwd:
+        if hasCwd then
+            outHasCwd := TRUE;
+        end if;
+    SetAllowedTools:
+        if permissionModeIn = "plan" then
+            outAllowedTools := allowedToolsIn \union PLAN_TOOLS;
+        else
+            outAllowedTools := allowedToolsIn;
+        end if;
+    SetPermissionMode:
+        if skipPermissions /\ permissionModeIn # "plan" then
+            outHasPerm  := TRUE;
+            outPermMode := "bypassPermissions";
+        elsif permissionModeIn \in {"plan", "bypassPermissions", "acceptEdits"} then
+            outHasPerm  := TRUE;
+            outPermMode := permissionModeIn;
+        end if;
+    Complete:
+        phase := "Complete";
+end process;
+
+end algorithm; *)
+
+\* gwt_0009_no_regression_normal.cfg
+\*
+\* CONSTANT PLAN_TOOLS = {"Read", "Task", "exit_plan_mode", "TodoRead", "TodoWrite", "WebFetch", "WebSearch"}
+\* CONSTANT LEGACY_KEYS = {"cwd", "permissionMode", "allowedTools", "disallowedTools", "tools", "model", "systemPrompt", "settingSources"}
+\* CONSTANT FORK_FIELDS = {"resume", "forkSession", "resumeSessionAt", "sessionId"}
+\*
+\* INVARIANT NoForkFieldsWhenAbsent
+\* INVARIANT NormalShapePreserved
+\* INVARIANT PlanModeToolsUnion
+\* INVARIANT BypassPermissionsSetCorrectly
+\* INVARIANT DefaultPermissionModeNotWritten
+
+====
+---- MODULE gwt_0009_no_regression_normal ----
+
+EXTENDS Integers, FiniteSets, TLC
+
+CONSTANTS
+    PLAN_TOOLS,
+    LEGACY_KEYS,
+    FORK_FIELDS
+
+(* --algorithm MapCliOptionsToSDK
+
+variables
+    hasCwd           \in {TRUE, FALSE},
+    permissionModeIn \in {"default", "plan", "bypassPermissions", "acceptEdits"},
+    skipPermissions  \in {TRUE, FALSE},
+    allowedToolsIn   \in { {"Bash"}, {} },
+    phase            = "Init",
+    outAllowedTools  = {},
+    outHasCwd        = FALSE,
+    outHasPerm       = FALSE,
+    outPermMode      = "none",
+    outForkLeaked    = FALSE;
+
+define
+
+    NoForkFieldsWhenAbsent ==
+        phase = "Complete" => ~outForkLeaked
+
+    NormalShapePreserved ==
+        phase = "Complete" =>
+            (outHasPerm =>
+                outPermMode \in {"plan", "bypassPermissions", "acceptEdits"})
+
+    PlanModeToolsUnion ==
+        (phase = "Complete" /\ permissionModeIn = "plan") =>
+            PLAN_TOOLS \subseteq outAllowedTools
+
+    BypassPermissionsSetCorrectly ==
+        (phase = "Complete" /\ skipPermissions /\ permissionModeIn # "plan") =>
+            (outHasPerm /\ outPermMode = "bypassPermissions")
+
+    DefaultPermissionModeNotWritten ==
+        (phase = "Complete" /\ permissionModeIn = "default" /\ ~skipPermissions) =>
+            ~outHasPerm
+
+    AllInvariants ==
+        NoForkFieldsWhenAbsent
+        /\ NormalShapePreserved
+        /\ PlanModeToolsUnion
+        /\ BypassPermissionsSetCorrectly
+        /\ DefaultPermissionModeNotWritten
+
+end define;
+
+fair process Actor = "main"
+begin
+    SetCwd:
+        if hasCwd then
+            outHasCwd := TRUE;
+        end if;
+    SetAllowedTools:
+        if permissionModeIn = "plan" then
+            outAllowedTools := allowedToolsIn \union PLAN_TOOLS;
+        else
+            outAllowedTools := allowedToolsIn;
+        end if;
+    SetPermissionMode:
+        if skipPermissions /\ permissionModeIn # "plan" then
+            outHasPerm  := TRUE;
+            outPermMode := "bypassPermissions";
+        elsif permissionModeIn \in {"plan", "bypassPermissions", "acceptEdits"} then
+            outHasPerm  := TRUE;
+            outPermMode := permissionModeIn;
+        end if;
+    Complete:
+        phase := "Complete";
+end process;
+
+end algorithm; *)
+
+\* gwt_0009_no_regression_normal.cfg
+\*
+\* CONSTANT PLAN_TOOLS = {"Read", "Task", "exit_plan_mode", "TodoRead", "TodoWrite", "WebFetch", "WebSearch"}
+\* CONSTANT LEGACY_KEYS = {"cwd", "permissionMode", "allowedTools", "disallowedTools", "tools", "model", "systemPrompt", "settingSources"}
+\* CONSTANT FORK_FIELDS = {"resume", "forkSession", "resumeSessionAt", "sessionId"}
+\*
+\* INVARIANT NoForkFieldsWhenAbsent
+\* INVARIANT NormalShapePreserved
+\* INVARIANT PlanModeToolsUnion
+\* INVARIANT BypassPermissionsSetCorrectly
+\* INVARIANT DefaultPermissionModeNotWritten
+
+====

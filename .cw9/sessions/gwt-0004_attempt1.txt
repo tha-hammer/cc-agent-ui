@@ -1,0 +1,252 @@
+---- MODULE ForkHandlerInheritsSettings ----
+EXTENDS Integers, Sequences, TLC
+
+CONSTANTS
+    ComposerState,
+    StoredClaudeSettings
+
+(*
+ * ComposerState is a record with fields:
+ *   provider       : "claude"
+ *   permissionMode : one of {"default","plan","acceptEdits","bypassPermissions"}
+ *   projectPath    : STRING
+ *   cwd            : STRING
+ *
+ * StoredClaudeSettings is a record with fields:
+ *   allowedTools    : set of STRING
+ *   disallowedTools : set of STRING
+ *   skipPermissions : BOOLEAN
+ *)
+
+(* --algorithm ForkHandlerInheritsSettings
+
+variables
+    phase                = "idle",
+    payloadProvider      = "",
+    payloadPermissionMode = "",
+    payloadProjectPath   = "",
+    payloadCwd           = "",
+    payloadToolsSettings = [ allowedTools    |-> {},
+                              disallowedTools |-> {},
+                              skipPermissions |-> FALSE ],
+    dialogsOpen          = FALSE,
+    storageKeyUsed       = "",
+    composerStateRead    = FALSE,
+    storageRead          = FALSE,
+    localStorageHasValue \in {TRUE, FALSE};
+
+define
+
+    NoDialog ==
+        dialogsOpen = FALSE
+
+    LocalStorageRead ==
+        phase = "Finish" => storageKeyUsed = "claude-settings"
+
+    ComposerStatePull ==
+        phase = "Finish" =>
+            /\ payloadProvider       = ComposerState.provider
+            /\ payloadPermissionMode = ComposerState.permissionMode
+            /\ payloadProjectPath    = ComposerState.projectPath
+            /\ payloadCwd            = ComposerState.cwd
+
+    ProviderKey ==
+        storageKeyUsed # "" => storageKeyUsed = "claude-settings"
+
+    PayloadComplete ==
+        phase = "Finish" =>
+            /\ payloadProvider       # ""
+            /\ payloadPermissionMode # ""
+            /\ payloadProjectPath    # ""
+            /\ payloadCwd            # ""
+            /\ storageRead           = TRUE
+            /\ composerStateRead     = TRUE
+
+    AllInvariants ==
+        /\ NoDialog
+        /\ LocalStorageRead
+        /\ ComposerStatePull
+        /\ ProviderKey
+        /\ PayloadComplete
+
+end define;
+
+fair process forkHandler = "forkHandler"
+begin
+    InvokeFork:
+        phase := "forking";
+
+    ReadComposerState:
+        payloadProvider       := ComposerState.provider;
+        payloadPermissionMode := ComposerState.permissionMode;
+        payloadProjectPath    := ComposerState.projectPath;
+        payloadCwd            := ComposerState.cwd;
+        composerStateRead     := TRUE;
+
+    GetToolsSettings:
+        storageKeyUsed := "claude-settings";
+        if localStorageHasValue then
+            payloadToolsSettings := StoredClaudeSettings;
+        else
+            payloadToolsSettings := [ allowedTools    |-> {},
+                                       disallowedTools |-> {},
+                                       skipPermissions |-> FALSE ];
+        end if;
+        storageRead := TRUE;
+
+    BuildPayload:
+        phase := "payloadBuilt";
+
+    Finish:
+        phase := "Finish";
+
+end process;
+
+end algorithm; *)
+
+\* =============================================================
+\* cfg (paste into ForkHandlerInheritsSettings.cfg):
+\*
+\* CONSTANTS
+\*   ComposerState = [ provider       |-> "claude",
+\*                     permissionMode |-> "default",
+\*                     projectPath    |-> "/work/proj",
+\*                     cwd            |-> "/work/proj" ]
+\*   StoredClaudeSettings = [ allowedTools    |-> {"Read", "Grep"},
+\*                             disallowedTools |-> {"Bash"},
+\*                             skipPermissions |-> FALSE ]
+\*
+\* INVARIANT NoDialog
+\* INVARIANT LocalStorageRead
+\* INVARIANT ComposerStatePull
+\* INVARIANT ProviderKey
+\* INVARIANT PayloadComplete
+\* =============================================================
+
+====
+---- MODULE ForkHandlerInheritsSettings ----
+EXTENDS Integers, Sequences, TLC
+
+CONSTANTS
+    ComposerState,
+    StoredClaudeSettings
+
+(*
+ * ComposerState is a record with fields:
+ *   provider       : "claude"
+ *   permissionMode : one of {"default","plan","acceptEdits","bypassPermissions"}
+ *   projectPath    : STRING
+ *   cwd            : STRING
+ *
+ * StoredClaudeSettings is a record with fields:
+ *   allowedTools    : set of STRING
+ *   disallowedTools : set of STRING
+ *   skipPermissions : BOOLEAN
+ *)
+
+(* --algorithm ForkHandlerInheritsSettings
+
+variables
+    phase                = "idle",
+    payloadProvider      = "",
+    payloadPermissionMode = "",
+    payloadProjectPath   = "",
+    payloadCwd           = "",
+    payloadToolsSettings = [ allowedTools    |-> {},
+                              disallowedTools |-> {},
+                              skipPermissions |-> FALSE ],
+    dialogsOpen          = FALSE,
+    storageKeyUsed       = "",
+    composerStateRead    = FALSE,
+    storageRead          = FALSE,
+    localStorageHasValue \in {TRUE, FALSE};
+
+define
+
+    NoDialog ==
+        dialogsOpen = FALSE
+
+    LocalStorageRead ==
+        phase = "Finish" => storageKeyUsed = "claude-settings"
+
+    ComposerStatePull ==
+        phase = "Finish" =>
+            /\ payloadProvider       = ComposerState.provider
+            /\ payloadPermissionMode = ComposerState.permissionMode
+            /\ payloadProjectPath    = ComposerState.projectPath
+            /\ payloadCwd            = ComposerState.cwd
+
+    ProviderKey ==
+        storageKeyUsed # "" => storageKeyUsed = "claude-settings"
+
+    PayloadComplete ==
+        phase = "Finish" =>
+            /\ payloadProvider       # ""
+            /\ payloadPermissionMode # ""
+            /\ payloadProjectPath    # ""
+            /\ payloadCwd            # ""
+            /\ storageRead           = TRUE
+            /\ composerStateRead     = TRUE
+
+    AllInvariants ==
+        /\ NoDialog
+        /\ LocalStorageRead
+        /\ ComposerStatePull
+        /\ ProviderKey
+        /\ PayloadComplete
+
+end define;
+
+fair process forkHandler = "forkHandler"
+begin
+    InvokeFork:
+        phase := "forking";
+
+    ReadComposerState:
+        payloadProvider       := ComposerState.provider;
+        payloadPermissionMode := ComposerState.permissionMode;
+        payloadProjectPath    := ComposerState.projectPath;
+        payloadCwd            := ComposerState.cwd;
+        composerStateRead     := TRUE;
+
+    GetToolsSettings:
+        storageKeyUsed := "claude-settings";
+        if localStorageHasValue then
+            payloadToolsSettings := StoredClaudeSettings;
+        else
+            payloadToolsSettings := [ allowedTools    |-> {},
+                                       disallowedTools |-> {},
+                                       skipPermissions |-> FALSE ];
+        end if;
+        storageRead := TRUE;
+
+    BuildPayload:
+        phase := "payloadBuilt";
+
+    Finish:
+        phase := "Finish";
+
+end process;
+
+end algorithm; *)
+
+\* =============================================================
+\* cfg (paste into ForkHandlerInheritsSettings.cfg):
+\*
+\* CONSTANTS
+\*   ComposerState = [ provider       |-> "claude",
+\*                     permissionMode |-> "default",
+\*                     projectPath    |-> "/work/proj",
+\*                     cwd            |-> "/work/proj" ]
+\*   StoredClaudeSettings = [ allowedTools    |-> {"Read", "Grep"},
+\*                             disallowedTools |-> {"Bash"},
+\*                             skipPermissions |-> FALSE ]
+\*
+\* INVARIANT NoDialog
+\* INVARIANT LocalStorageRead
+\* INVARIANT ComposerStatePull
+\* INVARIANT ProviderKey
+\* INVARIANT PayloadComplete
+\* =============================================================
+
+====

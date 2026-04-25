@@ -1,0 +1,162 @@
+---- MODULE gwt0014ErrorPathOnBadUUID ----
+
+EXTENDS Integers, Sequences, TLC
+
+CONSTANTS
+    BAD_UUID,
+    PARENT_ID,
+    THROWN_MSG
+
+(* --algorithm gwt0014ErrorPathOnBadUUID
+
+variables
+    sdkWillThrow   \in {TRUE, FALSE},
+    wsOut          = <<>>,
+    errorCount     = 0,
+    completeCount  = 0,
+    phase          = "Idle",
+    mappedResumeAt = "";
+
+define
+
+    ValidPhase ==
+        phase \in {"Idle", "Mapped", "Iterating", "CatchEmitted", "Finished"}
+
+    ErrorEmittedOnThrow ==
+        (sdkWillThrow /\ phase = "Finished") => errorCount = 1
+
+    NoHalfState ==
+        errorCount > 0 => completeCount = 0
+
+    ErrorContentIsMessage ==
+        \A i \in 1..Len(wsOut) :
+            wsOut[i].kind = "error" => wsOut[i].content = THROWN_MSG
+
+    NoPreflightNeeded ==
+        phase /= "Idle" => mappedResumeAt = BAD_UUID
+
+    AllInvariants ==
+        /\ ValidPhase
+        /\ ErrorEmittedOnThrow
+        /\ NoHalfState
+        /\ ErrorContentIsMessage
+        /\ NoPreflightNeeded
+
+end define;
+
+fair process actor = "main"
+begin
+    MapOptions:
+        mappedResumeAt := BAD_UUID;
+        phase := "Mapped";
+
+    StartQuery:
+        phase := "Iterating";
+
+    SDKIterateOrThrow:
+        if sdkWillThrow then
+            goto CatchEmit;
+        else
+            wsOut         := Append(wsOut, [kind |-> "complete", provider |-> "claude"]);
+            completeCount := completeCount + 1;
+            phase         := "Finished";
+            goto Finish;
+        end if;
+
+    CatchEmit:
+        wsOut      := Append(wsOut, [kind |-> "error", content |-> THROWN_MSG, provider |-> "claude"]);
+        errorCount := errorCount + 1;
+        phase      := "CatchEmitted";
+
+    Rethrown:
+        phase := "Finished";
+
+    Finish:
+        skip;
+
+end process;
+
+end algorithm; *)
+
+====
+---- MODULE gwt0014ErrorPathOnBadUUID ----
+
+EXTENDS Integers, Sequences, TLC
+
+CONSTANTS
+    BAD_UUID,
+    PARENT_ID,
+    THROWN_MSG
+
+(* --algorithm gwt0014ErrorPathOnBadUUID
+
+variables
+    sdkWillThrow   \in {TRUE, FALSE},
+    wsOut          = <<>>,
+    errorCount     = 0,
+    completeCount  = 0,
+    phase          = "Idle",
+    mappedResumeAt = "";
+
+define
+
+    ValidPhase ==
+        phase \in {"Idle", "Mapped", "Iterating", "CatchEmitted", "Finished"}
+
+    ErrorEmittedOnThrow ==
+        (sdkWillThrow /\ phase = "Finished") => errorCount = 1
+
+    NoHalfState ==
+        errorCount > 0 => completeCount = 0
+
+    ErrorContentIsMessage ==
+        \A i \in 1..Len(wsOut) :
+            wsOut[i].kind = "error" => wsOut[i].content = THROWN_MSG
+
+    NoPreflightNeeded ==
+        phase /= "Idle" => mappedResumeAt = BAD_UUID
+
+    AllInvariants ==
+        /\ ValidPhase
+        /\ ErrorEmittedOnThrow
+        /\ NoHalfState
+        /\ ErrorContentIsMessage
+        /\ NoPreflightNeeded
+
+end define;
+
+fair process actor = "main"
+begin
+    MapOptions:
+        mappedResumeAt := BAD_UUID;
+        phase := "Mapped";
+
+    StartQuery:
+        phase := "Iterating";
+
+    SDKIterateOrThrow:
+        if sdkWillThrow then
+            goto CatchEmit;
+        else
+            wsOut         := Append(wsOut, [kind |-> "complete", provider |-> "claude"]);
+            completeCount := completeCount + 1;
+            phase         := "Finished";
+            goto Finish;
+        end if;
+
+    CatchEmit:
+        wsOut      := Append(wsOut, [kind |-> "error", content |-> THROWN_MSG, provider |-> "claude"]);
+        errorCount := errorCount + 1;
+        phase      := "CatchEmitted";
+
+    Rethrown:
+        phase := "Finished";
+
+    Finish:
+        skip;
+
+end process;
+
+end algorithm; *)
+
+====

@@ -1,0 +1,116 @@
+---- MODULE Gwt0007ForwardResumeSessionAt ----
+
+EXTENDS Integers, TLC
+
+CONSTANTS
+    AssistantUuid,
+    OtherFieldSentinel
+
+(* --algorithm ForwardResumeSessionAt
+
+variables
+    inputKind \in {"uuid", "empty", "absent"},
+    phase = "Init",
+    resumeAtSet = FALSE,
+    resumeAtValue = "",
+    otherFieldValue = OtherFieldSentinel;
+
+define
+
+    ResumeAtForwarded ==
+        (phase = "Mapped" /\ inputKind = "uuid") =>
+            (resumeAtSet = TRUE /\ resumeAtValue = AssistantUuid)
+
+    ResumeAtAbsent ==
+        (phase = "Mapped" /\ inputKind \in {"empty", "absent"}) =>
+            resumeAtSet = FALSE
+
+    StringIdentity ==
+        resumeAtSet = TRUE =>
+            resumeAtValue = AssistantUuid
+
+    NoClobber ==
+        otherFieldValue = OtherFieldSentinel
+
+    AllInvariants ==
+        ResumeAtForwarded /\ ResumeAtAbsent /\ StringIdentity /\ NoClobber
+
+end define;
+
+fair process mapper = "mapper"
+begin
+    MapOptions:
+        if inputKind = "uuid" then
+            resumeAtSet := TRUE;
+            resumeAtValue := AssistantUuid;
+        else
+            resumeAtSet := FALSE;
+            resumeAtValue := "";
+        end if;
+    SetPhase:
+        phase := "Mapped";
+    Terminate:
+        skip;
+end process;
+
+end algorithm; *)
+
+====
+---- MODULE Gwt0007ForwardResumeSessionAt ----
+
+EXTENDS Integers, TLC
+
+CONSTANTS
+    AssistantUuid,
+    OtherFieldSentinel
+
+(* --algorithm ForwardResumeSessionAt
+
+variables
+    inputKind \in {"uuid", "empty", "absent"},
+    phase = "Init",
+    resumeAtSet = FALSE,
+    resumeAtValue = "",
+    otherFieldValue = OtherFieldSentinel;
+
+define
+
+    ResumeAtForwarded ==
+        (phase = "Mapped" /\ inputKind = "uuid") =>
+            (resumeAtSet = TRUE /\ resumeAtValue = AssistantUuid)
+
+    ResumeAtAbsent ==
+        (phase = "Mapped" /\ inputKind \in {"empty", "absent"}) =>
+            resumeAtSet = FALSE
+
+    StringIdentity ==
+        resumeAtSet = TRUE =>
+            resumeAtValue = AssistantUuid
+
+    NoClobber ==
+        otherFieldValue = OtherFieldSentinel
+
+    AllInvariants ==
+        ResumeAtForwarded /\ ResumeAtAbsent /\ StringIdentity /\ NoClobber
+
+end define;
+
+fair process mapper = "mapper"
+begin
+    MapOptions:
+        if inputKind = "uuid" then
+            resumeAtSet := TRUE;
+            resumeAtValue := AssistantUuid;
+        else
+            resumeAtSet := FALSE;
+            resumeAtValue := "";
+        end if;
+    SetPhase:
+        phase := "Mapped";
+    Terminate:
+        skip;
+end process;
+
+end algorithm; *)
+
+====

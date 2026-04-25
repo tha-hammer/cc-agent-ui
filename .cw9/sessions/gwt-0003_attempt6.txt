@@ -1,0 +1,158 @@
+The counterexample reveals the root cause: the pipeline auto-generates `AllInvariants` as a conjunction of **all** operators in the `define` block — including `PayloadSent`, which equals `phase = "sent"` and is `FALSE` in the initial state. That makes `AllInvariants` false immediately. The fix: remove `PayloadSent` and `AllInvariants` as named `define`-block operators, inline the phase guard directly into each invariant, and drop the `BoundedExecution`/`MaxSteps` pair to eliminate further pipeline surprises.
+
+---- MODULE ForkHandlerSendsClaudeCommand ----
+EXTENDS TLC
+
+CONSTANTS
+    ParentId,
+    MessageId,
+    NewUUID
+
+(*--algorithm ForkHandlerSendsClaudeCommand
+variables
+    phase = "idle",
+    sentType = "none",
+    sentCommand = "UNSET",
+    sentSessionId = "none",
+    sentResume = "none",
+    sentForkSession = FALSE,
+    sentResumeAt = "none",
+    sessionIdGenerated \in {TRUE, FALSE},
+    settingsResolved \in {TRUE, FALSE};
+
+define
+    ChannelReuse ==
+        (phase = "sent") => (sentType = "claude-command")
+
+    ForkMarker ==
+        (phase = "sent") =>
+            /\ sentForkSession = TRUE
+            /\ sentResume = ParentId
+            /\ sentResumeAt = MessageId
+
+    FreshSessionId ==
+        (phase = "sent") =>
+            /\ sentSessionId = NewUUID
+            /\ sentSessionId # ParentId
+
+    EmptyCommand ==
+        (phase = "sent") => (sentCommand = "")
+end define;
+
+fair process forkHandler = "handler"
+begin
+    CheckSessionId:
+        if ~sessionIdGenerated then
+            phase := "error_no_session_id";
+            goto Terminate;
+        end if;
+    CheckSettings:
+        if ~settingsResolved then
+            phase := "error_settings_unresolved";
+            goto Terminate;
+        end if;
+    MarkReady:
+        phase := "preconditions_ok";
+    BuildPayload:
+        sentType := "claude-command";
+        sentCommand := "";
+        sentSessionId := NewUUID;
+        sentResume := ParentId;
+        sentForkSession := TRUE;
+        sentResumeAt := MessageId;
+        phase := "payload_built";
+    DispatchSendMessage:
+        phase := "sent";
+    Terminate:
+        skip;
+end process;
+
+end algorithm; *)
+
+\* CONSTANT ParentId = "parent-xyz"
+\* CONSTANT MessageId = "a-uuid-1234"
+\* CONSTANT NewUUID = "11111111-2222-3333-4444-555555555555"
+\* INVARIANT ChannelReuse
+\* INVARIANT ForkMarker
+\* INVARIANT FreshSessionId
+\* INVARIANT EmptyCommand
+====
+The counterexample reveals the root cause: the pipeline auto-generates `AllInvariants` as a conjunction of **all** operators in the `define` block — including `PayloadSent`, which equals `phase = "sent"` and is `FALSE` in the initial state. That makes `AllInvariants` false immediately. The fix: remove `PayloadSent` and `AllInvariants` as named `define`-block operators, inline the phase guard directly into each invariant, and drop the `BoundedExecution`/`MaxSteps` pair to eliminate further pipeline surprises.
+
+---- MODULE ForkHandlerSendsClaudeCommand ----
+EXTENDS TLC
+
+CONSTANTS
+    ParentId,
+    MessageId,
+    NewUUID
+
+(*--algorithm ForkHandlerSendsClaudeCommand
+variables
+    phase = "idle",
+    sentType = "none",
+    sentCommand = "UNSET",
+    sentSessionId = "none",
+    sentResume = "none",
+    sentForkSession = FALSE,
+    sentResumeAt = "none",
+    sessionIdGenerated \in {TRUE, FALSE},
+    settingsResolved \in {TRUE, FALSE};
+
+define
+    ChannelReuse ==
+        (phase = "sent") => (sentType = "claude-command")
+
+    ForkMarker ==
+        (phase = "sent") =>
+            /\ sentForkSession = TRUE
+            /\ sentResume = ParentId
+            /\ sentResumeAt = MessageId
+
+    FreshSessionId ==
+        (phase = "sent") =>
+            /\ sentSessionId = NewUUID
+            /\ sentSessionId # ParentId
+
+    EmptyCommand ==
+        (phase = "sent") => (sentCommand = "")
+end define;
+
+fair process forkHandler = "handler"
+begin
+    CheckSessionId:
+        if ~sessionIdGenerated then
+            phase := "error_no_session_id";
+            goto Terminate;
+        end if;
+    CheckSettings:
+        if ~settingsResolved then
+            phase := "error_settings_unresolved";
+            goto Terminate;
+        end if;
+    MarkReady:
+        phase := "preconditions_ok";
+    BuildPayload:
+        sentType := "claude-command";
+        sentCommand := "";
+        sentSessionId := NewUUID;
+        sentResume := ParentId;
+        sentForkSession := TRUE;
+        sentResumeAt := MessageId;
+        phase := "payload_built";
+    DispatchSendMessage:
+        phase := "sent";
+    Terminate:
+        skip;
+end process;
+
+end algorithm; *)
+
+\* CONSTANT ParentId = "parent-xyz"
+\* CONSTANT MessageId = "a-uuid-1234"
+\* CONSTANT NewUUID = "11111111-2222-3333-4444-555555555555"
+\* INVARIANT ChannelReuse
+\* INVARIANT ForkMarker
+\* INVARIANT FreshSessionId
+\* INVARIANT EmptyCommand
+====

@@ -1,0 +1,2438 @@
+{
+  "nodes": {
+    "007b8b24-8409-5c8c-855f-04c29f67093f": {
+      "id": "007b8b24-8409-5c8c-855f-04c29f67093f",
+      "kind": "resource",
+      "name": "flattenFileTree @ src/components/chat/hooks/useFileMentions.tsx",
+      "description": "flattenFileTree (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "02ca143f-d3c8-5c89-9caf-f132dce5e77c": {
+      "id": "02ca143f-d3c8-5c89-9caf-f132dce5e77c",
+      "kind": "resource",
+      "name": "uploadFilesHandler @ server/index.js",
+      "description": "uploadFilesHandler (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "02fba0d5-2ba8-5060-8148-9a7d0e8d1f58": {
+      "id": "02fba0d5-2ba8-5060-8148-9a7d0e8d1f58",
+      "kind": "resource",
+      "name": "emitNotification @ server/claude-sdk.js",
+      "description": "emitNotification (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "03282220-c753-5715-9c5a-c28427ac98a2": {
+      "id": "03282220-c753-5715-9c5a-c28427ac98a2",
+      "kind": "resource",
+      "name": "otherText @ src/components/chat/tools/components/InteractiveRenderers/AskUserQuestionPanel.tsx",
+      "description": "otherText (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "0370a9ae-132c-5046-a431-5146f99f1778": {
+      "id": "0370a9ae-132c-5046-a431-5146f99f1778",
+      "kind": "resource",
+      "name": "handleAction @ src/components/chat/tools/components/OneLineDisplay.tsx",
+      "description": "handleAction (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "0801c5e6-f0f0-529c-8dda-6740d39dc5ac": {
+      "id": "0801c5e6-f0f0-529c-8dda-6740d39dc5ac",
+      "kind": "resource",
+      "name": "getColor @ src/components/chat/view/subcomponents/TokenUsagePie.tsx",
+      "description": "getColor (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "088b4f7e-ef4a-5d53-933f-c708a8482bea": {
+      "id": "088b4f7e-ef4a-5d53-933f-c708a8482bea",
+      "kind": "resource",
+      "name": "OpenAI @ server/index.js",
+      "description": "OpenAI (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "09755d96-a6a8-5e7a-b6a3-d0a00d3ec9a1": {
+      "id": "09755d96-a6a8-5e7a-b6a3-d0a00d3ec9a1",
+      "kind": "resource",
+      "name": "MessageForkControl @ src/components/chat/view/subcomponents/MessageForkControl.tsx",
+      "description": "MessageForkControl (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "0b3504fa-33f4-53f9-ba83-8f89742537bb": {
+      "id": "0b3504fa-33f4-53f9-ba83-8f89742537bb",
+      "kind": "resource",
+      "name": "toMessageKeyPart @ src/components/chat/utils/messageKeys.ts",
+      "description": "toMessageKeyPart (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "0c88c313-1097-5266-9b88-7b7880e1fb83": {
+      "id": "0c88c313-1097-5266-9b88-7b7880e1fb83",
+      "kind": "resource",
+      "name": "Tool Rendering System.architecture @ src/components/chat/tools/README.md",
+      "description": "architecture (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "0cf5f891-d2b9-5935-b8a8-ff7962659880": {
+      "id": "0cf5f891-d2b9-5935-b8a8-ff7962659880",
+      "kind": "resource",
+      "name": "StructuredMessageWrapper @ src/components/chat/view/subcomponents/StructuredMessage.tsx",
+      "description": "StructuredMessageWrapper (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "103a77aa-2e18-52da-8c29-3f7128782d0b": {
+      "id": "103a77aa-2e18-52da-8c29-3f7128782d0b",
+      "kind": "resource",
+      "name": "useSlashCommands @ src/components/chat/hooks/useSlashCommands.ts",
+      "description": "useSlashCommands() watches the chat input for a '/' prefix, derives a filtered suggestion list scoped to the selected project, and dispatches the confirmed command through onExecuteCommand while restoring textarea focus and clearing the input.",
+      "version": 1
+    },
+    "11d00575-76fc-553a-8bc6-5ff76194572e": {
+      "id": "11d00575-76fc-553a-8bc6-5ff76194572e",
+      "kind": "resource",
+      "name": "nextIndex @ src/components/chat/hooks/useChatProviderState.ts",
+      "description": "This snippet advances the active permission mode to the next item in the circular modes array, commits it to React state, and optionally persists it to localStorage keyed by the current session ID.",
+      "version": 1
+    },
+    "1724914f-e62c-5b82-9a8f-35373e47fcc6": {
+      "id": "1724914f-e62c-5b82-9a8f-35373e47fcc6",
+      "kind": "resource",
+      "name": "validatePathInProject @ server/index.js",
+      "description": "validatePathInProject (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "1ab3e194-b67f-5f15-815e-136c8e036f88": {
+      "id": "1ab3e194-b67f-5f15-815e-136c8e036f88",
+      "kind": "resource",
+      "name": "AssistantThinkingIndicator @ src/components/chat/view/subcomponents/AssistantThinkingIndicator.tsx",
+      "description": "AssistantThinkingIndicator (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "1e1c990d-20ca-5e51-b0a2-74cf21a0e8b6": {
+      "id": "1e1c990d-20ca-5e51-b0a2-74cf21a0e8b6",
+      "kind": "resource",
+      "name": "registerPermissionPanel @ src/components/chat/tools/configs/permissionPanelRegistry.ts",
+      "description": "registerPermissionPanel() stores the given React component in the module-level registry under toolName, making it retrievable for rendering permission panels for that tool.",
+      "version": 1
+    },
+    "1f76f7e0-614a-5d81-8190-f771eeb2f788": {
+      "id": "1f76f7e0-614a-5d81-8190-f771eeb2f788",
+      "kind": "resource",
+      "name": "unescapeWithMathProtection @ src/components/chat/utils/chatFormatting.ts",
+      "description": "unescapeWithMathProtection() converts literal escape sequences (\\\\n, \\\\t, \\\\r) to their actual characters in a string while shielding any LaTeX math expressions from modification, returning the original value unchanged if the input is not a non-empty string.",
+      "version": 1
+    },
+    "2134699a-ed88-590a-9557-affa8ce7856a": {
+      "id": "2134699a-ed88-590a-9557-affa8ce7856a",
+      "kind": "resource",
+      "name": "handleClickOutside @ src/components/chat/view/subcomponents/CommandMenu.tsx",
+      "description": "handleClickOutside (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "21705680-e9ec-5a0f-b855-0e79d2acd17e": {
+      "id": "21705680-e9ec-5a0f-b855-0e79d2acd17e",
+      "kind": "resource",
+      "name": "shutdownPlugins @ server/index.js",
+      "description": "shutdownPlugins (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "23aaca07-d65f-57e4-9538-4a978dca6be6": {
+      "id": "23aaca07-d65f-57e4-9538-4a978dca6be6",
+      "kind": "resource",
+      "name": "getCommandHistoryKey @ src/components/chat/hooks/useSlashCommands.ts",
+      "description": "getCommandHistoryKey() deterministically returns the namespaced localStorage key string for a project's command history, guaranteeing a unique key per distinct projectName value.",
+      "version": 1
+    },
+    "23ea05b1-affd-5199-9713-04189468610e": {
+      "id": "23ea05b1-affd-5199-9713-04189468610e",
+      "kind": "resource",
+      "name": "getClaudeSettings @ src/components/chat/utils/chatStorage.ts",
+      "description": "getClaudeSettings (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "264812fe-5689-5ebd-bd15-333d433f2628": {
+      "id": "264812fe-5689-5ebd-bd15-333d433f2628",
+      "kind": "resource",
+      "name": "shouldAutoOpenUrlFromOutput @ server/index.js",
+      "description": "shouldAutoOpenUrlFromOutput (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "2738fdd5-e467-51ae-a41c-9bee89ac48e1": {
+      "id": "2738fdd5-e467-51ae-a41c-9bee89ac48e1",
+      "kind": "resource",
+      "name": "handleChatConnection @ server/index.js",
+      "description": "handleChatConnection (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "279469eb-e9bd-5edb-b7ab-f3d7e7f7dc6a": {
+      "id": "279469eb-e9bd-5edb-b7ab-f3d7e7f7dc6a",
+      "kind": "resource",
+      "name": "abortClaudeSDKSession @ server/claude-sdk.js",
+      "description": "abortClaudeSDKSession (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "2a29ce4b-3749-5e0b-ba21-5849718882a6": {
+      "id": "2a29ce4b-3749-5e0b-ba21-5849718882a6",
+      "kind": "resource",
+      "name": "groupPerm @ server/index.js",
+      "description": "groupPerm (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "2a6cf5c1-355b-5e1f-8180-bd2904289a45": {
+      "id": "2a6cf5c1-355b-5e1f-8180-bd2904289a45",
+      "kind": "resource",
+      "name": "createRequestId @ server/claude-sdk.js",
+      "description": "createRequestId (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "3079effa-49cb-519d-9470-f7d351b738d2": {
+      "id": "3079effa-49cb-519d-9470-f7d351b738d2",
+      "kind": "resource",
+      "name": "formatToolInputForDisplay @ src/components/chat/utils/chatPermissions.ts",
+      "description": "formatToolInputForDisplay (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "30b18d82-e15a-58b3-ae94-c9b87cf2a2cd": {
+      "id": "30b18d82-e15a-58b3-ae94-c9b87cf2a2cd",
+      "kind": "resource",
+      "name": "handleModelChange @ src/components/chat/view/subcomponents/ProviderSelectionEmptyState.tsx",
+      "description": "handleModelChange (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "314b103f-a3d8-5028-a0a3-cd1e58fcc223": {
+      "id": "314b103f-a3d8-5028-a0a3-cd1e58fcc223",
+      "kind": "resource",
+      "name": "WebSocketWriter.if @ server/index.js",
+      "description": "if (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "32fb4586-d643-5e9d-ab82-70a59a1f36c8": {
+      "id": "32fb4586-d643-5e9d-ab82-70a59a1f36c8",
+      "kind": "resource",
+      "name": "handleImages @ server/claude-sdk.js",
+      "description": "handleImages (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "37a30d74-cf0c-549a-9b54-ef03c14dff33": {
+      "id": "37a30d74-cf0c-549a-9b54-ef03c14dff33",
+      "kind": "resource",
+      "name": "abortHandler @ server/claude-sdk.js",
+      "description": "abortHandler (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "3bb2e1a6-428a-52c2-bd69-c4510f04c1b6": {
+      "id": "3bb2e1a6-428a-52c2-bd69-c4510f04c1b6",
+      "kind": "resource",
+      "name": "createFakeSubmitEvent @ src/components/chat/hooks/useChatComposerState.ts",
+      "description": "createFakeSubmitEvent (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "3d0c9308-8ac9-520b-8227-c7e5b7b78ec9": {
+      "id": "3d0c9308-8ac9-520b-8227-c7e5b7b78ec9",
+      "kind": "resource",
+      "name": "handleCopyClick @ src/components/chat/view/subcomponents/MessageCopyControl.tsx",
+      "description": "handleCopyClick (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "3dc96c29-25fa-569e-a583-00bcc2e5f071": {
+      "id": "3dc96c29-25fa-569e-a583-00bcc2e5f071",
+      "kind": "resource",
+      "name": "Tool Rendering System.configuration_reference @ src/components/chat/tools/README.md",
+      "description": "configuration_reference (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "3e9c7330-f060-548b-ac56-827df48b4912": {
+      "id": "3e9c7330-f060-548b-ac56-827df48b4912",
+      "kind": "resource",
+      "name": "getCommandKey @ src/components/chat/view/subcomponents/CommandMenu.tsx",
+      "description": "getCommandKey (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "3f670782-55d0-59e0-b150-ea0103baea21": {
+      "id": "3f670782-55d0-59e0-b150-ea0103baea21",
+      "kind": "resource",
+      "name": "scrollToTarget @ src/components/chat/hooks/useChatSessionState.ts",
+      "description": "scrollToTarget guarantees that all session messages are loaded (for non-Cursor providers) and then retries a DOM search up to 15 times to scroll the chat container to the message best matching the given snippet or timestamp, flashing a highlight on success.",
+      "version": 1
+    },
+    "434807c5-dd22-5fdc-92ea-c9a7e28ffad0": {
+      "id": "434807c5-dd22-5fdc-92ea-c9a7e28ffad0",
+      "kind": "resource",
+      "name": "ViewToggle @ src/components/chat/view/subcomponents/StructuredMessage.tsx",
+      "description": "ViewToggle (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "43e6f516-992e-5e32-b196-b5d9d128ab6d": {
+      "id": "43e6f516-992e-5e32-b196-b5d9d128ab6d",
+      "kind": "resource",
+      "name": "createCachedDiffCalculator @ src/components/chat/utils/messageTransforms.ts",
+      "description": "createCachedDiffCalculator (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "448b836b-1e67-57aa-a1fd-6ca452a8fb60": {
+      "id": "448b836b-1e67-57aa-a1fd-6ca452a8fb60",
+      "kind": "resource",
+      "name": "WebSocketWriter.setSessionId @ server/index.js",
+      "description": "setSessionId (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "4652dfed-a582-50ec-b714-47e28fcfa2ea": {
+      "id": "4652dfed-a582-50ec-b714-47e28fcfa2ea",
+      "kind": "resource",
+      "name": "expandWorkspacePath @ server/index.js",
+      "description": "expandWorkspacePath (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "467ad815-b519-5405-b577-65e736ff9efc": {
+      "id": "467ad815-b519-5405-b577-65e736ff9efc",
+      "kind": "resource",
+      "name": "reconnectSessionWriter @ server/claude-sdk.js",
+      "description": "reconnectSessionWriter (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "472719b9-3d69-5249-b86a-d357867c615e": {
+      "id": "472719b9-3d69-5249-b86a-d357867c615e",
+      "kind": "resource",
+      "name": "isPromiseLike @ src/components/chat/hooks/useSlashCommands.ts",
+      "description": "isPromiseLike() returns a type-predicate boolean that is true if and only if value is truthy and possesses a callable .then property, narrowing the type to Promise<unknown> for the caller.",
+      "version": 1
+    },
+    "4806833e-922c-5ca7-8f7a-bb19324c95b6": {
+      "id": "4806833e-922c-5ca7-8f7a-bb19324c95b6",
+      "kind": "resource",
+      "name": "getToolCategory @ src/components/chat/tools/ToolRenderer.tsx",
+      "description": "getToolCategory (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "4bd00d0c-5102-57c6-9d5c-71d209c90067": {
+      "id": "4bd00d0c-5102-57c6-9d5c-71d209c90067",
+      "kind": "resource",
+      "name": "transformMessage @ server/claude-sdk.js",
+      "description": "transformMessage (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "4d7b99e7-c48e-5120-b750-1370d0047199": {
+      "id": "4d7b99e7-c48e-5120-b750-1370d0047199",
+      "kind": "resource",
+      "name": "resolveToolApproval @ server/claude-sdk.js",
+      "description": "resolveToolApproval (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "4f086bb2-a764-5439-939d-5fd15b5fc3a3": {
+      "id": "4f086bb2-a764-5439-939d-5fd15b5fc3a3",
+      "kind": "resource",
+      "name": "result @ src/components/chat/hooks/useChatComposerState.ts",
+      "description": "result (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "500c7e79-69c1-5d1b-ae1f-2187a2ecab39": {
+      "id": "500c7e79-69c1-5d1b-ae1f-2187a2ecab39",
+      "kind": "resource",
+      "name": "useChatSessionState @ src/components/chat/hooks/useChatSessionState.ts",
+      "description": "useChatSessionState() subscribes to WebSocket events and external updates for the selected project/session, synchronises message state with the session store, and returns a reactive state object with messages and processing flags ready for the chat UI to render.",
+      "version": 1
+    },
+    "504685fd-3b95-5103-ad97-fa1c880317a0": {
+      "id": "504685fd-3b95-5103-ad97-fa1c880317a0",
+      "kind": "resource",
+      "name": "ChatMessagesPane @ src/components/chat/view/subcomponents/ChatMessagesPane.tsx",
+      "description": "ChatMessagesPane (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "516133a5-83c8-5e01-84a8-5fd58e7939d2": {
+      "id": "516133a5-83c8-5e01-84a8-5fd58e7939d2",
+      "kind": "resource",
+      "name": "normalizedToChatMessages @ src/components/chat/hooks/useChatMessages.ts",
+      "description": "normalizedToChatMessages() performs a two-pass transformation of NormalizedMessage[] into ChatMessage[], attaching tool results to their parent tool_use entries, decoding and formatting text content, and silently dropping all control-only event kinds, returning a flat ordered array ready for chat UI rendering.",
+      "version": 1
+    },
+    "5208ad2f-0285-5718-8732-1cca0496d930": {
+      "id": "5208ad2f-0285-5718-8732-1cca0496d930",
+      "kind": "resource",
+      "name": "handleClickOutside @ src/components/chat/view/subcomponents/ThinkingModeSelector.tsx",
+      "description": "handleClickOutside (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "540db1cc-ce9b-51ca-b93e-ad6b06f44ff3": {
+      "id": "540db1cc-ce9b-51ca-b93e-ad6b06f44ff3",
+      "kind": "resource",
+      "name": "Tool Rendering System.tooldisplayconfig @ src/components/chat/tools/README.md",
+      "description": "tooldisplayconfig (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "54280b05-947c-5be2-88f0-99fd566fdce7": {
+      "id": "54280b05-947c-5be2-88f0-99fd566fdce7",
+      "kind": "resource",
+      "name": "ProviderSelectionEmptyState @ src/components/chat/view/subcomponents/ProviderSelectionEmptyState.tsx",
+      "description": "ProviderSelectionEmptyState (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "5445a99a-acf4-5664-8beb-eea3781a66a5": {
+      "id": "5445a99a-acf4-5664-8beb-eea3781a66a5",
+      "kind": "resource",
+      "name": "provider @ src/components/chat/hooks/useChatSessionState.ts",
+      "description": "When not actively streaming, this function refreshes the session store from the server using the persisted or session-overridden provider, then conditionally auto-scrolls the chat view to the bottom 200ms later if the viewport is already near the bottom.",
+      "version": 1
+    },
+    "55ceb070-2387-57e6-a4b3-28194834ac0d": {
+      "id": "55ceb070-2387-57e6-a4b3-28194834ac0d",
+      "kind": "resource",
+      "name": "permToRwx @ server/index.js",
+      "description": "permToRwx (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "55d0897e-edc5-56dc-ab06-2cb6d6e8065e": {
+      "id": "55d0897e-edc5-56dc-ab06-2cb6d6e8065e",
+      "kind": "resource",
+      "name": "extractTokenBudget @ server/claude-sdk.js",
+      "description": "extractTokenBudget (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "596bf5e3-62b7-58f7-9e05-5c18d6a83c75": {
+      "id": "596bf5e3-62b7-58f7-9e05-5c18d6a83c75",
+      "kind": "resource",
+      "name": "TokenUsagePie @ src/components/chat/view/subcomponents/TokenUsagePie.tsx",
+      "description": "TokenUsagePie (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "5a88a34f-0cc7-5af2-b4a6-ba91c84ce110": {
+      "id": "5a88a34f-0cc7-5af2-b4a6-ba91c84ce110",
+      "kind": "resource",
+      "name": "WebSocketWriter.getSessionId @ server/index.js",
+      "description": "getSessionId (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "5a8df866-3a66-5a60-af6a-adb193ac88ba": {
+      "id": "5a8df866-3a66-5a60-af6a-adb193ac88ba",
+      "kind": "resource",
+      "name": "getMenuPosition @ src/components/chat/view/subcomponents/CommandMenu.tsx",
+      "description": "getMenuPosition (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "5cce5566-e378-50a8-8db6-a7c35eb388a7": {
+      "id": "5cce5566-e378-50a8-8db6-a7c35eb388a7",
+      "kind": "resource",
+      "name": "fetchProjectFiles @ src/components/chat/hooks/useFileMentions.tsx",
+      "description": "fetchProjectFiles (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "5d3d883b-5370-5e5a-bfd9-55a3a7cb6201": {
+      "id": "5d3d883b-5370-5e5a-bfd9-55a3a7cb6201",
+      "kind": "resource",
+      "name": "getToolsSettings @ src/components/chat/hooks/useChatComposerState.ts",
+      "description": "getToolsSettings (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "5dfd542b-7325-5762-ade3-cb24c6678d1f": {
+      "id": "5dfd542b-7325-5762-ade3-cb24c6678d1f",
+      "kind": "resource",
+      "name": "ownerPerm @ server/index.js",
+      "description": "ownerPerm (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "5f24d1cb-abbb-5118-b8ea-cc0c5144065d": {
+      "id": "5f24d1cb-abbb-5118-b8ea-cc0c5144065d",
+      "kind": "resource",
+      "name": "providerVal @ src/components/chat/view/ChatInterface.tsx",
+      "description": "providerVal (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "60142880-1f85-5b87-852f-e6f99fd18500": {
+      "id": "60142880-1f85-5b87-852f-e6f99fd18500",
+      "kind": "resource",
+      "name": "FormData @ server/index.js",
+      "description": "FormData (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "60b6cf6d-b75e-59fc-9c66-f9c5ba5910a6": {
+      "id": "60b6cf6d-b75e-59fc-9c66-f9c5ba5910a6",
+      "kind": "resource",
+      "name": "startServer @ server/index.js",
+      "description": "startServer (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "62299afb-1262-50b6-8de1-217e83093123": {
+      "id": "62299afb-1262-50b6-8de1-217e83093123",
+      "kind": "resource",
+      "name": "text @ src/components/chat/hooks/useChatSessionState.ts",
+      "description": "This snippet performs a case-insensitive substring match on a DOM element's text and, on the first match, captures that element in the outer targetElement variable and short-circuits the enclosing loop via break.",
+      "version": 1
+    },
+    "656b5c55-8841-5438-8190-666c9be6b631": {
+      "id": "656b5c55-8841-5438-8190-666c9be6b631",
+      "kind": "resource",
+      "name": "tabs @ src/components/chat/view/subcomponents/StructuredMessage.tsx",
+      "description": "tabs (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "69b20f4e-b5c7-551e-bf1f-4ecfbb3fa99e": {
+      "id": "69b20f4e-b5c7-551e-bf1f-4ecfbb3fa99e",
+      "kind": "resource",
+      "name": "Tool Rendering System.adding_a_new_tool @ src/components/chat/tools/README.md",
+      "description": "adding_a_new_tool (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "6aacc1dc-c4e3-5c84-a883-757a987c6470": {
+      "id": "6aacc1dc-c4e3-5c84-a883-757a987c6470",
+      "kind": "resource",
+      "name": "ChatInterface @ src/components/chat/view/ChatInterface.tsx",
+      "description": "ChatInterface (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "6d8b44d2-666c-50ae-9e2d-56642aa607c1": {
+      "id": "6d8b44d2-666c-50ae-9e2d-56642aa607c1",
+      "kind": "resource",
+      "name": "lines @ src/components/chat/view/subcomponents/MessageComponent.tsx",
+      "description": "lines (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "6f079c95-a27d-53b2-b4c4-81ee71de849b": {
+      "id": "6f079c95-a27d-53b2-b4c4-81ee71de849b",
+      "kind": "resource",
+      "name": "useChatComposerState @ src/components/chat/hooks/useChatComposerState.ts",
+      "description": "useChatComposerState (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "6fb30b89-f469-520c-9611-9559e44d5764": {
+      "id": "6fb30b89-f469-520c-9611-9559e44d5764",
+      "kind": "resource",
+      "name": "queryClaudeSDK @ server/claude-sdk.js",
+      "description": "queryClaudeSDK (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "70960a2d-ff3a-56c4-895b-bd5307f95602": {
+      "id": "70960a2d-ff3a-56c4-895b-bd5307f95602",
+      "kind": "resource",
+      "name": "Tool Rendering System.all_configured_tools @ src/components/chat/tools/README.md",
+      "description": "all_configured_tools (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "73040388-bd22-5392-a3a7-b427bcfffad1": {
+      "id": "73040388-bd22-5392-a3a7-b427bcfffad1",
+      "kind": "resource",
+      "name": "Tool Rendering System.performance @ src/components/chat/tools/README.md",
+      "description": "performance (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "731df90a-f011-5310-9099-89c1b036aab4": {
+      "id": "731df90a-f011-5310-9099-89c1b036aab4",
+      "kind": "resource",
+      "name": "CodeBlock @ src/components/chat/view/subcomponents/Markdown.tsx",
+      "description": "CodeBlock (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "737b9600-e792-52a6-adc7-c60f2010e3e4": {
+      "id": "737b9600-e792-52a6-adc7-c60f2010e3e4",
+      "kind": "resource",
+      "name": "isTodoItem @ src/components/chat/tools/components/ContentRenderers/TodoListContent.tsx",
+      "description": "isTodoItem (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "774a254e-489b-5e7d-93ad-39b846d1a977": {
+      "id": "774a254e-489b-5e7d-93ad-39b846d1a977",
+      "kind": "resource",
+      "name": "closeOnOutsideClick @ src/components/chat/view/subcomponents/MessageCopyControl.tsx",
+      "description": "closeOnOutsideClick (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "7bd2abd1-be82-5a78-92fe-e95ab25f75f0": {
+      "id": "7bd2abd1-be82-5a78-92fe-e95ab25f75f0",
+      "kind": "resource",
+      "name": "buildClaudeToolPermissionEntry @ src/components/chat/utils/chatPermissions.ts",
+      "description": "buildClaudeToolPermissionEntry (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "7f2fd253-1168-5542-927b-ab647914e285": {
+      "id": "7f2fd253-1168-5542-927b-ab647914e285",
+      "kind": "resource",
+      "name": "getPermissionPanel @ src/components/chat/tools/configs/permissionPanelRegistry.ts",
+      "description": "getPermissionPanel() performs a single registry lookup by toolName and returns the associated permission panel component, or null if no component is registered for that tool.",
+      "version": 1
+    },
+    "80264fdf-97a8-532b-bf35-ef80665247bb": {
+      "id": "80264fdf-97a8-532b-bf35-ef80665247bb",
+      "kind": "resource",
+      "name": "Tool Rendering System.display_patterns @ src/components/chat/tools/README.md",
+      "description": "display_patterns (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "809605df-d079-5c33-a80d-e85f3042f640": {
+      "id": "809605df-d079-5c33-a80d-e85f3042f640",
+      "kind": "resource",
+      "name": "findSessionFile @ server/index.js",
+      "description": "findSessionFile (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "80fadbc9-6940-58d6-8e98-954588f39e7d": {
+      "id": "80fadbc9-6940-58d6-8e98-954588f39e7d",
+      "kind": "resource",
+      "name": "LayoutCard @ src/components/chat/view/subcomponents/StructuredMessage.tsx",
+      "description": "LayoutCard (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "8301df05-4cdb-54e0-a830-625949990e74": {
+      "id": "8301df05-4cdb-54e0-a830-625949990e74",
+      "kind": "resource",
+      "name": "useChatProviderState @ src/components/chat/hooks/useChatProviderState.ts",
+      "description": "useChatProviderState() consumes a selected session and returns the reactive state and setters required by the chat provider context.",
+      "version": 1
+    },
+    "8436a87a-5c25-5d37-902e-06517bea79c6": {
+      "id": "8436a87a-5c25-5d37-902e-06517bea79c6",
+      "kind": "resource",
+      "name": "fileFilter @ server/index.js",
+      "description": "fileFilter (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "845c9d77-a005-57d3-89e4-c6d76f28f39d": {
+      "id": "845c9d77-a005-57d3-89e4-c6d76f28f39d",
+      "kind": "resource",
+      "name": "getFileTree @ server/index.js",
+      "description": "getFileTree (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "86995fdf-e09f-5e00-aa5b-fdca99818cdb": {
+      "id": "86995fdf-e09f-5e00-aa5b-fdca99818cdb",
+      "kind": "resource",
+      "name": "RenderNode @ src/components/chat/view/subcomponents/StructuredMessage.tsx",
+      "description": "RenderNode (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "8726b62e-dc7b-561a-bc5f-423e13d6bada": {
+      "id": "8726b62e-dc7b-561a-bc5f-423e13d6bada",
+      "kind": "resource",
+      "name": "handlePluginWsProxy @ server/index.js",
+      "description": "handlePluginWsProxy (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "8b8faf3b-73c5-5c10-945e-2ad3268c4aed": {
+      "id": "8b8faf3b-73c5-5c10-945e-2ad3268c4aed",
+      "kind": "resource",
+      "name": "getClaudePermissionSuggestion @ src/components/chat/utils/chatPermissions.ts",
+      "description": "getClaudePermissionSuggestion (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "8b9ac100-5e24-56cb-9cd1-6966c892d8bd": {
+      "id": "8b9ac100-5e24-56cb-9cd1-6966c892d8bd",
+      "kind": "resource",
+      "name": "reloadExternalMessages @ src/components/chat/hooks/useChatSessionState.ts",
+      "description": "reloadExternalMessages() refreshes the session message store from the server when not streaming, then auto-scrolls the view 200 ms later if the user is near the bottom, swallowing all errors to avoid disrupting the UI.",
+      "version": 1
+    },
+    "8d19337a-2db7-508b-ae2e-d1878b83f23a": {
+      "id": "8d19337a-2db7-508b-ae2e-d1878b83f23a",
+      "kind": "resource",
+      "name": "waitForToolApproval @ server/claude-sdk.js",
+      "description": "waitForToolApproval (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "8d3c8fe9-d7dc-51fa-ab6d-a5762ac825c4": {
+      "id": "8d3c8fe9-d7dc-51fa-ab6d-a5762ac825c4",
+      "kind": "resource",
+      "name": "escapeRegExp @ src/components/chat/utils/chatFormatting.ts",
+      "description": "escapeRegExp (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "8df9e358-220b-528a-9562-d44b96a93d05": {
+      "id": "8df9e358-220b-528a-9562-d44b96a93d05",
+      "kind": "resource",
+      "name": "Tool Rendering System.content_renderers @ src/components/chat/tools/README.md",
+      "description": "content_renderers (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "8f426f7d-7371-5022-9540-2f7a6dfb4eb0": {
+      "id": "8f426f7d-7371-5022-9540-2f7a6dfb4eb0",
+      "kind": "resource",
+      "name": "getModelValue @ src/components/chat/view/subcomponents/ProviderSelectionEmptyState.tsx",
+      "description": "getModelValue (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "902833f2-1dd1-53e3-ab41-e475bc1534b7": {
+      "id": "902833f2-1dd1-53e3-ab41-e475bc1534b7",
+      "kind": "resource",
+      "name": "mapCliOptionsToSDK @ server/claude-sdk.js",
+      "description": "mapCliOptionsToSDK (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "908a4e0b-eabb-59d7-b52f-aa32df455419": {
+      "id": "908a4e0b-eabb-59d7-b52f-aa32df455419",
+      "kind": "resource",
+      "name": "useFileMentions @ src/components/chat/hooks/useFileMentions.tsx",
+      "description": "useFileMentions (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "91180f75-1dc8-54c7-9421-6ad677b1f032": {
+      "id": "91180f75-1dc8-54c7-9421-6ad677b1f032",
+      "kind": "resource",
+      "name": "extractUrlsFromText @ server/index.js",
+      "description": "extractUrlsFromText (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "955e8fe1-d656-5d91-b881-67b9e44c0ed9": {
+      "id": "955e8fe1-d656-5d91-b881-67b9e44c0ed9",
+      "kind": "resource",
+      "name": "isClaudeSDKSessionActive @ server/claude-sdk.js",
+      "description": "isClaudeSDKSessionActive (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "97cf6a47-9644-507b-a3b4-2acddd79b073": {
+      "id": "97cf6a47-9644-507b-a3b4-2acddd79b073",
+      "kind": "resource",
+      "name": "loadMcpConfig @ server/claude-sdk.js",
+      "description": "loadMcpConfig (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "992025c0-b3c4-5698-809b-2b5f6239fca1": {
+      "id": "992025c0-b3c4-5698-809b-2b5f6239fca1",
+      "kind": "resource",
+      "name": "multer @ server/index.js",
+      "description": "multer (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "99392e1e-00d2-5600-a856-488087ca71a4": {
+      "id": "99392e1e-00d2-5600-a856-488087ca71a4",
+      "kind": "resource",
+      "name": "ClaudeStatus @ src/components/chat/view/subcomponents/ClaudeStatus.tsx",
+      "description": "ClaudeStatus (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "9a7714f4-2e58-5b3b-9ec7-30e3ad59fb5e": {
+      "id": "9a7714f4-2e58-5b3b-9ec7-30e3ad59fb5e",
+      "kind": "resource",
+      "name": "handleTitleClick @ src/components/chat/tools/ToolRenderer.tsx",
+      "description": "handleTitleClick (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "9c5ef6c9-9dbd-5927-8316-5c6a738663c7": {
+      "id": "9c5ef6c9-9dbd-5927-8316-5c6a738663c7",
+      "kind": "resource",
+      "name": "readCommandHistory @ src/components/chat/hooks/useSlashCommands.ts",
+      "description": "readCommandHistory() retrieves and deserializes the slash command usage map for the given project from localStorage, always returning a valid Record<string, number> \u2014 falling back to {} on missing or malformed data.",
+      "version": 1
+    },
+    "9c7991a7-09fe-5ece-a4a6-92bd306d6f48": {
+      "id": "9c7991a7-09fe-5ece-a4a6-92bd306d6f48",
+      "kind": "resource",
+      "name": "findAndScroll @ src/components/chat/hooks/useChatSessionState.ts",
+      "description": "findAndScroll() locates a target chat message by snippet text or closest timestamp within the scroll container, scrolls it into view with a highlight flash, and retries up to retriesLeft times at 200 ms intervals before clearing the active-scroll flag.",
+      "version": 1
+    },
+    "9dd2f33a-5973-5221-829f-107d9c8ac7f8": {
+      "id": "9dd2f33a-5973-5221-829f-107d9c8ac7f8",
+      "kind": "resource",
+      "name": "ImageAttachment @ src/components/chat/view/subcomponents/ImageAttachment.tsx",
+      "description": "ImageAttachment (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "9df7bb3e-d4b7-5f6d-86f2-c8557007d6c6": {
+      "id": "9df7bb3e-d4b7-5f6d-86f2-c8557007d6c6",
+      "kind": "resource",
+      "name": "getToolConfig @ src/components/chat/tools/configs/toolConfigs.ts",
+      "description": "getToolConfig() returns the ToolDisplayConfig registered for toolName, or the Default config if toolName is not in TOOL_CONFIGS, guaranteeing a non-null result as long as a Default entry exists.",
+      "version": 1
+    },
+    "9f3336c8-b633-57a4-a591-f8b1b5c0616a": {
+      "id": "9f3336c8-b633-57a4-a591-f8b1b5c0616a",
+      "kind": "resource",
+      "name": "matchesToolPermission @ server/claude-sdk.js",
+      "description": "matchesToolPermission (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "9ff736b8-a542-536a-9bd9-7d3c20511282": {
+      "id": "9ff736b8-a542-536a-9bd9-7d3c20511282",
+      "kind": "resource",
+      "name": "WebSocketWriter.updateWebSocket @ server/index.js",
+      "description": "updateWebSocket (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "a06ad2e6-d115-54ad-afe1-b2c1c0d061e2": {
+      "id": "a06ad2e6-d115-54ad-afe1-b2c1c0d061e2",
+      "kind": "resource",
+      "name": "MessageCopyControl @ src/components/chat/view/subcomponents/MessageCopyControl.tsx",
+      "description": "MessageCopyControl (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "a0f24942-d707-56c2-bd6c-a449c6edd6b1": {
+      "id": "a0f24942-d707-56c2-bd6c-a449c6edd6b1",
+      "kind": "resource",
+      "name": "CommandMenu @ src/components/chat/view/subcomponents/CommandMenu.tsx",
+      "description": "CommandMenu (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "a3221b48-0603-5d7f-85fa-6433a578a4f6": {
+      "id": "a3221b48-0603-5d7f-85fa-6433a578a4f6",
+      "kind": "resource",
+      "name": "handleFormatChange @ src/components/chat/view/subcomponents/MessageCopyControl.tsx",
+      "description": "handleFormatChange (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "a3a67626-8ad0-530f-95b7-cbc12826688b": {
+      "id": "a3a67626-8ad0-530f-95b7-cbc12826688b",
+      "kind": "resource",
+      "name": "getModelConfig @ src/components/chat/view/subcomponents/ProviderSelectionEmptyState.tsx",
+      "description": "getModelConfig (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "a3f9caa8-90a8-5227-a85d-fb2e4f92e777": {
+      "id": "a3f9caa8-90a8-5227-a85d-fb2e4f92e777",
+      "kind": "resource",
+      "name": "renderCopyButton @ src/components/chat/tools/components/OneLineDisplay.tsx",
+      "description": "renderCopyButton (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "a43280bf-bb3e-5cdf-99ca-f9e631b34815": {
+      "id": "a43280bf-bb3e-5cdf-99ca-f9e631b34815",
+      "kind": "resource",
+      "name": "removeSession @ server/claude-sdk.js",
+      "description": "removeSession (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "a4e93eff-92f2-5601-a211-6486873b5cd7": {
+      "id": "a4e93eff-92f2-5601-a211-6486873b5cd7",
+      "kind": "resource",
+      "name": "ChatComposer @ src/components/chat/view/subcomponents/ChatComposer.tsx",
+      "description": "ChatComposer (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "a67f6d1c-1eb3-5056-8d5f-33f44b18c86e": {
+      "id": "a67f6d1c-1eb3-5056-8d5f-33f44b18c86e",
+      "kind": "resource",
+      "name": "selectProvider @ src/components/chat/view/subcomponents/ProviderSelectionEmptyState.tsx",
+      "description": "selectProvider (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "a7638696-58c6-5695-9113-52e999fb5397": {
+      "id": "a7638696-58c6-5695-9113-52e999fb5397",
+      "kind": "resource",
+      "name": "shouldHideToolResult @ src/components/chat/tools/configs/toolConfigs.ts",
+      "description": "shouldHideToolResult (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "a89f8cd5-377a-50a3-ab38-b0e7e7ee4714": {
+      "id": "a89f8cd5-377a-50a3-ab38-b0e7e7ee4714",
+      "kind": "resource",
+      "name": "messageId @ src/components/chat/view/subcomponents/MessageComponent.tsx",
+      "description": "messageId (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "ac57dc52-4273-5890-8d63-091c7b4d1436": {
+      "id": "ac57dc52-4273-5890-8d63-091c7b4d1436",
+      "kind": "resource",
+      "name": "getActiveClaudeSDKSessions @ server/claude-sdk.js",
+      "description": "getActiveClaudeSDKSessions (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "acb9b6a3-3141-50c6-9844-5e38d57522ab": {
+      "id": "acb9b6a3-3141-50c6-9844-5e38d57522ab",
+      "kind": "resource",
+      "name": "fetchCommands @ src/components/chat/hooks/useSlashCommands.ts",
+      "description": "fetchCommands() POSTs to /api/commands/list for the selected project, merges built-in and custom commands tagged by type, sorts them by historical usage frequency from local storage, and commits the result to slashCommands state \u2014 or resets state to [] if no project is selected or any error occurs.",
+      "version": 1
+    },
+    "ad57c926-c8e0-5159-a49a-811009a3001f": {
+      "id": "ad57c926-c8e0-5159-a49a-811009a3001f",
+      "kind": "resource",
+      "name": "LayoutTabs @ src/components/chat/view/subcomponents/StructuredMessage.tsx",
+      "description": "LayoutTabs (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "ade7e9c4-2645-50b8-b41a-cd981f353b4d": {
+      "id": "ade7e9c4-2645-50b8-b41a-cd981f353b4d",
+      "kind": "resource",
+      "name": "addSession @ server/claude-sdk.js",
+      "description": "addSession (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "ae635eeb-13c9-5d06-964e-a5e1801010d6": {
+      "id": "ae635eeb-13c9-5d06-964e-a5e1801010d6",
+      "kind": "resource",
+      "name": "claude-sdk.claude-sdk @ server/claude-sdk.js",
+      "description": "claude-sdk (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "b0adc8af-4e00-5427-b1b5-6f27dc941dad": {
+      "id": "b0adc8af-4e00-5427-b1b5-6f27dc941dad",
+      "kind": "resource",
+      "name": "getPendingApprovalsForSession @ server/claude-sdk.js",
+      "description": "getPendingApprovalsForSession (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "b0cfacea-9025-5ac3-a2f5-07830f968509": {
+      "id": "b0cfacea-9025-5ac3-a2f5-07830f968509",
+      "kind": "resource",
+      "name": "getNamespace @ src/components/chat/view/subcomponents/CommandMenu.tsx",
+      "description": "getNamespace (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "b13ed50d-472a-5164-b52e-6e6c61d13895": {
+      "id": "b13ed50d-472a-5164-b52e-6e6c61d13895",
+      "kind": "resource",
+      "name": "index.index @ server/index.js",
+      "description": "index (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "b1cadf1b-46d0-541c-9e7c-6b3b877ac65c": {
+      "id": "b1cadf1b-46d0-541c-9e7c-6b3b877ac65c",
+      "kind": "resource",
+      "name": "cleanup @ server/claude-sdk.js",
+      "description": "cleanup (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "b339f112-48d9-53f6-b338-6d3e7e349f93": {
+      "id": "b339f112-48d9-53f6-b338-6d3e7e349f93",
+      "kind": "resource",
+      "name": "os @ server/index.js",
+      "description": "os (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "b49f658e-1643-5fe2-9b0d-8a432a978a4f": {
+      "id": "b49f658e-1643-5fe2-9b0d-8a432a978a4f",
+      "kind": "resource",
+      "name": "getCompactToolDisplay @ src/components/chat/tools/components/SubagentContainer.tsx",
+      "description": "getCompactToolDisplay (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "b61ba31d-4b8f-5b0c-9fc0-0361ea78ccf0": {
+      "id": "b61ba31d-4b8f-5b0c-9fc0-0361ea78ccf0",
+      "kind": "resource",
+      "name": "Tool Rendering System.collapsibledisplay @ src/components/chat/tools/README.md",
+      "description": "collapsibledisplay (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "b99a9e78-cdd6-5549-b5cc-9c85f34ff60b": {
+      "id": "b99a9e78-cdd6-5549-b5cc-9c85f34ff60b",
+      "kind": "resource",
+      "name": "getSession @ server/claude-sdk.js",
+      "description": "getSession (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "bbb73d29-7b67-50e8-a3bf-c5484574fafc": {
+      "id": "bbb73d29-7b67-50e8-a3bf-c5484574fafc",
+      "kind": "resource",
+      "name": "formatElapsedTime @ src/components/chat/view/subcomponents/ClaudeStatus.tsx",
+      "description": "formatElapsedTime (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "bcd30676-2eb7-5a9e-aa19-fa8acb0419db": {
+      "id": "bcd30676-2eb7-5a9e-aa19-fa8acb0419db",
+      "kind": "resource",
+      "name": "validateFilename @ server/index.js",
+      "description": "validateFilename (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "bee55b34-5d6d-5cf2-9057-8af6233ceb30": {
+      "id": "bee55b34-5d6d-5cf2-9057-8af6233ceb30",
+      "kind": "resource",
+      "name": "decodeHtmlEntities @ src/components/chat/utils/chatFormatting.ts",
+      "description": "decodeHtmlEntities() converts the five most common HTML character entities (&lt; &gt; &quot; &#39; &amp;) in a string to their literal character equivalents, returning the input unchanged if it is falsy.",
+      "version": 1
+    },
+    "c0530f54-dbc5-56f3-88ca-a507eed01c28": {
+      "id": "c0530f54-dbc5-56f3-88ca-a507eed01c28",
+      "kind": "resource",
+      "name": "chatMessageToNormalized @ src/components/chat/hooks/useChatSessionState.ts",
+      "description": "chatMessageToNormalized() inspects a ChatMessage's type flags in priority order and returns a fully-populated NormalizedMessage with a locally-unique ID and an ISO-8601 timestamp, or null if the signature ever needs to signal an unrepresentable message.",
+      "version": 1
+    },
+    "c0807d39-e8b3-50b5-a4fb-781f81141694": {
+      "id": "c0807d39-e8b3-50b5-a4fb-781f81141694",
+      "kind": "resource",
+      "name": "Tool Rendering System.overview @ src/components/chat/tools/README.md",
+      "description": "overview (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "c1855837-dddc-5551-a31f-125e2429f2a2": {
+      "id": "c1855837-dddc-5551-a31f-125e2429f2a2",
+      "kind": "resource",
+      "name": "files @ src/components/chat/hooks/useFileMentions.tsx",
+      "description": "files (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "c1d92707-ed8b-5ec7-b850-2ce1754a02c4": {
+      "id": "c1d92707-ed8b-5ec7-b850-2ce1754a02c4",
+      "kind": "resource",
+      "name": "normalizeInlineCodeFences @ src/components/chat/utils/chatFormatting.ts",
+      "description": "normalizeInlineCodeFences (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "c2787fc4-f754-5af2-94f8-ec29764c2eec": {
+      "id": "c2787fc4-f754-5af2-94f8-ec29764c2eec",
+      "kind": "resource",
+      "name": "parseTaskContent @ src/components/chat/tools/components/ContentRenderers/TaskListContent.tsx",
+      "description": "parseTaskContent (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "c7ba9cf7-92e5-5aec-b26f-d30ec5f2c107": {
+      "id": "c7ba9cf7-92e5-5aec-b26f-d30ec5f2c107",
+      "kind": "resource",
+      "name": "emitAuthUrl @ server/index.js",
+      "description": "emitAuthUrl (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "c89d00a8-ab90-53b7-8bfc-d854b1874e52": {
+      "id": "c89d00a8-ab90-53b7-8bfc-d854b1874e52",
+      "kind": "resource",
+      "name": "slashPos @ src/components/chat/hooks/useSlashCommands.ts",
+      "description": "Given a valid regex match containing a slash-command prefix and query, this handler immediately opens the command menu at the correct caret position, resets selection, cancels any stale query timer, and schedules a debounced state update with the new query string.",
+      "version": 1
+    },
+    "c9c62cec-c8e5-5247-8547-ea3b806f01cd": {
+      "id": "c9c62cec-c8e5-5247-8547-ea3b806f01cd",
+      "kind": "resource",
+      "name": "isDisallowed @ server/claude-sdk.js",
+      "description": "isDisallowed (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "cbaf84d5-e530-58ec-801f-86e65175f2cc": {
+      "id": "cbaf84d5-e530-58ec-801f-86e65175f2cc",
+      "kind": "resource",
+      "name": "formatUsageLimitText @ src/components/chat/utils/chatFormatting.ts",
+      "description": "formatUsageLimitText() transforms pipe-encoded Claude usage-limit tokens in a string into locale-aware, human-readable reset-time sentences, returning the original text on any type mismatch or exception.",
+      "version": 1
+    },
+    "cd423434-e82d-58fe-96bb-b73308e36e27": {
+      "id": "cd423434-e82d-58fe-96bb-b73308e36e27",
+      "kind": "resource",
+      "name": "getIntrinsicMessageKey @ src/components/chat/utils/messageKeys.ts",
+      "description": "getIntrinsicMessageKey (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "ce6b7d19-7fd6-5ebc-957b-70b619bd3baf": {
+      "id": "ce6b7d19-7fd6-5ebc-957b-70b619bd3baf",
+      "kind": "resource",
+      "name": "broadcastProgress @ server/index.js",
+      "description": "broadcastProgress (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "ce8c50c5-3f0c-504f-8be8-08b945bce65a": {
+      "id": "ce8c50c5-3f0c-504f-8be8-08b945bce65a",
+      "kind": "resource",
+      "name": "normalizePriority @ src/components/chat/tools/components/ContentRenderers/TodoList.tsx",
+      "description": "normalizePriority (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "ceab0587-9b68-5d21-ad52-9b287d314559": {
+      "id": "ceab0587-9b68-5d21-ad52-9b287d314559",
+      "kind": "resource",
+      "name": "isAllowed @ server/claude-sdk.js",
+      "description": "isAllowed (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "ceda0d28-1080-552d-99ab-d76e4c872b4f": {
+      "id": "ceda0d28-1080-552d-99ab-d76e4c872b4f",
+      "kind": "resource",
+      "name": "stripAnsiSequences @ server/index.js",
+      "description": "stripAnsiSequences (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "d23b3236-7e11-5759-971a-10c2723301b5": {
+      "id": "d23b3236-7e11-5759-971a-10c2723301b5",
+      "kind": "resource",
+      "name": "path @ server/index.js",
+      "description": "path (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "d4213739-b036-5939-b87a-f597c66dd0b4": {
+      "id": "d4213739-b036-5939-b87a-f597c66dd0b4",
+      "kind": "resource",
+      "name": "Markdown @ src/components/chat/view/subcomponents/Markdown.tsx",
+      "description": "Markdown (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "d8028687-851c-54a5-b994-2f60273b65ce": {
+      "id": "d8028687-851c-54a5-b994-2f60273b65ce",
+      "kind": "resource",
+      "name": "calculateDiff @ src/components/chat/utils/messageTransforms.ts",
+      "description": "calculateDiff (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "d8513e4c-df39-5619-b247-8f0e0fdc08dd": {
+      "id": "d8513e4c-df39-5619-b247-8f0e0fdc08dd",
+      "kind": "resource",
+      "name": "handleShellConnection @ server/index.js",
+      "description": "handleShellConnection (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "db02c1ea-a5f3-5895-a589-16bd18c9d653": {
+      "id": "db02c1ea-a5f3-5895-a589-16bd18c9d653",
+      "kind": "resource",
+      "name": "cleanupTempFiles @ server/claude-sdk.js",
+      "description": "cleanupTempFiles (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "db61e921-edc8-5cdc-bdcf-da37d30e4263": {
+      "id": "db61e921-edc8-5cdc-bdcf-da37d30e4263",
+      "kind": "resource",
+      "name": "getAllSessions @ server/claude-sdk.js",
+      "description": "getAllSessions (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "dc192400-25bf-548c-939b-7d47ab889309": {
+      "id": "dc192400-25bf-548c-939b-7d47ab889309",
+      "kind": "resource",
+      "name": "finalize @ server/claude-sdk.js",
+      "description": "finalize (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "dc9c00a7-3a50-5bd3-9956-04c545ef121a": {
+      "id": "dc9c00a7-3a50-5bd3-9956-04c545ef121a",
+      "kind": "resource",
+      "name": "isTemporarySessionId @ src/components/chat/hooks/useChatComposerState.ts",
+      "description": "isTemporarySessionId (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "ddbb28b8-c7db-54dc-838b-7151407c9508": {
+      "id": "ddbb28b8-c7db-54dc-838b-7151407c9508",
+      "kind": "resource",
+      "name": "debouncedUpdate @ server/index.js",
+      "description": "debouncedUpdate (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "ddc8cfd1-3888-570f-b9cd-9daf8f092804": {
+      "id": "ddc8cfd1-3888-570f-b9cd-9daf8f092804",
+      "kind": "resource",
+      "name": "backticksBefore @ src/components/chat/hooks/useSlashCommands.ts",
+      "description": "handleCommandInputChange() opens the slash-command menu and schedules a debounced query update whenever textBeforeCursor ends with a slash token outside a fenced code block, and dismisses the menu in all other cases.",
+      "version": 1
+    },
+    "df9ff264-9fcf-5e58-b04e-e09237a78b62": {
+      "id": "df9ff264-9fcf-5e58-b04e-e09237a78b62",
+      "kind": "resource",
+      "name": "LayoutGrid @ src/components/chat/view/subcomponents/StructuredMessage.tsx",
+      "description": "LayoutGrid (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "e07b3ace-90a5-57a6-ba79-a9b0c5092bcc": {
+      "id": "e07b3ace-90a5-57a6-ba79-a9b0c5092bcc",
+      "kind": "resource",
+      "name": "grantClaudeToolPermission @ src/components/chat/utils/chatPermissions.ts",
+      "description": "grantClaudeToolPermission (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "e1e4dc9f-071c-5c68-b83e-65222dab1f3f": {
+      "id": "e1e4dc9f-071c-5c68-b83e-65222dab1f3f",
+      "kind": "resource",
+      "name": "useChatRealtimeHandlers @ src/components/chat/hooks/useChatRealtimeHandlers.ts",
+      "description": "useChatRealtimeHandlers() wires all incoming real-time provider events to their corresponding state setters, refs, and navigation callbacks, returning stable handler functions that keep the chat UI synchronised with live session and stream state.",
+      "version": 1
+    },
+    "e209b89d-997a-5834-a182-541dec63d3d9": {
+      "id": "e209b89d-997a-5834-a182-541dec63d3d9",
+      "kind": "resource",
+      "name": "chokidar @ server/index.js",
+      "description": "chokidar (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "e2736afa-4efd-5088-8147-6bd070de2465": {
+      "id": "e2736afa-4efd-5088-8147-6bd070de2465",
+      "kind": "resource",
+      "name": "normalizeStatus @ src/components/chat/tools/components/ContentRenderers/TodoList.tsx",
+      "description": "normalizeStatus (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "e601d653-d51b-58c5-b140-65d5f74a71b2": {
+      "id": "e601d653-d51b-58c5-b140-65d5f74a71b2",
+      "kind": "resource",
+      "name": "contentComponent @ src/components/chat/tools/ToolRenderer.tsx",
+      "description": "contentComponent (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "e62819ca-4aca-5961-a595-8149770e047f": {
+      "id": "e62819ca-4aca-5961-a595-8149770e047f",
+      "kind": "resource",
+      "name": "convertMarkdownToPlainText @ src/components/chat/view/subcomponents/MessageCopyControl.tsx",
+      "description": "convertMarkdownToPlainText (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "e6fd0fee-f4dc-5c3d-9bd0-e495969cf779": {
+      "id": "e6fd0fee-f4dc-5c3d-9bd0-e495969cf779",
+      "kind": "resource",
+      "name": "saveCommandHistory @ src/components/chat/hooks/useSlashCommands.ts",
+      "description": "saveCommandHistory() serializes the command-usage map to JSON and persists it to localStorage under a project-scoped key, with storage errors suppressed by safeLocalStorage.",
+      "version": 1
+    },
+    "e7bca0b3-bedb-52af-881c-e270f21a5981": {
+      "id": "e7bca0b3-bedb-52af-881c-e270f21a5981",
+      "kind": "resource",
+      "name": "handleGlobalEscape @ src/components/chat/view/ChatInterface.tsx",
+      "description": "handleGlobalEscape (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "eda02fb1-27b5-5eb1-abba-2f008c4c386c": {
+      "id": "eda02fb1-27b5-5eb1-abba-2f008c4c386c",
+      "kind": "resource",
+      "name": "WebSocketWriter.send @ server/index.js",
+      "description": "send (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "edb3686e-a114-5821-a006-46c639ffdb6a": {
+      "id": "edb3686e-a114-5821-a006-46c639ffdb6a",
+      "kind": "resource",
+      "name": "setupProjectsWatcher @ server/index.js",
+      "description": "setupProjectsWatcher (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "eea4912e-1296-522d-b51d-d417ab132440": {
+      "id": "eea4912e-1296-522d-b51d-d417ab132440",
+      "kind": "resource",
+      "name": "normalizeDetectedUrl @ server/index.js",
+      "description": "normalizeDetectedUrl (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "efe5918c-edab-52b5-b78d-6754182b5378": {
+      "id": "efe5918c-edab-52b5-b78d-6754182b5378",
+      "kind": "resource",
+      "name": "fileName @ server/index.js",
+      "description": "fileName (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "f48c8e1f-38e7-5604-af4f-1a123137002d": {
+      "id": "f48c8e1f-38e7-5604-af4f-1a123137002d",
+      "kind": "resource",
+      "name": "resolver @ server/claude-sdk.js",
+      "description": "resolver (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "f48e3fee-dd9f-545a-b798-a870d0d884b5": {
+      "id": "f48e3fee-dd9f-545a-b798-a870d0d884b5",
+      "kind": "resource",
+      "name": "ChatInputControls @ src/components/chat/view/subcomponents/ChatInputControls.tsx",
+      "description": "ChatInputControls (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "f6b696da-4541-57d3-aea9-a1cdfa11f7fe": {
+      "id": "f6b696da-4541-57d3-aea9-a1cdfa11f7fe",
+      "kind": "resource",
+      "name": "ThinkingModeSelector @ src/components/chat/view/subcomponents/ThinkingModeSelector.tsx",
+      "description": "ThinkingModeSelector (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "f77acee3-ddc7-5201-9456-db522d9648c8": {
+      "id": "f77acee3-ddc7-5201-9456-db522d9648c8",
+      "kind": "resource",
+      "name": "PermissionRequestsBanner @ src/components/chat/view/subcomponents/PermissionRequestsBanner.tsx",
+      "description": "PermissionRequestsBanner (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "f881c118-17d6-5b94-be90-35b6d7a9097a": {
+      "id": "f881c118-17d6-5b94-be90-35b6d7a9097a",
+      "kind": "resource",
+      "name": "getNotificationSessionSummary @ src/components/chat/hooks/useChatComposerState.ts",
+      "description": "getNotificationSessionSummary (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "f942a46f-274b-55dd-a92a-21e44dd25e7a": {
+      "id": "f942a46f-274b-55dd-a92a-21e44dd25e7a",
+      "kind": "resource",
+      "name": "Tool Rendering System.onelinedisplay @ src/components/chat/tools/README.md",
+      "description": "onelinedisplay (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "f9eab143-d759-53a1-97cb-a0f8f16f6444": {
+      "id": "f9eab143-d759-53a1-97cb-a0f8f16f6444",
+      "kind": "resource",
+      "name": "prov @ src/components/chat/hooks/useChatSessionState.ts",
+      "description": "This snippet reads the active provider from localStorage (defaulting to 'claude'), normalizes the incoming message via chatMessageToNormalized, and \u2014 if normalization yields a value \u2014 appends it to the active session's realtime stream via sessionStore.appendRealtime.",
+      "version": 1
+    },
+    "fcc7abdd-e37a-5a38-aeb5-d8b7d6a476f2": {
+      "id": "fcc7abdd-e37a-5a38-aeb5-d8b7d6a476f2",
+      "kind": "resource",
+      "name": "fs @ server/index.js",
+      "description": "fs (skeleton only, awaiting LLM extraction)",
+      "version": 1
+    },
+    "fd97ea90-1aa6-5568-a5ee-1081811e3207": {
+      "id": "fd97ea90-1aa6-5568-a5ee-1081811e3207",
+      "kind": "resource",
+      "name": "fetchInitialTokenUsage @ src/components/chat/hooks/useChatSessionState.ts",
+      "description": "fetchInitialTokenUsage() calls the token-usage API endpoint for the active project/session and sets tokenBudget to the parsed result on success, null on a non-ok response, or leaves it unchanged on a thrown exception.",
+      "version": 1
+    },
+    "gwt-0001": {
+      "id": "gwt-0001",
+      "kind": "behavior",
+      "name": "chatmessagespane_renders_each_messagecom",
+      "description": "",
+      "version": 1,
+      "given": "ChatMessagesPane is mapping visibleMessages to MessageComponent elements and an onFork prop has been threaded from the parent",
+      "when": "ChatMessagesPane renders each MessageComponent at array index i",
+      "then": "each MessageComponent receives messageIndex=i and onFork=the threaded onFork callback, in addition to all previously-passed props",
+      "metadata": {
+        "template": "state_machine"
+      }
+    },
+    "gwt-0002": {
+      "id": "gwt-0002",
+      "kind": "behavior",
+      "name": "handleforkfrommessage_reads_the_parent_s",
+      "description": "",
+      "version": 1,
+      "given": "handleForkFromMessage is invoked with a valid messageId (string) and messageIndex (number) while parentSessionId is the current active session in useSessionStore",
+      "when": "handleForkFromMessage reads the parent session's message history",
+      "then": "it calls useSessionStore.getState().sessions.get(parentId).merged.slice(0, messageIndex + 1), producing a slice that includes all messages up to and including the forked message, without mutating the parent session store entry",
+      "metadata": {
+        "template": "state_machine"
+      }
+    },
+    "gwt-0003": {
+      "id": "gwt-0003",
+      "kind": "behavior",
+      "name": "it_dispatches_the_fork_request_over_webs",
+      "description": "",
+      "version": 1,
+      "given": "handleForkFromMessage has generated a new sessionId and resolved all inherited settings from the current composer state",
+      "when": "it dispatches the fork request over WebSocket",
+      "then": "it calls sendMessage with a payload of shape { type: 'claude-command', command: '', options: { ...inheritedSettings, sessionId: newUUID, resume: parentSessionId, forkSession: true, resumeSessionAt: messageId } } \u2014 using the existing 'claude-command' channel with no new WS message type",
+      "metadata": {
+        "template": "state_machine"
+      }
+    },
+    "gwt-0004": {
+      "id": "gwt-0004",
+      "kind": "behavior",
+      "name": "it_builds_the_inheritedsettings_portion",
+      "description": "",
+      "version": 1,
+      "given": "handleForkFromMessage is invoked for a Claude session",
+      "when": "it builds the inheritedSettings portion of the payload",
+      "then": "it reads provider, permissionMode, projectPath, and cwd from the current composer state, and calls getToolsSettings('claude') to retrieve toolsSettings (allowedTools, disallowedTools, skipPermissions) from localStorage \u2014 no settings prompt or dialog is shown",
+      "metadata": {
+        "template": "state_machine"
+      }
+    },
+    "gwt-0005": {
+      "id": "gwt-0005",
+      "kind": "behavior",
+      "name": "it_constructs_sdkoptions",
+      "description": "",
+      "version": 1,
+      "given": "mapCliOptionsToSDK receives an options object where options.resume is a non-empty string (a parent sessionId)",
+      "when": "it constructs sdkOptions",
+      "then": "sdkOptions.resume is set to options.resume \u2014 the resume field is additively copied without altering any other existing field in sdkOptions",
+      "metadata": {
+        "template": "state_machine"
+      }
+    },
+    "gwt-0006": {
+      "id": "gwt-0006",
+      "kind": "behavior",
+      "name": "it_constructs_sdkoptions",
+      "description": "",
+      "version": 1,
+      "given": "mapCliOptionsToSDK receives an options object where options.forkSession === true",
+      "when": "it constructs sdkOptions",
+      "then": "sdkOptions.forkSession is set to true \u2014 the field is additively copied, matching the SDK's forkSession?: boolean contract at sdk.d.ts:663",
+      "metadata": {
+        "template": "state_machine"
+      }
+    },
+    "gwt-0007": {
+      "id": "gwt-0007",
+      "kind": "behavior",
+      "name": "it_constructs_sdkoptions",
+      "description": "",
+      "version": 1,
+      "given": "mapCliOptionsToSDK receives an options object where options.resumeSessionAt is a non-empty UUID string (the SDK assistant message uuid)",
+      "when": "it constructs sdkOptions",
+      "then": "sdkOptions.resumeSessionAt is set to options.resumeSessionAt, matching the SDK's resumeSessionAt?: string contract at sdk.d.ts:840",
+      "metadata": {
+        "template": "state_machine"
+      }
+    },
+    "gwt-0008": {
+      "id": "gwt-0008",
+      "kind": "behavior",
+      "name": "it_constructs_sdkoptions",
+      "description": "",
+      "version": 1,
+      "given": "mapCliOptionsToSDK receives an options object where options.sessionId is set to a UUID string",
+      "when": "it constructs sdkOptions",
+      "then": "sdkOptions.sessionId is set to options.sessionId IF AND ONLY IF options.forkSession is also truthy; when forkSession is absent or false, the caller-supplied sessionId is NOT forwarded into sdkOptions, matching the SDK constraint at sdk.d.ts:834",
+      "metadata": {
+        "template": "state_machine"
+      }
+    },
+    "gwt-0009": {
+      "id": "gwt-0009",
+      "kind": "behavior",
+      "name": "it_constructs_sdkoptions",
+      "description": "",
+      "version": 1,
+      "given": "mapCliOptionsToSDK receives a normal (non-fork) options object that does NOT include resume, forkSession, resumeSessionAt, or sessionId",
+      "when": "it constructs sdkOptions",
+      "then": "sdkOptions is identical to what it produced before this change \u2014 cwd, permissionMode, allowedTools, and disallowedTools are set as before, and no new fork fields appear in the output",
+      "metadata": {
+        "template": "state_machine"
+      }
+    },
+    "gwt-0010": {
+      "id": "gwt-0010",
+      "kind": "behavior",
+      "name": "usechatrealtimehandlers_processes_the_se",
+      "description": "",
+      "version": 1,
+      "given": "the Claude SDK emits a session_created event over WebSocket after processing the fork command, carrying a new sessionId distinct from the parent",
+      "when": "useChatRealtimeHandlers processes the session_created event at line 242",
+      "then": "it calls onNavigateToSession(newSessionId), routing the UI to /session/{newSessionId} \u2014 this handler is reused verbatim with no modifications required",
+      "metadata": {
+        "template": "state_machine"
+      }
+    },
+    "gwt-0011": {
+      "id": "gwt-0011",
+      "kind": "behavior",
+      "name": "the_fork_command_is_dispatched_and_the_n",
+      "description": "",
+      "version": 1,
+      "given": "a fork is initiated from message index N of parent session P",
+      "when": "the fork command is dispatched and the new session is navigated to",
+      "then": "useSessionStore.sessions.get(P).merged still contains all of its original messages unmodified; no append, splice, or clear operation is issued against the parent session slot",
+      "metadata": {
+        "template": "state_machine"
+      }
+    },
+    "gwt-0012": {
+      "id": "gwt-0012",
+      "kind": "behavior",
+      "name": "onnavigatetosession_executes_usechatreal",
+      "description": "",
+      "version": 1,
+      "given": "the user navigates from parent session P to the forked session F via onNavigateToSession",
+      "when": "onNavigateToSession executes (useChatRealtimeHandlers.ts:257)",
+      "then": "localStorage keys 'claude-settings', 'cursor-tools-settings', 'codex-settings', and 'gemini-settings' are not cleared, deleted, or modified \u2014 the new session's composer reads the same settings that were active during the parent session",
+      "metadata": {
+        "template": "state_machine"
+      }
+    },
+    "gwt-0013": {
+      "id": "gwt-0013",
+      "kind": "behavior",
+      "name": "the_async_generator_from_query_is_consum",
+      "description": "",
+      "version": 1,
+      "given": "a server-side smoke-test script posts a fork command with { resume: parentSessionId, forkSession: true, resumeSessionAt: assistantMessageUUID, sessionId: newUUID, cwd } against a real 3-message Claude session",
+      "when": "the async generator from query() is consumed",
+      "then": "(a) events stream back without throwing, (b) at least one event carries a new session_id distinct from the parent, (c) claudeAdapter.normalizeMessage handles each replay event (SDKUserMessageReplay with isReplay:true) without throwing or producing malformed NormalizedMessage objects",
+      "metadata": {
+        "template": "state_machine"
+      }
+    },
+    "gwt-0014": {
+      "id": "gwt-0014",
+      "kind": "behavior",
+      "name": "the_sdk_throws_inside_the_async_generato",
+      "description": "",
+      "version": 1,
+      "given": "mapCliOptionsToSDK forwards a resumeSessionAt value that the Claude SDK rejects (e.g., not a known message UUID, or a synthetic 'claude_' id that slipped through)",
+      "when": "the SDK throws inside the async generator at claude-sdk.js",
+      "then": "the existing catch block at claude-sdk.js:694-706 emits a { kind: 'error' } event over WebSocket \u2014 no new pre-flight validation or error handler is needed; the existing error path covers this case",
+      "metadata": {
+        "template": "state_machine"
+      }
+    },
+    "tpl-0002": {
+      "id": "tpl-0002",
+      "kind": "spec",
+      "name": "gwt-0005_verified_spec",
+      "description": "",
+      "version": 1,
+      "path": "/home/maceo/Dev/cosmic-agent-memory/cc-agent-ui/.cw9/specs/gwt-0005.tla"
+    },
+    "tpl-0004": {
+      "id": "tpl-0004",
+      "kind": "spec",
+      "name": "gwt-0009_verified_spec",
+      "description": "",
+      "version": 1,
+      "path": "/home/maceo/Dev/cosmic-agent-memory/cc-agent-ui/.cw9/specs/gwt-0009.tla"
+    },
+    "tpl-0005": {
+      "id": "tpl-0005",
+      "kind": "spec",
+      "name": "gwt-0013_verified_spec",
+      "description": "",
+      "version": 1,
+      "path": "/home/maceo/Dev/cosmic-agent-memory/cc-agent-ui/.cw9/specs/gwt-0013.tla"
+    },
+    "tpl-0006": {
+      "id": "tpl-0006",
+      "kind": "spec",
+      "name": "gwt-0001_verified_spec",
+      "description": "",
+      "version": 1,
+      "path": "/home/maceo/Dev/cosmic-agent-memory/cc-agent-ui/.cw9/specs/gwt-0001.tla"
+    },
+    "tpl-0007": {
+      "id": "tpl-0007",
+      "kind": "spec",
+      "name": "gwt-0006_verified_spec",
+      "description": "",
+      "version": 1,
+      "path": "/home/maceo/Dev/cosmic-agent-memory/cc-agent-ui/.cw9/specs/gwt-0006.tla"
+    },
+    "tpl-0008": {
+      "id": "tpl-0008",
+      "kind": "spec",
+      "name": "gwt-0007_verified_spec",
+      "description": "",
+      "version": 1,
+      "path": "/home/maceo/Dev/cosmic-agent-memory/cc-agent-ui/.cw9/specs/gwt-0007.tla"
+    }
+  },
+  "edges": [
+    {
+      "from": "gwt-0001",
+      "to": "504685fd-3b95-5103-ad97-fa1c880317a0",
+      "edge_type": "depends_on"
+    },
+    {
+      "from": "gwt-0002",
+      "to": "6f079c95-a27d-53b2-b4c4-81ee71de849b",
+      "edge_type": "depends_on"
+    },
+    {
+      "from": "gwt-0003",
+      "to": "6f079c95-a27d-53b2-b4c4-81ee71de849b",
+      "edge_type": "depends_on"
+    },
+    {
+      "from": "gwt-0003",
+      "to": "2738fdd5-e467-51ae-a41c-9bee89ac48e1",
+      "edge_type": "depends_on"
+    },
+    {
+      "from": "gwt-0004",
+      "to": "6f079c95-a27d-53b2-b4c4-81ee71de849b",
+      "edge_type": "depends_on"
+    },
+    {
+      "from": "gwt-0004",
+      "to": "5d3d883b-5370-5e5a-bfd9-55a3a7cb6201",
+      "edge_type": "depends_on"
+    },
+    {
+      "from": "gwt-0005",
+      "to": "2738fdd5-e467-51ae-a41c-9bee89ac48e1",
+      "edge_type": "depends_on"
+    },
+    {
+      "from": "gwt-0006",
+      "to": "2738fdd5-e467-51ae-a41c-9bee89ac48e1",
+      "edge_type": "depends_on"
+    },
+    {
+      "from": "gwt-0007",
+      "to": "2738fdd5-e467-51ae-a41c-9bee89ac48e1",
+      "edge_type": "depends_on"
+    },
+    {
+      "from": "gwt-0008",
+      "to": "2738fdd5-e467-51ae-a41c-9bee89ac48e1",
+      "edge_type": "depends_on"
+    },
+    {
+      "from": "gwt-0009",
+      "to": "2738fdd5-e467-51ae-a41c-9bee89ac48e1",
+      "edge_type": "depends_on"
+    },
+    {
+      "from": "gwt-0010",
+      "to": "e1e4dc9f-071c-5c68-b83e-65222dab1f3f",
+      "edge_type": "depends_on"
+    },
+    {
+      "from": "gwt-0011",
+      "to": "6f079c95-a27d-53b2-b4c4-81ee71de849b",
+      "edge_type": "depends_on"
+    },
+    {
+      "from": "gwt-0011",
+      "to": "e1e4dc9f-071c-5c68-b83e-65222dab1f3f",
+      "edge_type": "depends_on"
+    },
+    {
+      "from": "gwt-0012",
+      "to": "e1e4dc9f-071c-5c68-b83e-65222dab1f3f",
+      "edge_type": "depends_on"
+    },
+    {
+      "from": "gwt-0012",
+      "to": "5d3d883b-5370-5e5a-bfd9-55a3a7cb6201",
+      "edge_type": "depends_on"
+    },
+    {
+      "from": "gwt-0013",
+      "to": "2738fdd5-e467-51ae-a41c-9bee89ac48e1",
+      "edge_type": "depends_on"
+    },
+    {
+      "from": "gwt-0013",
+      "to": "e1e4dc9f-071c-5c68-b83e-65222dab1f3f",
+      "edge_type": "depends_on"
+    },
+    {
+      "from": "gwt-0014",
+      "to": "2738fdd5-e467-51ae-a41c-9bee89ac48e1",
+      "edge_type": "depends_on"
+    },
+    {
+      "from": "tpl-0002",
+      "to": "gwt-0005",
+      "edge_type": "verifies"
+    },
+    {
+      "from": "tpl-0004",
+      "to": "gwt-0009",
+      "edge_type": "verifies"
+    },
+    {
+      "from": "tpl-0005",
+      "to": "gwt-0013",
+      "edge_type": "verifies"
+    },
+    {
+      "from": "516133a5-83c8-5e01-84a8-5fd58e7939d2",
+      "to": "bee55b34-5d6d-5cf2-9057-8af6233ceb30",
+      "edge_type": "calls"
+    },
+    {
+      "from": "516133a5-83c8-5e01-84a8-5fd58e7939d2",
+      "to": "1f76f7e0-614a-5d81-8190-f771eeb2f788",
+      "edge_type": "calls"
+    },
+    {
+      "from": "516133a5-83c8-5e01-84a8-5fd58e7939d2",
+      "to": "cbaf84d5-e530-58ec-801f-86e65175f2cc",
+      "edge_type": "calls"
+    },
+    {
+      "from": "9c5ef6c9-9dbd-5927-8316-5c6a738663c7",
+      "to": "23aaca07-d65f-57e4-9538-4a978dca6be6",
+      "edge_type": "calls"
+    },
+    {
+      "from": "acb9b6a3-3141-50c6-9844-5e38d57522ab",
+      "to": "9c5ef6c9-9dbd-5927-8316-5c6a738663c7",
+      "edge_type": "calls"
+    },
+    {
+      "from": "e6fd0fee-f4dc-5c3d-9bd0-e495969cf779",
+      "to": "23aaca07-d65f-57e4-9538-4a978dca6be6",
+      "edge_type": "calls"
+    },
+    {
+      "from": "tpl-0006",
+      "to": "gwt-0001",
+      "edge_type": "verifies"
+    },
+    {
+      "from": "tpl-0007",
+      "to": "gwt-0006",
+      "edge_type": "verifies"
+    },
+    {
+      "from": "tpl-0008",
+      "to": "gwt-0007",
+      "edge_type": "verifies"
+    }
+  ],
+  "closure": {
+    "007b8b24-8409-5c8c-855f-04c29f67093f": [],
+    "02ca143f-d3c8-5c89-9caf-f132dce5e77c": [],
+    "02fba0d5-2ba8-5060-8148-9a7d0e8d1f58": [],
+    "03282220-c753-5715-9c5a-c28427ac98a2": [],
+    "0370a9ae-132c-5046-a431-5146f99f1778": [],
+    "0801c5e6-f0f0-529c-8dda-6740d39dc5ac": [],
+    "088b4f7e-ef4a-5d53-933f-c708a8482bea": [],
+    "09755d96-a6a8-5e7a-b6a3-d0a00d3ec9a1": [],
+    "0b3504fa-33f4-53f9-ba83-8f89742537bb": [],
+    "0c88c313-1097-5266-9b88-7b7880e1fb83": [],
+    "0cf5f891-d2b9-5935-b8a8-ff7962659880": [],
+    "103a77aa-2e18-52da-8c29-3f7128782d0b": [],
+    "11d00575-76fc-553a-8bc6-5ff76194572e": [],
+    "1724914f-e62c-5b82-9a8f-35373e47fcc6": [],
+    "1ab3e194-b67f-5f15-815e-136c8e036f88": [],
+    "1e1c990d-20ca-5e51-b0a2-74cf21a0e8b6": [],
+    "1f76f7e0-614a-5d81-8190-f771eeb2f788": [],
+    "2134699a-ed88-590a-9557-affa8ce7856a": [],
+    "21705680-e9ec-5a0f-b855-0e79d2acd17e": [],
+    "23aaca07-d65f-57e4-9538-4a978dca6be6": [],
+    "23ea05b1-affd-5199-9713-04189468610e": [],
+    "264812fe-5689-5ebd-bd15-333d433f2628": [],
+    "2738fdd5-e467-51ae-a41c-9bee89ac48e1": [],
+    "279469eb-e9bd-5edb-b7ab-f3d7e7f7dc6a": [],
+    "2a29ce4b-3749-5e0b-ba21-5849718882a6": [],
+    "2a6cf5c1-355b-5e1f-8180-bd2904289a45": [],
+    "3079effa-49cb-519d-9470-f7d351b738d2": [],
+    "30b18d82-e15a-58b3-ae94-c9b87cf2a2cd": [],
+    "314b103f-a3d8-5028-a0a3-cd1e58fcc223": [],
+    "32fb4586-d643-5e9d-ab82-70a59a1f36c8": [],
+    "37a30d74-cf0c-549a-9b54-ef03c14dff33": [],
+    "3bb2e1a6-428a-52c2-bd69-c4510f04c1b6": [],
+    "3d0c9308-8ac9-520b-8227-c7e5b7b78ec9": [],
+    "3dc96c29-25fa-569e-a583-00bcc2e5f071": [],
+    "3e9c7330-f060-548b-ac56-827df48b4912": [],
+    "3f670782-55d0-59e0-b150-ea0103baea21": [],
+    "434807c5-dd22-5fdc-92ea-c9a7e28ffad0": [],
+    "43e6f516-992e-5e32-b196-b5d9d128ab6d": [],
+    "448b836b-1e67-57aa-a1fd-6ca452a8fb60": [],
+    "4652dfed-a582-50ec-b714-47e28fcfa2ea": [],
+    "467ad815-b519-5405-b577-65e736ff9efc": [],
+    "472719b9-3d69-5249-b86a-d357867c615e": [],
+    "4806833e-922c-5ca7-8f7a-bb19324c95b6": [],
+    "4bd00d0c-5102-57c6-9d5c-71d209c90067": [],
+    "4d7b99e7-c48e-5120-b750-1370d0047199": [],
+    "4f086bb2-a764-5439-939d-5fd15b5fc3a3": [],
+    "500c7e79-69c1-5d1b-ae1f-2187a2ecab39": [],
+    "504685fd-3b95-5103-ad97-fa1c880317a0": [],
+    "516133a5-83c8-5e01-84a8-5fd58e7939d2": [
+      "1f76f7e0-614a-5d81-8190-f771eeb2f788",
+      "bee55b34-5d6d-5cf2-9057-8af6233ceb30",
+      "cbaf84d5-e530-58ec-801f-86e65175f2cc"
+    ],
+    "5208ad2f-0285-5718-8732-1cca0496d930": [],
+    "540db1cc-ce9b-51ca-b93e-ad6b06f44ff3": [],
+    "54280b05-947c-5be2-88f0-99fd566fdce7": [],
+    "5445a99a-acf4-5664-8beb-eea3781a66a5": [],
+    "55ceb070-2387-57e6-a4b3-28194834ac0d": [],
+    "55d0897e-edc5-56dc-ab06-2cb6d6e8065e": [],
+    "596bf5e3-62b7-58f7-9e05-5c18d6a83c75": [],
+    "5a88a34f-0cc7-5af2-b4a6-ba91c84ce110": [],
+    "5a8df866-3a66-5a60-af6a-adb193ac88ba": [],
+    "5cce5566-e378-50a8-8db6-a7c35eb388a7": [],
+    "5d3d883b-5370-5e5a-bfd9-55a3a7cb6201": [],
+    "5dfd542b-7325-5762-ade3-cb24c6678d1f": [],
+    "5f24d1cb-abbb-5118-b8ea-cc0c5144065d": [],
+    "60142880-1f85-5b87-852f-e6f99fd18500": [],
+    "60b6cf6d-b75e-59fc-9c66-f9c5ba5910a6": [],
+    "62299afb-1262-50b6-8de1-217e83093123": [],
+    "656b5c55-8841-5438-8190-666c9be6b631": [],
+    "69b20f4e-b5c7-551e-bf1f-4ecfbb3fa99e": [],
+    "6aacc1dc-c4e3-5c84-a883-757a987c6470": [],
+    "6d8b44d2-666c-50ae-9e2d-56642aa607c1": [],
+    "6f079c95-a27d-53b2-b4c4-81ee71de849b": [],
+    "6fb30b89-f469-520c-9611-9559e44d5764": [],
+    "70960a2d-ff3a-56c4-895b-bd5307f95602": [],
+    "73040388-bd22-5392-a3a7-b427bcfffad1": [],
+    "731df90a-f011-5310-9099-89c1b036aab4": [],
+    "737b9600-e792-52a6-adc7-c60f2010e3e4": [],
+    "774a254e-489b-5e7d-93ad-39b846d1a977": [],
+    "7bd2abd1-be82-5a78-92fe-e95ab25f75f0": [],
+    "7f2fd253-1168-5542-927b-ab647914e285": [],
+    "80264fdf-97a8-532b-bf35-ef80665247bb": [],
+    "809605df-d079-5c33-a80d-e85f3042f640": [],
+    "80fadbc9-6940-58d6-8e98-954588f39e7d": [],
+    "8301df05-4cdb-54e0-a830-625949990e74": [],
+    "8436a87a-5c25-5d37-902e-06517bea79c6": [],
+    "845c9d77-a005-57d3-89e4-c6d76f28f39d": [],
+    "86995fdf-e09f-5e00-aa5b-fdca99818cdb": [],
+    "8726b62e-dc7b-561a-bc5f-423e13d6bada": [],
+    "8b8faf3b-73c5-5c10-945e-2ad3268c4aed": [],
+    "8b9ac100-5e24-56cb-9cd1-6966c892d8bd": [],
+    "8d19337a-2db7-508b-ae2e-d1878b83f23a": [],
+    "8d3c8fe9-d7dc-51fa-ab6d-a5762ac825c4": [],
+    "8df9e358-220b-528a-9562-d44b96a93d05": [],
+    "8f426f7d-7371-5022-9540-2f7a6dfb4eb0": [],
+    "902833f2-1dd1-53e3-ab41-e475bc1534b7": [],
+    "908a4e0b-eabb-59d7-b52f-aa32df455419": [],
+    "91180f75-1dc8-54c7-9421-6ad677b1f032": [],
+    "955e8fe1-d656-5d91-b881-67b9e44c0ed9": [],
+    "97cf6a47-9644-507b-a3b4-2acddd79b073": [],
+    "992025c0-b3c4-5698-809b-2b5f6239fca1": [],
+    "99392e1e-00d2-5600-a856-488087ca71a4": [],
+    "9a7714f4-2e58-5b3b-9ec7-30e3ad59fb5e": [],
+    "9c5ef6c9-9dbd-5927-8316-5c6a738663c7": [
+      "23aaca07-d65f-57e4-9538-4a978dca6be6"
+    ],
+    "9c7991a7-09fe-5ece-a4a6-92bd306d6f48": [],
+    "9dd2f33a-5973-5221-829f-107d9c8ac7f8": [],
+    "9df7bb3e-d4b7-5f6d-86f2-c8557007d6c6": [],
+    "9f3336c8-b633-57a4-a591-f8b1b5c0616a": [],
+    "9ff736b8-a542-536a-9bd9-7d3c20511282": [],
+    "a06ad2e6-d115-54ad-afe1-b2c1c0d061e2": [],
+    "a0f24942-d707-56c2-bd6c-a449c6edd6b1": [],
+    "a3221b48-0603-5d7f-85fa-6433a578a4f6": [],
+    "a3a67626-8ad0-530f-95b7-cbc12826688b": [],
+    "a3f9caa8-90a8-5227-a85d-fb2e4f92e777": [],
+    "a43280bf-bb3e-5cdf-99ca-f9e631b34815": [],
+    "a4e93eff-92f2-5601-a211-6486873b5cd7": [],
+    "a67f6d1c-1eb3-5056-8d5f-33f44b18c86e": [],
+    "a7638696-58c6-5695-9113-52e999fb5397": [],
+    "a89f8cd5-377a-50a3-ab38-b0e7e7ee4714": [],
+    "ac57dc52-4273-5890-8d63-091c7b4d1436": [],
+    "acb9b6a3-3141-50c6-9844-5e38d57522ab": [
+      "23aaca07-d65f-57e4-9538-4a978dca6be6",
+      "9c5ef6c9-9dbd-5927-8316-5c6a738663c7"
+    ],
+    "ad57c926-c8e0-5159-a49a-811009a3001f": [],
+    "ade7e9c4-2645-50b8-b41a-cd981f353b4d": [],
+    "ae635eeb-13c9-5d06-964e-a5e1801010d6": [],
+    "b0adc8af-4e00-5427-b1b5-6f27dc941dad": [],
+    "b0cfacea-9025-5ac3-a2f5-07830f968509": [],
+    "b13ed50d-472a-5164-b52e-6e6c61d13895": [],
+    "b1cadf1b-46d0-541c-9e7c-6b3b877ac65c": [],
+    "b339f112-48d9-53f6-b338-6d3e7e349f93": [],
+    "b49f658e-1643-5fe2-9b0d-8a432a978a4f": [],
+    "b61ba31d-4b8f-5b0c-9fc0-0361ea78ccf0": [],
+    "b99a9e78-cdd6-5549-b5cc-9c85f34ff60b": [],
+    "bbb73d29-7b67-50e8-a3bf-c5484574fafc": [],
+    "bcd30676-2eb7-5a9e-aa19-fa8acb0419db": [],
+    "bee55b34-5d6d-5cf2-9057-8af6233ceb30": [],
+    "c0530f54-dbc5-56f3-88ca-a507eed01c28": [],
+    "c0807d39-e8b3-50b5-a4fb-781f81141694": [],
+    "c1855837-dddc-5551-a31f-125e2429f2a2": [],
+    "c1d92707-ed8b-5ec7-b850-2ce1754a02c4": [],
+    "c2787fc4-f754-5af2-94f8-ec29764c2eec": [],
+    "c7ba9cf7-92e5-5aec-b26f-d30ec5f2c107": [],
+    "c89d00a8-ab90-53b7-8bfc-d854b1874e52": [],
+    "c9c62cec-c8e5-5247-8547-ea3b806f01cd": [],
+    "cbaf84d5-e530-58ec-801f-86e65175f2cc": [],
+    "cd423434-e82d-58fe-96bb-b73308e36e27": [],
+    "ce6b7d19-7fd6-5ebc-957b-70b619bd3baf": [],
+    "ce8c50c5-3f0c-504f-8be8-08b945bce65a": [],
+    "ceab0587-9b68-5d21-ad52-9b287d314559": [],
+    "ceda0d28-1080-552d-99ab-d76e4c872b4f": [],
+    "d23b3236-7e11-5759-971a-10c2723301b5": [],
+    "d4213739-b036-5939-b87a-f597c66dd0b4": [],
+    "d8028687-851c-54a5-b994-2f60273b65ce": [],
+    "d8513e4c-df39-5619-b247-8f0e0fdc08dd": [],
+    "db02c1ea-a5f3-5895-a589-16bd18c9d653": [],
+    "db61e921-edc8-5cdc-bdcf-da37d30e4263": [],
+    "dc192400-25bf-548c-939b-7d47ab889309": [],
+    "dc9c00a7-3a50-5bd3-9956-04c545ef121a": [],
+    "ddbb28b8-c7db-54dc-838b-7151407c9508": [],
+    "ddc8cfd1-3888-570f-b9cd-9daf8f092804": [],
+    "df9ff264-9fcf-5e58-b04e-e09237a78b62": [],
+    "e07b3ace-90a5-57a6-ba79-a9b0c5092bcc": [],
+    "e1e4dc9f-071c-5c68-b83e-65222dab1f3f": [],
+    "e209b89d-997a-5834-a182-541dec63d3d9": [],
+    "e2736afa-4efd-5088-8147-6bd070de2465": [],
+    "e601d653-d51b-58c5-b140-65d5f74a71b2": [],
+    "e62819ca-4aca-5961-a595-8149770e047f": [],
+    "e6fd0fee-f4dc-5c3d-9bd0-e495969cf779": [
+      "23aaca07-d65f-57e4-9538-4a978dca6be6"
+    ],
+    "e7bca0b3-bedb-52af-881c-e270f21a5981": [],
+    "eda02fb1-27b5-5eb1-abba-2f008c4c386c": [],
+    "edb3686e-a114-5821-a006-46c639ffdb6a": [],
+    "eea4912e-1296-522d-b51d-d417ab132440": [],
+    "efe5918c-edab-52b5-b78d-6754182b5378": [],
+    "f48c8e1f-38e7-5604-af4f-1a123137002d": [],
+    "f48e3fee-dd9f-545a-b798-a870d0d884b5": [],
+    "f6b696da-4541-57d3-aea9-a1cdfa11f7fe": [],
+    "f77acee3-ddc7-5201-9456-db522d9648c8": [],
+    "f881c118-17d6-5b94-be90-35b6d7a9097a": [],
+    "f942a46f-274b-55dd-a92a-21e44dd25e7a": [],
+    "f9eab143-d759-53a1-97cb-a0f8f16f6444": [],
+    "fcc7abdd-e37a-5a38-aeb5-d8b7d6a476f2": [],
+    "fd97ea90-1aa6-5568-a5ee-1081811e3207": [],
+    "gwt-0001": [
+      "504685fd-3b95-5103-ad97-fa1c880317a0"
+    ],
+    "gwt-0002": [
+      "6f079c95-a27d-53b2-b4c4-81ee71de849b"
+    ],
+    "gwt-0003": [
+      "2738fdd5-e467-51ae-a41c-9bee89ac48e1",
+      "6f079c95-a27d-53b2-b4c4-81ee71de849b"
+    ],
+    "gwt-0004": [
+      "5d3d883b-5370-5e5a-bfd9-55a3a7cb6201",
+      "6f079c95-a27d-53b2-b4c4-81ee71de849b"
+    ],
+    "gwt-0005": [
+      "2738fdd5-e467-51ae-a41c-9bee89ac48e1"
+    ],
+    "gwt-0006": [
+      "2738fdd5-e467-51ae-a41c-9bee89ac48e1"
+    ],
+    "gwt-0007": [
+      "2738fdd5-e467-51ae-a41c-9bee89ac48e1"
+    ],
+    "gwt-0008": [
+      "2738fdd5-e467-51ae-a41c-9bee89ac48e1"
+    ],
+    "gwt-0009": [
+      "2738fdd5-e467-51ae-a41c-9bee89ac48e1"
+    ],
+    "gwt-0010": [
+      "e1e4dc9f-071c-5c68-b83e-65222dab1f3f"
+    ],
+    "gwt-0011": [
+      "6f079c95-a27d-53b2-b4c4-81ee71de849b",
+      "e1e4dc9f-071c-5c68-b83e-65222dab1f3f"
+    ],
+    "gwt-0012": [
+      "5d3d883b-5370-5e5a-bfd9-55a3a7cb6201",
+      "e1e4dc9f-071c-5c68-b83e-65222dab1f3f"
+    ],
+    "gwt-0013": [
+      "2738fdd5-e467-51ae-a41c-9bee89ac48e1",
+      "e1e4dc9f-071c-5c68-b83e-65222dab1f3f"
+    ],
+    "gwt-0014": [
+      "2738fdd5-e467-51ae-a41c-9bee89ac48e1"
+    ],
+    "tpl-0002": [
+      "2738fdd5-e467-51ae-a41c-9bee89ac48e1",
+      "gwt-0005"
+    ],
+    "tpl-0004": [
+      "2738fdd5-e467-51ae-a41c-9bee89ac48e1",
+      "gwt-0009"
+    ],
+    "tpl-0005": [
+      "2738fdd5-e467-51ae-a41c-9bee89ac48e1",
+      "e1e4dc9f-071c-5c68-b83e-65222dab1f3f",
+      "gwt-0013"
+    ],
+    "tpl-0006": [
+      "504685fd-3b95-5103-ad97-fa1c880317a0",
+      "gwt-0001"
+    ],
+    "tpl-0007": [
+      "2738fdd5-e467-51ae-a41c-9bee89ac48e1",
+      "gwt-0006"
+    ],
+    "tpl-0008": [
+      "2738fdd5-e467-51ae-a41c-9bee89ac48e1",
+      "gwt-0007"
+    ]
+  },
+  "components": {
+    "component-0": [
+      "007b8b24-8409-5c8c-855f-04c29f67093f"
+    ],
+    "component-1": [
+      "02ca143f-d3c8-5c89-9caf-f132dce5e77c"
+    ],
+    "component-10": [
+      "0cf5f891-d2b9-5935-b8a8-ff7962659880"
+    ],
+    "component-100": [
+      "9f3336c8-b633-57a4-a591-f8b1b5c0616a"
+    ],
+    "component-101": [
+      "9ff736b8-a542-536a-9bd9-7d3c20511282"
+    ],
+    "component-102": [
+      "a06ad2e6-d115-54ad-afe1-b2c1c0d061e2"
+    ],
+    "component-103": [
+      "a0f24942-d707-56c2-bd6c-a449c6edd6b1"
+    ],
+    "component-104": [
+      "a3221b48-0603-5d7f-85fa-6433a578a4f6"
+    ],
+    "component-105": [
+      "a3a67626-8ad0-530f-95b7-cbc12826688b"
+    ],
+    "component-106": [
+      "a3f9caa8-90a8-5227-a85d-fb2e4f92e777"
+    ],
+    "component-107": [
+      "a43280bf-bb3e-5cdf-99ca-f9e631b34815"
+    ],
+    "component-108": [
+      "a4e93eff-92f2-5601-a211-6486873b5cd7"
+    ],
+    "component-109": [
+      "a67f6d1c-1eb3-5056-8d5f-33f44b18c86e"
+    ],
+    "component-11": [
+      "103a77aa-2e18-52da-8c29-3f7128782d0b"
+    ],
+    "component-110": [
+      "a7638696-58c6-5695-9113-52e999fb5397"
+    ],
+    "component-111": [
+      "a89f8cd5-377a-50a3-ab38-b0e7e7ee4714"
+    ],
+    "component-112": [
+      "ac57dc52-4273-5890-8d63-091c7b4d1436"
+    ],
+    "component-113": [
+      "ad57c926-c8e0-5159-a49a-811009a3001f"
+    ],
+    "component-114": [
+      "ade7e9c4-2645-50b8-b41a-cd981f353b4d"
+    ],
+    "component-115": [
+      "ae635eeb-13c9-5d06-964e-a5e1801010d6"
+    ],
+    "component-116": [
+      "b0adc8af-4e00-5427-b1b5-6f27dc941dad"
+    ],
+    "component-117": [
+      "b0cfacea-9025-5ac3-a2f5-07830f968509"
+    ],
+    "component-118": [
+      "b13ed50d-472a-5164-b52e-6e6c61d13895"
+    ],
+    "component-119": [
+      "b1cadf1b-46d0-541c-9e7c-6b3b877ac65c"
+    ],
+    "component-12": [
+      "11d00575-76fc-553a-8bc6-5ff76194572e"
+    ],
+    "component-120": [
+      "b339f112-48d9-53f6-b338-6d3e7e349f93"
+    ],
+    "component-121": [
+      "b49f658e-1643-5fe2-9b0d-8a432a978a4f"
+    ],
+    "component-122": [
+      "b61ba31d-4b8f-5b0c-9fc0-0361ea78ccf0"
+    ],
+    "component-123": [
+      "b99a9e78-cdd6-5549-b5cc-9c85f34ff60b"
+    ],
+    "component-124": [
+      "bbb73d29-7b67-50e8-a3bf-c5484574fafc"
+    ],
+    "component-125": [
+      "bcd30676-2eb7-5a9e-aa19-fa8acb0419db"
+    ],
+    "component-126": [
+      "c0530f54-dbc5-56f3-88ca-a507eed01c28"
+    ],
+    "component-127": [
+      "c0807d39-e8b3-50b5-a4fb-781f81141694"
+    ],
+    "component-128": [
+      "c1855837-dddc-5551-a31f-125e2429f2a2"
+    ],
+    "component-129": [
+      "c1d92707-ed8b-5ec7-b850-2ce1754a02c4"
+    ],
+    "component-13": [
+      "1724914f-e62c-5b82-9a8f-35373e47fcc6"
+    ],
+    "component-130": [
+      "c2787fc4-f754-5af2-94f8-ec29764c2eec"
+    ],
+    "component-131": [
+      "c7ba9cf7-92e5-5aec-b26f-d30ec5f2c107"
+    ],
+    "component-132": [
+      "c89d00a8-ab90-53b7-8bfc-d854b1874e52"
+    ],
+    "component-133": [
+      "c9c62cec-c8e5-5247-8547-ea3b806f01cd"
+    ],
+    "component-134": [
+      "cd423434-e82d-58fe-96bb-b73308e36e27"
+    ],
+    "component-135": [
+      "ce6b7d19-7fd6-5ebc-957b-70b619bd3baf"
+    ],
+    "component-136": [
+      "ce8c50c5-3f0c-504f-8be8-08b945bce65a"
+    ],
+    "component-137": [
+      "ceab0587-9b68-5d21-ad52-9b287d314559"
+    ],
+    "component-138": [
+      "ceda0d28-1080-552d-99ab-d76e4c872b4f"
+    ],
+    "component-139": [
+      "d23b3236-7e11-5759-971a-10c2723301b5"
+    ],
+    "component-14": [
+      "1ab3e194-b67f-5f15-815e-136c8e036f88"
+    ],
+    "component-140": [
+      "d4213739-b036-5939-b87a-f597c66dd0b4"
+    ],
+    "component-141": [
+      "d8028687-851c-54a5-b994-2f60273b65ce"
+    ],
+    "component-142": [
+      "d8513e4c-df39-5619-b247-8f0e0fdc08dd"
+    ],
+    "component-143": [
+      "db02c1ea-a5f3-5895-a589-16bd18c9d653"
+    ],
+    "component-144": [
+      "db61e921-edc8-5cdc-bdcf-da37d30e4263"
+    ],
+    "component-145": [
+      "dc192400-25bf-548c-939b-7d47ab889309"
+    ],
+    "component-146": [
+      "dc9c00a7-3a50-5bd3-9956-04c545ef121a"
+    ],
+    "component-147": [
+      "ddbb28b8-c7db-54dc-838b-7151407c9508"
+    ],
+    "component-148": [
+      "ddc8cfd1-3888-570f-b9cd-9daf8f092804"
+    ],
+    "component-149": [
+      "df9ff264-9fcf-5e58-b04e-e09237a78b62"
+    ],
+    "component-15": [
+      "1e1c990d-20ca-5e51-b0a2-74cf21a0e8b6"
+    ],
+    "component-150": [
+      "e07b3ace-90a5-57a6-ba79-a9b0c5092bcc"
+    ],
+    "component-151": [
+      "e209b89d-997a-5834-a182-541dec63d3d9"
+    ],
+    "component-152": [
+      "e2736afa-4efd-5088-8147-6bd070de2465"
+    ],
+    "component-153": [
+      "e601d653-d51b-58c5-b140-65d5f74a71b2"
+    ],
+    "component-154": [
+      "e62819ca-4aca-5961-a595-8149770e047f"
+    ],
+    "component-155": [
+      "e7bca0b3-bedb-52af-881c-e270f21a5981"
+    ],
+    "component-156": [
+      "eda02fb1-27b5-5eb1-abba-2f008c4c386c"
+    ],
+    "component-157": [
+      "edb3686e-a114-5821-a006-46c639ffdb6a"
+    ],
+    "component-158": [
+      "eea4912e-1296-522d-b51d-d417ab132440"
+    ],
+    "component-159": [
+      "efe5918c-edab-52b5-b78d-6754182b5378"
+    ],
+    "component-16": [
+      "1f76f7e0-614a-5d81-8190-f771eeb2f788",
+      "516133a5-83c8-5e01-84a8-5fd58e7939d2",
+      "bee55b34-5d6d-5cf2-9057-8af6233ceb30",
+      "cbaf84d5-e530-58ec-801f-86e65175f2cc"
+    ],
+    "component-160": [
+      "f48c8e1f-38e7-5604-af4f-1a123137002d"
+    ],
+    "component-161": [
+      "f48e3fee-dd9f-545a-b798-a870d0d884b5"
+    ],
+    "component-162": [
+      "f6b696da-4541-57d3-aea9-a1cdfa11f7fe"
+    ],
+    "component-163": [
+      "f77acee3-ddc7-5201-9456-db522d9648c8"
+    ],
+    "component-164": [
+      "f881c118-17d6-5b94-be90-35b6d7a9097a"
+    ],
+    "component-165": [
+      "f942a46f-274b-55dd-a92a-21e44dd25e7a"
+    ],
+    "component-166": [
+      "f9eab143-d759-53a1-97cb-a0f8f16f6444"
+    ],
+    "component-167": [
+      "fcc7abdd-e37a-5a38-aeb5-d8b7d6a476f2"
+    ],
+    "component-168": [
+      "fd97ea90-1aa6-5568-a5ee-1081811e3207"
+    ],
+    "component-17": [
+      "2134699a-ed88-590a-9557-affa8ce7856a"
+    ],
+    "component-18": [
+      "21705680-e9ec-5a0f-b855-0e79d2acd17e"
+    ],
+    "component-19": [
+      "23aaca07-d65f-57e4-9538-4a978dca6be6",
+      "9c5ef6c9-9dbd-5927-8316-5c6a738663c7",
+      "acb9b6a3-3141-50c6-9844-5e38d57522ab",
+      "e6fd0fee-f4dc-5c3d-9bd0-e495969cf779"
+    ],
+    "component-2": [
+      "02fba0d5-2ba8-5060-8148-9a7d0e8d1f58"
+    ],
+    "component-20": [
+      "23ea05b1-affd-5199-9713-04189468610e"
+    ],
+    "component-21": [
+      "264812fe-5689-5ebd-bd15-333d433f2628"
+    ],
+    "component-22": [
+      "2738fdd5-e467-51ae-a41c-9bee89ac48e1",
+      "5d3d883b-5370-5e5a-bfd9-55a3a7cb6201",
+      "6f079c95-a27d-53b2-b4c4-81ee71de849b",
+      "e1e4dc9f-071c-5c68-b83e-65222dab1f3f",
+      "gwt-0002",
+      "gwt-0003",
+      "gwt-0004",
+      "gwt-0005",
+      "gwt-0006",
+      "gwt-0007",
+      "gwt-0008",
+      "gwt-0009",
+      "gwt-0010",
+      "gwt-0011",
+      "gwt-0012",
+      "gwt-0013",
+      "gwt-0014",
+      "tpl-0002",
+      "tpl-0004",
+      "tpl-0005",
+      "tpl-0007",
+      "tpl-0008"
+    ],
+    "component-23": [
+      "279469eb-e9bd-5edb-b7ab-f3d7e7f7dc6a"
+    ],
+    "component-24": [
+      "2a29ce4b-3749-5e0b-ba21-5849718882a6"
+    ],
+    "component-25": [
+      "2a6cf5c1-355b-5e1f-8180-bd2904289a45"
+    ],
+    "component-26": [
+      "3079effa-49cb-519d-9470-f7d351b738d2"
+    ],
+    "component-27": [
+      "30b18d82-e15a-58b3-ae94-c9b87cf2a2cd"
+    ],
+    "component-28": [
+      "314b103f-a3d8-5028-a0a3-cd1e58fcc223"
+    ],
+    "component-29": [
+      "32fb4586-d643-5e9d-ab82-70a59a1f36c8"
+    ],
+    "component-3": [
+      "03282220-c753-5715-9c5a-c28427ac98a2"
+    ],
+    "component-30": [
+      "37a30d74-cf0c-549a-9b54-ef03c14dff33"
+    ],
+    "component-31": [
+      "3bb2e1a6-428a-52c2-bd69-c4510f04c1b6"
+    ],
+    "component-32": [
+      "3d0c9308-8ac9-520b-8227-c7e5b7b78ec9"
+    ],
+    "component-33": [
+      "3dc96c29-25fa-569e-a583-00bcc2e5f071"
+    ],
+    "component-34": [
+      "3e9c7330-f060-548b-ac56-827df48b4912"
+    ],
+    "component-35": [
+      "3f670782-55d0-59e0-b150-ea0103baea21"
+    ],
+    "component-36": [
+      "434807c5-dd22-5fdc-92ea-c9a7e28ffad0"
+    ],
+    "component-37": [
+      "43e6f516-992e-5e32-b196-b5d9d128ab6d"
+    ],
+    "component-38": [
+      "448b836b-1e67-57aa-a1fd-6ca452a8fb60"
+    ],
+    "component-39": [
+      "4652dfed-a582-50ec-b714-47e28fcfa2ea"
+    ],
+    "component-4": [
+      "0370a9ae-132c-5046-a431-5146f99f1778"
+    ],
+    "component-40": [
+      "467ad815-b519-5405-b577-65e736ff9efc"
+    ],
+    "component-41": [
+      "472719b9-3d69-5249-b86a-d357867c615e"
+    ],
+    "component-42": [
+      "4806833e-922c-5ca7-8f7a-bb19324c95b6"
+    ],
+    "component-43": [
+      "4bd00d0c-5102-57c6-9d5c-71d209c90067"
+    ],
+    "component-44": [
+      "4d7b99e7-c48e-5120-b750-1370d0047199"
+    ],
+    "component-45": [
+      "4f086bb2-a764-5439-939d-5fd15b5fc3a3"
+    ],
+    "component-46": [
+      "500c7e79-69c1-5d1b-ae1f-2187a2ecab39"
+    ],
+    "component-47": [
+      "504685fd-3b95-5103-ad97-fa1c880317a0",
+      "gwt-0001",
+      "tpl-0006"
+    ],
+    "component-48": [
+      "5208ad2f-0285-5718-8732-1cca0496d930"
+    ],
+    "component-49": [
+      "540db1cc-ce9b-51ca-b93e-ad6b06f44ff3"
+    ],
+    "component-5": [
+      "0801c5e6-f0f0-529c-8dda-6740d39dc5ac"
+    ],
+    "component-50": [
+      "54280b05-947c-5be2-88f0-99fd566fdce7"
+    ],
+    "component-51": [
+      "5445a99a-acf4-5664-8beb-eea3781a66a5"
+    ],
+    "component-52": [
+      "55ceb070-2387-57e6-a4b3-28194834ac0d"
+    ],
+    "component-53": [
+      "55d0897e-edc5-56dc-ab06-2cb6d6e8065e"
+    ],
+    "component-54": [
+      "596bf5e3-62b7-58f7-9e05-5c18d6a83c75"
+    ],
+    "component-55": [
+      "5a88a34f-0cc7-5af2-b4a6-ba91c84ce110"
+    ],
+    "component-56": [
+      "5a8df866-3a66-5a60-af6a-adb193ac88ba"
+    ],
+    "component-57": [
+      "5cce5566-e378-50a8-8db6-a7c35eb388a7"
+    ],
+    "component-58": [
+      "5dfd542b-7325-5762-ade3-cb24c6678d1f"
+    ],
+    "component-59": [
+      "5f24d1cb-abbb-5118-b8ea-cc0c5144065d"
+    ],
+    "component-6": [
+      "088b4f7e-ef4a-5d53-933f-c708a8482bea"
+    ],
+    "component-60": [
+      "60142880-1f85-5b87-852f-e6f99fd18500"
+    ],
+    "component-61": [
+      "60b6cf6d-b75e-59fc-9c66-f9c5ba5910a6"
+    ],
+    "component-62": [
+      "62299afb-1262-50b6-8de1-217e83093123"
+    ],
+    "component-63": [
+      "656b5c55-8841-5438-8190-666c9be6b631"
+    ],
+    "component-64": [
+      "69b20f4e-b5c7-551e-bf1f-4ecfbb3fa99e"
+    ],
+    "component-65": [
+      "6aacc1dc-c4e3-5c84-a883-757a987c6470"
+    ],
+    "component-66": [
+      "6d8b44d2-666c-50ae-9e2d-56642aa607c1"
+    ],
+    "component-67": [
+      "6fb30b89-f469-520c-9611-9559e44d5764"
+    ],
+    "component-68": [
+      "70960a2d-ff3a-56c4-895b-bd5307f95602"
+    ],
+    "component-69": [
+      "73040388-bd22-5392-a3a7-b427bcfffad1"
+    ],
+    "component-7": [
+      "09755d96-a6a8-5e7a-b6a3-d0a00d3ec9a1"
+    ],
+    "component-70": [
+      "731df90a-f011-5310-9099-89c1b036aab4"
+    ],
+    "component-71": [
+      "737b9600-e792-52a6-adc7-c60f2010e3e4"
+    ],
+    "component-72": [
+      "774a254e-489b-5e7d-93ad-39b846d1a977"
+    ],
+    "component-73": [
+      "7bd2abd1-be82-5a78-92fe-e95ab25f75f0"
+    ],
+    "component-74": [
+      "7f2fd253-1168-5542-927b-ab647914e285"
+    ],
+    "component-75": [
+      "80264fdf-97a8-532b-bf35-ef80665247bb"
+    ],
+    "component-76": [
+      "809605df-d079-5c33-a80d-e85f3042f640"
+    ],
+    "component-77": [
+      "80fadbc9-6940-58d6-8e98-954588f39e7d"
+    ],
+    "component-78": [
+      "8301df05-4cdb-54e0-a830-625949990e74"
+    ],
+    "component-79": [
+      "8436a87a-5c25-5d37-902e-06517bea79c6"
+    ],
+    "component-8": [
+      "0b3504fa-33f4-53f9-ba83-8f89742537bb"
+    ],
+    "component-80": [
+      "845c9d77-a005-57d3-89e4-c6d76f28f39d"
+    ],
+    "component-81": [
+      "86995fdf-e09f-5e00-aa5b-fdca99818cdb"
+    ],
+    "component-82": [
+      "8726b62e-dc7b-561a-bc5f-423e13d6bada"
+    ],
+    "component-83": [
+      "8b8faf3b-73c5-5c10-945e-2ad3268c4aed"
+    ],
+    "component-84": [
+      "8b9ac100-5e24-56cb-9cd1-6966c892d8bd"
+    ],
+    "component-85": [
+      "8d19337a-2db7-508b-ae2e-d1878b83f23a"
+    ],
+    "component-86": [
+      "8d3c8fe9-d7dc-51fa-ab6d-a5762ac825c4"
+    ],
+    "component-87": [
+      "8df9e358-220b-528a-9562-d44b96a93d05"
+    ],
+    "component-88": [
+      "8f426f7d-7371-5022-9540-2f7a6dfb4eb0"
+    ],
+    "component-89": [
+      "902833f2-1dd1-53e3-ab41-e475bc1534b7"
+    ],
+    "component-9": [
+      "0c88c313-1097-5266-9b88-7b7880e1fb83"
+    ],
+    "component-90": [
+      "908a4e0b-eabb-59d7-b52f-aa32df455419"
+    ],
+    "component-91": [
+      "91180f75-1dc8-54c7-9421-6ad677b1f032"
+    ],
+    "component-92": [
+      "955e8fe1-d656-5d91-b881-67b9e44c0ed9"
+    ],
+    "component-93": [
+      "97cf6a47-9644-507b-a3b4-2acddd79b073"
+    ],
+    "component-94": [
+      "992025c0-b3c4-5698-809b-2b5f6239fca1"
+    ],
+    "component-95": [
+      "99392e1e-00d2-5600-a856-488087ca71a4"
+    ],
+    "component-96": [
+      "9a7714f4-2e58-5b3b-9ec7-30e3ad59fb5e"
+    ],
+    "component-97": [
+      "9c7991a7-09fe-5ece-a4a6-92bd306d6f48"
+    ],
+    "component-98": [
+      "9dd2f33a-5973-5221-829f-107d9c8ac7f8"
+    ],
+    "component-99": [
+      "9df7bb3e-d4b7-5f6d-86f2-c8557007d6c6"
+    ]
+  }
+}

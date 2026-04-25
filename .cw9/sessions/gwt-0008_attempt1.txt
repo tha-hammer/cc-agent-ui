@@ -1,0 +1,144 @@
+---- MODULE GWT0008ForkSessionId ----
+
+EXTENDS TLC
+
+CONSTANTS UUID_A, UUID_B
+
+(*--algorithm GWT0008ForkSessionId
+
+variables
+    sessionIdPresent    \in BOOLEAN,
+    forkSessionTrue     \in BOOLEAN,
+    resumePresent       \in BOOLEAN,
+    out_sessionId_set   = FALSE,
+    out_forkSession_set = FALSE,
+    out_resume_set      = FALSE,
+    phase               = "Init";
+
+define
+
+    SessionIdGatedByFork ==
+        out_sessionId_set =>
+            (forkSessionTrue /\ sessionIdPresent)
+
+    NoLeakWithoutFork ==
+        (sessionIdPresent /\ ~forkSessionTrue) => ~out_sessionId_set
+
+    ForkFieldPropagated ==
+        out_sessionId_set => out_forkSession_set
+
+    LegacyResumePreserved ==
+        (phase = "Complete" /\ sessionIdPresent /\ ~forkSessionTrue) =>
+            out_resume_set
+
+    AllInvariants ==
+        /\ SessionIdGatedByFork
+        /\ NoLeakWithoutFork
+        /\ ForkFieldPropagated
+        /\ LegacyResumePreserved
+
+end define;
+
+fair process mapper = "mapper"
+begin
+    MapForkFields:
+        if forkSessionTrue /\ sessionIdPresent then
+            out_sessionId_set   := TRUE;
+            out_forkSession_set := TRUE;
+        else
+            out_sessionId_set := FALSE;
+        end if;
+    MapResume:
+        if ~forkSessionTrue /\ sessionIdPresent then
+            out_resume_set := TRUE;
+        elsif resumePresent then
+            out_resume_set := TRUE;
+        end if;
+    Finish:
+        phase := "Complete";
+end process;
+
+end algorithm; *)
+
+\* GWT0008ForkSessionId.cfg
+\* CONSTANT UUID_A = "uuid-a"
+\* CONSTANT UUID_B = "uuid-b"
+\* SPECIFICATION Spec
+\* INVARIANT SessionIdGatedByFork
+\* INVARIANT NoLeakWithoutFork
+\* INVARIANT ForkFieldPropagated
+\* INVARIANT LegacyResumePreserved
+
+====
+---- MODULE GWT0008ForkSessionId ----
+
+EXTENDS TLC
+
+CONSTANTS UUID_A, UUID_B
+
+(*--algorithm GWT0008ForkSessionId
+
+variables
+    sessionIdPresent    \in BOOLEAN,
+    forkSessionTrue     \in BOOLEAN,
+    resumePresent       \in BOOLEAN,
+    out_sessionId_set   = FALSE,
+    out_forkSession_set = FALSE,
+    out_resume_set      = FALSE,
+    phase               = "Init";
+
+define
+
+    SessionIdGatedByFork ==
+        out_sessionId_set =>
+            (forkSessionTrue /\ sessionIdPresent)
+
+    NoLeakWithoutFork ==
+        (sessionIdPresent /\ ~forkSessionTrue) => ~out_sessionId_set
+
+    ForkFieldPropagated ==
+        out_sessionId_set => out_forkSession_set
+
+    LegacyResumePreserved ==
+        (phase = "Complete" /\ sessionIdPresent /\ ~forkSessionTrue) =>
+            out_resume_set
+
+    AllInvariants ==
+        /\ SessionIdGatedByFork
+        /\ NoLeakWithoutFork
+        /\ ForkFieldPropagated
+        /\ LegacyResumePreserved
+
+end define;
+
+fair process mapper = "mapper"
+begin
+    MapForkFields:
+        if forkSessionTrue /\ sessionIdPresent then
+            out_sessionId_set   := TRUE;
+            out_forkSession_set := TRUE;
+        else
+            out_sessionId_set := FALSE;
+        end if;
+    MapResume:
+        if ~forkSessionTrue /\ sessionIdPresent then
+            out_resume_set := TRUE;
+        elsif resumePresent then
+            out_resume_set := TRUE;
+        end if;
+    Finish:
+        phase := "Complete";
+end process;
+
+end algorithm; *)
+
+\* GWT0008ForkSessionId.cfg
+\* CONSTANT UUID_A = "uuid-a"
+\* CONSTANT UUID_B = "uuid-b"
+\* SPECIFICATION Spec
+\* INVARIANT SessionIdGatedByFork
+\* INVARIANT NoLeakWithoutFork
+\* INVARIANT ForkFieldPropagated
+\* INVARIANT LegacyResumePreserved
+
+====
