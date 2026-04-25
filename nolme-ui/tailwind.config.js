@@ -13,14 +13,21 @@ export default {
           300: '#c4bbff',
           400: '#8470ff',
           500: '#4f3ed6',
+          550: '#6550f0',
           600: '#3c2eb8',
+          900: '#1e1663',
         },
+        'nolme-border-input': '#c8c8d6',
         'nolme-amber': {
           100: '#fff6e7',
           200: '#feefd0',
           300: '#ffd89a',
           400: '#f9a832',
           500: '#e8900a',
+        },
+        'nolme-yellow': {
+          50: '#fffbeb',
+          600: '#d97706',
         },
         'nolme-emerald': {
           100: '#e9f9f1',

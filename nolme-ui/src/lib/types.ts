@@ -71,6 +71,8 @@ export interface NolmeAgentState {
   taskNotifications: NolmeTaskNotification[];
 }
 
+export type NolmeAgentStateLike = NolmeAgentState & Record<string, unknown>;
+
 export const DEFAULT_NOLME_AGENT_STATE: NolmeAgentState = Object.freeze({
   schemaVersion: 1,
   phases: [],

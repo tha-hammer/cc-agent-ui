@@ -5,9 +5,12 @@ import express from 'express';
 // Stub the CopilotKit runtime at module-load so no real CopilotRuntime
 // instantiation happens (it tries to bind GraphQL schema). The route module
 // under test only needs to call the stubbed factories and wire up middleware.
-const copilotHandler = vi.fn(async (_req: any, res: any) => {
-  res.status(200).json({ ok: true, hit: 'copilot' });
-});
+const { copilotHandler, runtimeConstructorOptions } = vi.hoisted(() => ({
+  copilotHandler: vi.fn(async (_req: any, res: any) => {
+    res.status(200).json({ ok: true, hit: 'copilot' });
+  }),
+  runtimeConstructorOptions: [] as any[],
+}));
 
 // Mock @copilotkit/runtime/v2: createCopilotExpressHandler returns a real
 // Express Router whose sole middleware forwards every request to our spy
@@ -16,12 +19,19 @@ const copilotHandler = vi.fn(async (_req: any, res: any) => {
 import express from 'express';
 
 vi.mock('@copilotkit/runtime/v2', () => {
+  class StubInMemoryAgentRunner {
+    run() { /* stubbed */ }
+    connect() { /* stubbed */ }
+  }
   class StubCopilotRuntime {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    constructor(_opts: any) { /* stubbed */ }
+    constructor(opts: any) {
+      runtimeConstructorOptions.push(opts);
+    }
   }
   return {
     CopilotRuntime: StubCopilotRuntime,
+    InMemoryAgentRunner: StubInMemoryAgentRunner,
     createCopilotExpressHandler: () => {
       const router = express.Router();
       router.use((req, res) => copilotHandler(req, res));
@@ -51,7 +61,7 @@ function fakeAuth(req: any, res: any, next: () => void) {
   if (token !== 'good-token') {
     return res.status(403).json({ error: 'bad token' });
   }
-  req.user = { id: 'u1' };
+  req.user = { id: 42 };
   next();
 }
 
@@ -102,6 +112,26 @@ describe('mountCopilotKit — authenticated route (Phase 1 · B10)', () => {
     });
     expect(res.status).toBe(200);
     expect(copilotHandler).toHaveBeenCalledTimes(1);
+  });
+
+  it('threads authenticated req.user.id into the CopilotKit request headers', async () => {
+    copilotHandler.mockClear();
+    const res = await fetch(`http://127.0.0.1:${port}/api/copilotkit/agent/ccu/run`, {
+      method: 'POST',
+      headers: { Authorization: 'Bearer good-token' },
+    });
+
+    expect(res.status).toBe(200);
+    expect(copilotHandler).toHaveBeenCalledTimes(1);
+    expect(copilotHandler.mock.calls[0][0].headers['x-cc-user-id']).toBe('42');
+  });
+
+  it('installs a custom runner so connect replay can be filtered defensively', async () => {
+    expect(runtimeConstructorOptions.length).toBeGreaterThan(0);
+    const latestOptions = runtimeConstructorOptions.at(-1);
+    expect(latestOptions?.runner).toBeDefined();
+    expect(typeof latestOptions?.runner?.run).toBe('function');
+    expect(typeof latestOptions?.runner?.connect).toBe('function');
   });
 
   it('dispatches every sub-path under /api/copilotkit (connect, stop, …)', async () => {

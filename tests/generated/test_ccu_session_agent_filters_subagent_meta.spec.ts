@@ -19,7 +19,7 @@ const claudeBinding = {
   sessionId: 'primary-s1',
   projectName: '-abs-foo',
   projectPath: '/abs/foo',
-  model: 'claude-sonnet-4-6',
+  model: 'sonnet',
   permissionMode: 'default' as const,
   toolsSettings: { allowedTools: [], disallowedTools: [], skipPermissions: false },
 };

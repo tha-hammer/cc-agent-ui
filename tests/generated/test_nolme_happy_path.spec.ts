@@ -85,7 +85,7 @@ const binding = {
   sessionId: 's-e2e',
   projectName: '-home-x',
   projectPath: '/home/x',
-  model: 'claude-sonnet-4-6',
+  model: 'sonnet',
   permissionMode: 'default' as const,
   toolsSettings: { allowedTools: [], disallowedTools: [], skipPermissions: false },
 };

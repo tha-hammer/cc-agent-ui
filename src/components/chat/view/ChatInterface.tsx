@@ -10,7 +10,9 @@ import { useChatProviderState } from '../hooks/useChatProviderState';
 import { useChatSessionState } from '../hooks/useChatSessionState';
 import { useChatRealtimeHandlers } from '../hooks/useChatRealtimeHandlers';
 import { useChatComposerState } from '../hooks/useChatComposerState';
+import { useSessionBroadcast } from '../../../hooks/useSessionBroadcast';
 import { useSessionStore } from '../../../stores/useSessionStore';
+import { readStoredToolsSettings } from '../../../utils/nolmeLaunch';
 import ChatMessagesPane from './subcomponents/ChatMessagesPane';
 import ChatComposer from './subcomponents/ChatComposer';
 
@@ -115,6 +117,24 @@ function ChatInterface({
   } = useChatProviderState({
     selectedSession,
   });
+
+  const activeModel =
+    provider === 'cursor'
+      ? cursorModel
+      : provider === 'codex'
+        ? codexModel
+        : provider === 'gemini'
+          ? geminiModel
+          : claudeModel;
+
+  useSessionBroadcast(
+    selectedProject ?? null,
+    selectedSession ?? null,
+    provider,
+    activeModel,
+    permissionMode,
+    readStoredToolsSettings(provider),
+  );
 
   const {
     chatMessages,

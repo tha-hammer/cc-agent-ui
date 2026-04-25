@@ -41,7 +41,7 @@ const claudeBinding = {
   sessionId: 's-abc',
   projectName: '-home-maceo-Dev-temp-testing',
   projectPath: '/home/maceo/Dev/temp_testing',
-  model: 'claude-sonnet-4-6',
+  model: 'sonnet',
 };
 
 function buildInput(overrides: object = {}) {

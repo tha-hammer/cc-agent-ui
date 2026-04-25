@@ -22,7 +22,11 @@ describe('ag-ui-event-translator — full MessageKind coverage (Phase 1 · B4)',
     expect((events[1] as any).delta).toBe('Hi');
   });
 
-  it('thinking frame emits TEXT_MESSAGE_* with thinking flag', () => {
+  it('thinking frame emits a regular assistant text triad', () => {
+    // Algorithm-mode and long-form Silmari output arrive as `thinking` frames
+    // from the SDK. They must reach Nolme's CopilotKit message store; we emit
+    // a plain assistant text triad (no `thinking` flag) so the content lands
+    // as a normal assistant message and renders via NolmeAssistantMessage.
     const c = createCursor({ primarySessionId: P });
     const events = translate({ kind: 'thinking', content: 'pondering...', sessionId: P }, c);
     expect(events.map((e) => e.type)).toEqual([
@@ -30,7 +34,9 @@ describe('ag-ui-event-translator — full MessageKind coverage (Phase 1 · B4)',
       'TEXT_MESSAGE_CONTENT',
       'TEXT_MESSAGE_END',
     ]);
-    expect((events[0] as any).thinking).toBe(true);
+    expect((events[0] as any).role).toBe('assistant');
+    expect((events[0] as any).thinking).toBeUndefined();
+    expect((events[1] as any).delta).toBe('pondering...');
   });
 
   it('tool_use frame emits TOOL_CALL_START + TOOL_CALL_ARGS', () => {
@@ -83,12 +89,12 @@ describe('ag-ui-event-translator — full MessageKind coverage (Phase 1 · B4)',
     expect((events[0] as any).toolCallId).toBe('perm_req-1');
   });
 
-  it('status with active tool emits TOOL_CALL_ARGS on that tool', () => {
+  it('status with active tool emits TOOL_CALL_ARGS and still patches shared state', () => {
     const c = createCursor({ primarySessionId: P });
     // Open a tool call first
     translate({ kind: 'tool_use', toolId: 't1', toolName: 'Bash', toolInput: {}, sessionId: P }, c);
     const events = translate({ kind: 'status', text: 'running...', sessionId: P }, c);
-    expect(events.map((e) => e.type)).toEqual(['TOOL_CALL_ARGS']);
+    expect(events.map((e) => e.type)).toEqual(['TOOL_CALL_ARGS', 'STATE_DELTA']);
     expect((events[0] as any).toolCallId).toBe('t1');
   });
 

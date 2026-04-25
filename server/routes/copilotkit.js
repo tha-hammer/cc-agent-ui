@@ -21,13 +21,30 @@
 
 import { CopilotRuntime, createCopilotExpressHandler } from '@copilotkit/runtime/v2';
 import { CcuSessionAgent } from '../agents/ccu-session-agent.js';
+import { SafeInMemoryAgentRunner } from '../lib/safe-in-memory-agent-runner.js';
 
 let _router = null;
+const runner = new SafeInMemoryAgentRunner();
+
+function parseAuthenticatedUserId(value) {
+  const parsed = Number.parseInt(String(value ?? ''), 10);
+  return Number.isInteger(parsed) ? parsed : null;
+}
 
 function getRouter() {
   if (_router) return _router;
   const runtime = new CopilotRuntime({
-    agents: { ccu: new CcuSessionAgent({ agentId: 'ccu', description: 'cc-agent-ui session wrapper' }) },
+    runner,
+    agents: ({ request }) => {
+      const userId = parseAuthenticatedUserId(request.headers.get('x-cc-user-id'));
+      return {
+        ccu: new CcuSessionAgent({
+          agentId: 'ccu',
+          description: 'cc-agent-ui session wrapper',
+          userId,
+        }),
+      };
+    },
   });
   // Mode + basePath geometry explained:
   //
@@ -63,5 +80,11 @@ function getRouter() {
  * @param {import('express').Application} app
  */
 export function mountCopilotKit(app) {
-  app.use('/api/copilotkit', getRouter());
+  app.use('/api/copilotkit', (req, _res, next) => {
+    const userId = parseAuthenticatedUserId(req.user?.id);
+    if (userId !== null) {
+      req.headers['x-cc-user-id'] = String(userId);
+    }
+    next();
+  }, getRouter());
 }

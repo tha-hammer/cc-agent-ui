@@ -11,6 +11,8 @@
  * @module agents/ag-ui-event-translator
  */
 
+import { normalizeAiWorkingTokenBudget } from '../../shared/aiWorkingTokenBudget.js';
+
 /** @typedef {'RUN_STARTED'|'RUN_FINISHED'|'RUN_ERROR'|'TEXT_MESSAGE_START'|'TEXT_MESSAGE_CONTENT'|'TEXT_MESSAGE_END'|'TOOL_CALL_START'|'TOOL_CALL_ARGS'|'TOOL_CALL_END'|'STATE_SNAPSHOT'|'STATE_DELTA'} AgUiEventType */
 
 /**
@@ -117,8 +119,19 @@ export function translate(frame, cursor) {
     }
 
     case 'thinking': {
+      // The provider-side `thinking` frame is where Algorithm-mode and
+      // long-form Silmari output actually live (the SDK separates "thought
+      // process / final answer" from short tool/control frames). cc-agent-ui
+      // sees this content because it taps the CLI stdout directly; for
+      // Nolme it has to flow through CopilotKit, which means we have to emit
+      // events for it.
+      //
+      // We emit as a regular assistant text triad (no `thinking: true` flag)
+      // so the message lands in agent.messages as a normal `role: 'assistant'`
+      // entry and renders via the existing NolmeAssistantMessage slot.
+      // Suppressing it (returning []) hides the bulk of the agent's output.
       const content = typeof frame.content === 'string' ? frame.content : '';
-      return emitTextTriad(content, cursor, { thinking: true });
+      return emitTextTriad(content, cursor);
     }
 
     case 'tool_use': {
@@ -158,17 +171,35 @@ export function translate(frame, cursor) {
 
     case 'status': {
       const text = typeof frame.text === 'string' ? frame.text : '';
-      if (cursor.currentToolId) {
-        return [
-          { type: 'TOOL_CALL_ARGS', toolCallId: cursor.currentToolId, delta: JSON.stringify({ status: text }) },
-        ];
+      const tokenBudget = text === 'token_budget'
+        ? normalizeAiWorkingTokenBudget(frame.tokenBudget, {
+            provider: frame.provider,
+            source: 'live',
+          })
+        : null;
+      const delta = [{ op: 'add', path: '/statusText', value: text }];
+      if (tokenBudget) {
+        delta.push({ op: 'add', path: '/tokenBudget', value: tokenBudget });
       }
-      return [
-        {
-          type: 'STATE_DELTA',
-          delta: [{ op: 'replace', path: '/statusText', value: text }],
-        },
-      ];
+      const events = [];
+      if (cursor.currentToolId) {
+        events.push({
+          type: 'TOOL_CALL_ARGS',
+          toolCallId: cursor.currentToolId,
+          delta: JSON.stringify({ status: text }),
+        });
+      }
+      events.push({
+        type: 'STATE_DELTA',
+        // `add` (not `replace`) so the patch succeeds when /statusText is
+        // not yet present in NolmeAgentState (DEFAULT_NOLME_AGENT_STATE
+        // doesn't seed it). RFC 6902 `replace` requires the path to exist;
+        // `add` creates-or-replaces. Without this, the first status frame
+        // throws OPERATION_PATH_UNRESOLVABLE and the AG-UI stream stalls,
+        // so subsequent text/tool events never reach the Nolme client.
+        delta,
+      });
+      return events;
     }
 
     case 'interactive_prompt': {

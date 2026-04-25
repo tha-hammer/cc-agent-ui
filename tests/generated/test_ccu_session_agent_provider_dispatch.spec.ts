@@ -15,13 +15,23 @@ import { spawnGemini } from '../../server/gemini-cli.js';
 const PROJECT_PATH = '/home/maceo/Dev/temp_testing';
 const PROJECT_NAME = '-home-maceo-Dev-temp-testing';
 
+// Models picked from shared/modelConstants.js — must be valid catalog entries
+// because CcuSessionAgent.buildProviderDispatch() normalises unknown values to
+// the provider default before dispatch.
+const VALID_MODEL: Record<'claude' | 'cursor' | 'codex' | 'gemini', string> = {
+  claude: 'sonnet',
+  cursor: 'auto',
+  codex: 'gpt-5.4',
+  gemini: 'gemini-2.5-flash',
+};
+
 function bindingFor(provider: 'claude' | 'cursor' | 'codex' | 'gemini') {
   return {
     provider,
     sessionId: `${provider}-s1`,
     projectName: PROJECT_NAME,
     projectPath: PROJECT_PATH,
-    model: 'some-model',
+    model: VALID_MODEL[provider],
     permissionMode: 'default' as const,
     toolsSettings: { allowedTools: ['Read'], disallowedTools: [], skipPermissions: false },
     sessionSummary: 'hi',
@@ -63,7 +73,7 @@ describe('CcuSessionAgent — provider dispatch table (Phase 1 · B5+B6)', () =>
       cwd: PROJECT_PATH,
       toolsSettings: { allowedTools: ['Read'], disallowedTools: [], skipPermissions: false },
       permissionMode: 'default',
-      model: 'some-model',
+      model: VALID_MODEL.claude,
       sessionSummary: 'hi',
       sessionId: 'claude-s1',
     });
@@ -80,7 +90,7 @@ describe('CcuSessionAgent — provider dispatch table (Phase 1 · B5+B6)', () =>
       projectPath: PROJECT_PATH,
       sessionId: 'cursor-s1',
       resume: true,
-      model: 'some-model',
+      model: VALID_MODEL.cursor,
       skipPermissions: false,
       sessionSummary: 'hi',
       toolsSettings: { allowedTools: ['Read'], disallowedTools: [], skipPermissions: false },
@@ -120,7 +130,7 @@ describe('CcuSessionAgent — provider dispatch table (Phase 1 · B5+B6)', () =>
       projectPath: PROJECT_PATH,
       sessionId: 'gemini-s1',
       resume: true,
-      model: 'some-model',
+      model: VALID_MODEL.gemini,
       sessionSummary: 'hi',
       permissionMode: 'default',
       toolsSettings: { allowedTools: ['Read'], disallowedTools: [], skipPermissions: false },

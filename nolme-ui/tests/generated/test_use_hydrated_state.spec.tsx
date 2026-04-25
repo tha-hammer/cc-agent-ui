@@ -49,7 +49,16 @@ describe('useHydratedState (Phase 3 · B16)', () => {
     const { result } = renderHook(() => useHydratedState(binding()));
     await waitFor(() => expect(result.current.status).toBe('ready'));
     expect(result.current.messages).toEqual([{ id: 'm1', role: 'user', content: 'hi' }]);
-    expect(result.current.state).toEqual({ schemaVersion: 1, phases: [{ id: 'p1' }] });
+    expect(result.current.state).toEqual({
+      schemaVersion: 1,
+      phases: [{ id: 'p1', label: 'P1', title: 'P1', status: 'idle' }],
+      currentPhaseIndex: 0,
+      currentReviewLine: '',
+      resources: [],
+      profile: null,
+      quickActions: [],
+      taskNotifications: [],
+    });
   });
 
   it('calls /api/sessions with the binding query params', async () => {

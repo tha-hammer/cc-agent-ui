@@ -12,14 +12,19 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { nolmeFetch } from '../lib/fetch';
-import { DEFAULT_NOLME_AGENT_STATE, type NolmeSessionBinding, type NolmeAgentState } from '../lib/types';
+import {
+  DEFAULT_NOLME_AGENT_STATE,
+  type NolmeAgentStateLike,
+  type NolmeSessionBinding,
+} from '../lib/types';
+import { normalizeNolmeState } from '../lib/ai-working/normalizeNolmeState';
 
 export type HydrationStatus = 'idle' | 'loading' | 'ready' | 'error';
 
 export interface HydrationResult {
   status: HydrationStatus;
   messages?: unknown[];
-  state?: NolmeAgentState;
+  state?: NolmeAgentStateLike;
   error?: Error;
 }
 
@@ -68,12 +73,10 @@ export function useHydratedState(binding: NolmeSessionBinding | null): Hydration
         const msgBody = await msgRes.json();
         const messages = Array.isArray(msgBody?.messages) ? msgBody.messages : [];
 
-        let state: NolmeAgentState = { ...DEFAULT_NOLME_AGENT_STATE };
+        let state: NolmeAgentStateLike = { ...DEFAULT_NOLME_AGENT_STATE };
         if (stateRes.ok) {
           const sidecar = await stateRes.json();
-          if (sidecar && sidecar.schemaVersion === 1) {
-            state = sidecar as NolmeAgentState;
-          }
+          state = normalizeNolmeState(sidecar).state;
         }
         // 404 / 500 on state → keep defaults, proceed.
 

@@ -13,10 +13,45 @@ import { spawnCursor } from '../cursor-cli.js';
 import { queryCodex } from '../openai-codex.js';
 import { spawnGemini } from '../gemini-cli.js';
 import { getProvider } from '../providers/registry.js';
+import {
+  CLAUDE_MODELS,
+  CURSOR_MODELS,
+  CODEX_MODELS,
+  GEMINI_MODELS,
+} from '../../shared/modelConstants.js';
 
 import { createNolmeAgUiWriter } from './nolme-ag-ui-writer.js';
 import { createCursor, translate } from './ag-ui-event-translator.js';
-import { readState } from './nolme-state-store.js';
+import { readState, writeState } from './nolme-state-store.js';
+import { normalizeAiWorkingTokenBudget } from '../../shared/aiWorkingTokenBudget.js';
+
+const PROVIDER_MODEL_CATALOG = {
+  claude: CLAUDE_MODELS,
+  cursor: CURSOR_MODELS,
+  codex: CODEX_MODELS,
+  gemini: GEMINI_MODELS,
+};
+
+/**
+ * Validate the binding's `model` against the provider's canonical catalog
+ * (shared/modelConstants.js). If the persisted model is unknown (e.g., a
+ * stale value from an old client catalog), fall back to the provider default
+ * so the SDK never receives an invalid identifier and exits 1.
+ *
+ * @param {string|undefined} provider
+ * @param {string|undefined} model
+ * @returns {string|undefined}
+ */
+function resolveModel(provider, model) {
+  const catalog = PROVIDER_MODEL_CATALOG[provider];
+  if (!catalog) return model;
+  if (!model) return catalog.DEFAULT;
+  const isKnown = Array.isArray(catalog.OPTIONS)
+    && catalog.OPTIONS.some((o) => o.value === model);
+  if (isKnown) return model;
+  console.warn(`[CcuSessionAgent] dropping unknown model '${model}' for provider '${provider}'; falling back to default '${catalog.DEFAULT}'`);
+  return catalog.DEFAULT;
+}
 
 // Re-exported for B1 regression check; intentionally unused at runtime so it
 // doesn't pollute the agent's public surface.
@@ -30,8 +65,9 @@ export const CANONICAL_HELPERS = Object.freeze({ encodeProjectPath, isSubagentSe
  * @returns {{ dispatch: Function, options: object }}
  */
 function buildProviderDispatch(binding) {
-  const { provider, sessionId, projectPath, model, permissionMode, toolsSettings, sessionSummary } = binding;
+  const { provider, sessionId, projectPath, model: rawModel, permissionMode, toolsSettings, sessionSummary } = binding;
   const cwd = projectPath;
+  const model = resolveModel(provider, rawModel);
 
   switch (provider) {
     case 'claude':
@@ -126,6 +162,7 @@ export class CcuSessionAgent extends AbstractAgent {
       initialState: config.initialState,
       debug: config.debug,
     });
+    this.userId = Number.isInteger(config.userId) ? config.userId : null;
   }
 
   /**
@@ -151,16 +188,45 @@ export class CcuSessionAgent extends AbstractAgent {
       // the first session_created frame will bootstrap it.
       const cursor = createCursor({ primarySessionId: binding.sessionId || null });
       let runErrorEmitted = false;
+      let persistChain = Promise.resolve();
 
       const writer = createNolmeAgUiWriter({
         onFrame: (frame) => {
+          const normalizedTokenBudget = frame?.kind === 'status' && frame?.text === 'token_budget'
+            ? normalizeAiWorkingTokenBudget(frame.tokenBudget, {
+                provider: frame.provider || binding.provider,
+                source: 'live',
+              })
+            : null;
+
+          if (normalizedTokenBudget) {
+            persistChain = persistChain
+              .then(async () => {
+                const currentState = await readState(binding);
+                await writeState(binding, {
+                  ...currentState,
+                  tokenBudget: {
+                    ...normalizedTokenBudget,
+                    source: 'persisted',
+                  },
+                });
+              })
+              .catch((err) => {
+                console.warn('[CcuSessionAgent] failed to persist tokenBudget:', err);
+              });
+          }
+
           const events = translate(frame, cursor);
           for (const event of events) {
             if (event.type === 'RUN_ERROR') runErrorEmitted = true;
             observer.next(event);
           }
         },
-        userId: binding.sessionId ?? null,
+        // userId must be the authenticated `users.id` (INTEGER PRIMARY KEY)
+        // because downstream notifyRunStopped → notificationPreferencesDb
+        // INSERTs against user_notification_preferences.user_id which strictly
+        // enforces integer values (SQLite "datatype mismatch" otherwise).
+        userId: this.userId,
       });
 
       observer.next({ type: 'RUN_STARTED', threadId, runId });
@@ -180,7 +246,8 @@ export class CcuSessionAgent extends AbstractAgent {
       }
 
       Promise.resolve(dispatchFn(prompt, dispatchOptions, writer))
-        .then(() => {
+        .then(async () => {
+          await persistChain;
           // Flush any lingering open message span (defensive — provider should have
           // emitted stream_end).
           if (cursor.currentMessageId !== null) {

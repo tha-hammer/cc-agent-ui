@@ -23,12 +23,12 @@ vi.mock('../../src/hooks/useHydratedState', () => ({
   useHydratedState: useHydratedStateMock,
 }));
 
-// NolmeDashboard exercises a chain of CopilotKit hooks (useFrontendTool /
-// useHumanInTheLoop / useRenderToolCall / useCoAgent / useCopilotChat /
-// useCopilotChatSuggestions). B15's contract is the CopilotKit provider wire,
-// not the dashboard — stub the dashboard so the B15 assertions stay focused.
-vi.mock('../../src/components/NolmeDashboard', () => ({
-  NolmeDashboard: () => null,
+// NolmeDashboardV2 exercises a chain of CopilotKit hooks (useRenderTool /
+// useHumanInTheLoop / useCoAgent / CopilotChat / useAttachments). B15's
+// contract is the CopilotKit provider wire, not the dashboard — stub the
+// dashboard so the B15 assertions stay focused.
+vi.mock('../../src/components/NolmeDashboard.v2', () => ({
+  NolmeDashboardV2: () => null,
 }));
 
 import { NolmeApp } from '../../src/NolmeApp';
@@ -87,14 +87,14 @@ describe('NolmeApp — CopilotKit provider wire (Phase 3 · B15)', () => {
     expect(copilotKitSpy).not.toHaveBeenCalled();
   });
 
-  it('wraps children in <CopilotKit> with runtimeUrl / agentId / threadId / updates when hydration is ready', async () => {
+  it('wraps children in <CopilotKit> with runtimeUrl / agent / threadId / updates when hydration is ready', async () => {
     useCcuSessionMock.mockReturnValue(claudeBinding);
     useHydratedStateMock.mockReturnValue(readyState);
     render(<NolmeApp />);
     await waitFor(() => expect(copilotKitSpy).toHaveBeenCalledTimes(1));
     const props = copilotKitSpy.mock.calls[0][0] as any;
     expect(props.runtimeUrl).toBe('/api/copilotkit');
-    expect(props.agentId).toBe('ccu');
+    expect(props.agent).toBe('ccu');
     expect(props.threadId).toBe('s-1');
     expect(props.updates).toBe(readyState.state);
   });

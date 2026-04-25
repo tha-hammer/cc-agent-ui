@@ -17,11 +17,7 @@ import { useEffect } from 'react';
 import type { Project, ProjectSession, SessionProvider } from '../types/app';
 
 type PermissionMode = 'default' | 'acceptEdits' | 'bypassPermissions' | 'plan';
-type ToolsSettings = {
-  allowedTools: string[];
-  disallowedTools: string[];
-  skipPermissions: boolean;
-};
+type ToolsSettings = Record<string, unknown> | undefined;
 
 export function useSessionBroadcast(
   selectedProject: Project | null,
@@ -35,9 +31,7 @@ export function useSessionBroadcast(
   const projectName = selectedProject?.name ?? '';
   const projectPath = selectedProject?.fullPath ?? (selectedProject as { path?: string } | null)?.path ?? '';
   const explicitProvider = (selectedSession?.__provider as SessionProvider | undefined) ?? provider;
-  const allowed = toolsSettings?.allowedTools.join('\x1f') ?? '';
-  const disallowed = toolsSettings?.disallowedTools.join('\x1f') ?? '';
-  const skipPermissions = toolsSettings?.skipPermissions ?? false;
+  const serializedToolsSettings = JSON.stringify(toolsSettings ?? null);
 
   useEffect(() => {
     if (!selectedSession || !selectedProject) return;
@@ -83,8 +77,6 @@ export function useSessionBroadcast(
     explicitProvider,
     model,
     permissionMode,
-    allowed,
-    disallowed,
-    skipPermissions,
+    serializedToolsSettings,
   ]);
 }

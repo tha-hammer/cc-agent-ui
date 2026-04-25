@@ -16,6 +16,7 @@
 
 import express from 'express';
 import { readState } from '../agents/nolme-state-store.js';
+import { getPendingApprovalsForSession, resolveToolApproval } from '../claude-sdk.js';
 
 const router = express.Router();
 
@@ -39,6 +40,49 @@ router.get('/state/:sessionId', async (req, res) => {
     console.error('[routes/nolme-state] read failed:', err);
     return res.status(500).json({ error: 'Failed to read Nolme state' });
   }
+});
+
+router.get('/pending-permissions/:sessionId', async (req, res) => {
+  const { sessionId } = req.params;
+  const provider = typeof req.query.provider === 'string' ? req.query.provider : '';
+
+  if (!sessionId) {
+    return res.status(400).json({ error: 'Missing sessionId' });
+  }
+
+  if (provider && provider !== 'claude') {
+    return res.json({ requests: [] });
+  }
+
+  try {
+    const requests = getPendingApprovalsForSession(sessionId);
+    return res.json({ requests });
+  } catch (err) {
+    console.error('[routes/nolme-state] pending permissions read failed:', err);
+    return res.status(500).json({ error: 'Failed to read pending permissions' });
+  }
+});
+
+router.post('/pending-permissions/:sessionId/:requestId/decision', async (req, res) => {
+  const { sessionId, requestId } = req.params;
+
+  if (!sessionId || !requestId) {
+    return res.status(400).json({ error: 'Missing sessionId or requestId' });
+  }
+
+  const pending = getPendingApprovalsForSession(sessionId);
+  if (!pending.some((request) => request.requestId === requestId)) {
+    return res.status(404).json({ error: 'Pending permission request not found' });
+  }
+
+  resolveToolApproval(requestId, {
+    allow: Boolean(req.body?.allow),
+    updatedInput: req.body?.updatedInput,
+    message: req.body?.message,
+    rememberEntry: req.body?.rememberEntry,
+  });
+
+  return res.json({ ok: true });
 });
 
 export default router;

@@ -11,10 +11,10 @@ export interface QuickActionChipRowProps {
 export function QuickActionChipRow({ options, onSelect, disabled = false }: QuickActionChipRowProps) {
   if (options.length === 0) return null;
   return (
-    <div className="flex flex-wrap gap-2">
+    <div data-testid="quick-action-chip-row" className="flex flex-wrap justify-end gap-[6px]">
       {options.map((option) => (
         <button
-          className="rounded-full border border-[#d9d3ff] bg-white px-3 py-1.5 text-[12px] font-medium text-nolme-neutral-600 transition hover:border-nolme-purple-400 hover:text-nolme-purple-600 disabled:opacity-50"
+          className="rounded-[999px] bg-nolme-purple-100 px-[10px] py-[4px] font-[Satoshi:Medium] text-[12px] leading-[16px] tracking-[0.5px] text-nolme-purple-900 transition disabled:opacity-50"
           disabled={disabled}
           key={option}
           onClick={() => onSelect(option)}

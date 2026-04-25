@@ -24,6 +24,7 @@ import { escapeRegExp } from '../utils/chatFormatting';
 import { useFileMentions } from './useFileMentions';
 import { type SlashCommand, useSlashCommands } from './useSlashCommands';
 import { useSessionStore } from '../../../stores/useSessionStore';
+import { useActiveSkillBroadcast } from '../../../hooks/useActiveSkillBroadcast';
 
 type PendingViewSession = {
   sessionId: string | null;
@@ -70,9 +71,11 @@ interface MentionableFile {
 
 interface CommandExecutionResult {
   type: 'builtin' | 'custom';
+  command?: string;
   action?: string;
   data?: any;
   content?: string;
+  metadata?: Record<string, unknown>;
   hasBashCommands?: boolean;
   hasFileIncludes?: boolean;
 }
@@ -135,6 +138,7 @@ export function useChatComposerState({
   setPendingPermissionRequests,
 }: UseChatComposerStateArgs) {
   const sessionStore = useSessionStore();
+  const { publishActiveSkill } = useActiveSkillBroadcast();
   const [input, setInput] = useState(() => {
     if (typeof window !== 'undefined' && selectedProject) {
       return safeLocalStorage.getItem(`draft_input_${selectedProject.name}`) || '';
@@ -243,7 +247,7 @@ export function useChatComposerState({
   );
 
   const handleCustomCommand = useCallback(async (result: CommandExecutionResult, userArgsText?: string) => {
-    const { content, hasBashCommands } = result;
+    const { content, hasBashCommands, metadata, command } = result;
 
     if (hasBashCommands) {
       const confirmed = window.confirm(
@@ -265,6 +269,20 @@ export function useChatComposerState({
     const commandContent = content || '';
     pendingSystemPromptRef.current = commandContent;
 
+    const resolvedProjectPath = selectedProject?.fullPath || selectedProject?.path || '';
+    const resolvedSessionId = currentSessionId || selectedSession?.id || '';
+    if (resolvedProjectPath && resolvedSessionId) {
+      publishActiveSkill({
+        provider,
+        sessionId: resolvedSessionId,
+        projectPath: resolvedProjectPath,
+        commandName: typeof command === 'string' && command.trim().length > 0 ? command.trim() : 'custom-command',
+        metadata: metadata ?? null,
+        argsText: userArgsText?.trim() ?? '',
+        updatedAt: Date.now(),
+      });
+    }
+
     // Show just the user's args (the topic/query) as the visible input,
     // not the entire skill template.
     const visibleInput = userArgsText || '';
@@ -277,7 +295,15 @@ export function useChatComposerState({
         handleSubmitRef.current(createFakeSubmitEvent());
       }
     }, 0);
-  }, [addMessage]);
+  }, [
+    addMessage,
+    currentSessionId,
+    provider,
+    publishActiveSkill,
+    selectedProject?.fullPath,
+    selectedProject?.path,
+    selectedSession?.id,
+  ]);
 
   const executeCommand = useCallback(
     async (command: SlashCommand, rawInput?: string) => {

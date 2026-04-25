@@ -6,6 +6,7 @@ const readStateMock = vi.hoisted(() => vi.fn());
 vi.mock('../../server/agents/nolme-state-store.js', () => ({
   DEFAULT_NOLME_STATE: { schemaVersion: 1 },
   readState: readStateMock,
+  writeState: vi.fn(async () => {}),
 }));
 
 import nolmeStateRouter from '../../server/routes/nolme-state.js';

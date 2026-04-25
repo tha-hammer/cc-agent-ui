@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import ChatInterface from '../../chat/view/ChatInterface';
 import FileTree from '../../file-tree/view/FileTree';
 import StandaloneShell from '../../standalone-shell/view/StandaloneShell';
@@ -11,6 +11,7 @@ import { useUiPreferences } from '../../../hooks/useUiPreferences';
 import { useEditorSidebar } from '../../code-editor/hooks/useEditorSidebar';
 import EditorSidebar from '../../code-editor/view/EditorSidebar';
 import type { Project } from '../../../types/app';
+import { buildNolmeLaunchBinding, buildNolmeLaunchUrl } from '../../../utils/nolmeLaunch';
 import { TaskMasterPanel } from '../../task-master';
 import MainContentHeader from './subcomponents/MainContentHeader';
 import MainContentStateView from './subcomponents/MainContentStateView';
@@ -87,6 +88,12 @@ function MainContent({
     }
   }, [shouldShowTasksTab, activeTab, setActiveTab]);
 
+  const handleOpenNolme = useCallback(() => {
+    const binding = buildNolmeLaunchBinding(selectedProject, selectedSession);
+    if (!binding) return;
+    window.open(buildNolmeLaunchUrl(binding), '_blank', 'noopener,noreferrer');
+  }, [selectedProject, selectedSession]);
+
   if (isLoading) {
     return <MainContentStateView mode="loading" isMobile={isMobile} onMenuClick={onMenuClick} />;
   }
@@ -105,6 +112,7 @@ function MainContent({
         shouldShowTasksTab={shouldShowTasksTab}
         isMobile={isMobile}
         onMenuClick={onMenuClick}
+        onOpenNolme={handleOpenNolme}
       />
 
       <div className="flex min-h-0 flex-1 overflow-hidden">

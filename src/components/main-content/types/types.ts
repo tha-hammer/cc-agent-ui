@@ -63,6 +63,7 @@ export type MainContentHeaderProps = {
   shouldShowTasksTab: boolean;
   isMobile: boolean;
   onMenuClick: () => void;
+  onOpenNolme: () => void;
 };
 
 export type MainContentStateViewProps = {

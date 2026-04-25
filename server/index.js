@@ -77,6 +77,7 @@ import { configureWebPush } from './services/vapid-keys.js';
 import { validateApiKey, authenticateToken, authenticateWebSocket } from './middleware/auth.js';
 import { IS_PLATFORM } from './constants/config.js';
 import { getConnectableHost } from '../shared/networkHosts.js';
+import { normalizeAiWorkingTokenBudget } from '../shared/aiWorkingTokenBudget.js';
 
 const VALID_PROVIDERS = ['claude', 'codex', 'cursor', 'gemini'];
 
@@ -99,6 +100,8 @@ const WATCHER_IGNORED_PATTERNS = [
 ];
 const WATCHER_DEBOUNCE_MS = 300;
 let projectsWatchers = [];
+// per-provider rate-limited error log state — see watcher 'error' handler
+const watcherErrorLog = new Map();
 let projectsWatcherDebounceTimer = null;
 const connectedClients = new Set();
 let isGetProjectsRunning = false; // Flag to prevent reentrant calls
@@ -186,13 +189,27 @@ async function setupProjectsWatcher() {
             // Ensure provider folders exist before creating the watcher so watching stays active.
             await fsPromises.mkdir(rootPath, { recursive: true });
 
-            // Initialize chokidar watcher with optimized settings
+            // Initialize chokidar watcher with optimized settings.
+            //
+            // usePolling=true is critical: inotify-based watching opens one
+            // fs watch per file under each rootPath, and `~/.claude/projects/`
+            // alone holds tens of thousands of session jsonl files —
+            // exceeding fs.inotify.max_user_watches and producing an
+            // ENOSPC "System limit for number of file watchers reached"
+            // error on every new session file (which floods the server log
+            // and prevents new sessions from being detected). Polling
+            // sidesteps the kernel limit entirely; for the
+            // refresh-projects-list use case a 2s interval is plenty of
+            // resolution and the 300ms debounce coalesces churn.
             const watcher = chokidar.watch(rootPath, {
                 ignored: WATCHER_IGNORED_PATTERNS,
                 persistent: true,
                 ignoreInitial: true, // Don't fire events for existing files on startup
                 followSymlinks: false,
-                depth: 10, // Reasonable depth limit
+                depth: 2, // root → projectDir → sessionFile is the entire schema
+                usePolling: true,
+                interval: 2000, // text files (jsonl) — 2s detection latency
+                binaryInterval: 5000, // any non-text — 5s
                 awaitWriteFinish: {
                     stabilityThreshold: 100, // Wait 100ms for file to stabilize
                     pollInterval: 50
@@ -207,7 +224,20 @@ async function setupProjectsWatcher() {
                 .on('addDir', (dirPath) => debouncedUpdate('addDir', dirPath, provider, rootPath))
                 .on('unlinkDir', (dirPath) => debouncedUpdate('unlinkDir', dirPath, provider, rootPath))
                 .on('error', (error) => {
-                    console.error(`[ERROR] ${provider} watcher error:`, error);
+                    // Defense-in-depth: even with polling, log floods are
+                    // unreadable. Print the first error per provider in
+                    // full, then summarize repeats once a minute.
+                    const now = Date.now();
+                    const last = watcherErrorLog.get(provider) ?? { firstAt: 0, count: 0, summarizedAt: 0 };
+                    last.count += 1;
+                    if (last.firstAt === 0) {
+                        last.firstAt = now;
+                        console.error(`[ERROR] ${provider} watcher error:`, error);
+                    } else if (now - last.summarizedAt >= 60_000) {
+                        last.summarizedAt = now;
+                        console.error(`[ERROR] ${provider} watcher error suppressed (${last.count} total since startup; latest: ${error?.code ?? error?.message ?? error})`);
+                    }
+                    watcherErrorLog.set(provider, last);
                 })
                 .on('ready', () => {
                 });
@@ -2303,24 +2333,24 @@ app.get('/api/projects/:projectName/sessions/:sessionId/token-usage', authentica
 
         // Handle Cursor sessions - they use SQLite and don't have token usage info
         if (provider === 'cursor') {
-            return res.json({
-                used: 0,
-                total: 0,
-                breakdown: { input: 0, cacheCreation: 0, cacheRead: 0 },
+            return res.json(normalizeAiWorkingTokenBudget({
                 unsupported: true,
                 message: 'Token usage tracking not available for Cursor sessions'
-            });
+            }, {
+                provider: 'cursor',
+                source: 'route',
+            }));
         }
 
         // Handle Gemini sessions - they are raw logs in our current setup
         if (provider === 'gemini') {
-            return res.json({
-                used: 0,
-                total: 0,
-                breakdown: { input: 0, cacheCreation: 0, cacheRead: 0 },
+            return res.json(normalizeAiWorkingTokenBudget({
                 unsupported: true,
                 message: 'Token usage tracking not available for Gemini sessions'
-            });
+            }, {
+                provider: 'gemini',
+                source: 'route',
+            }));
         }
 
         // Handle Codex sessions
@@ -2388,10 +2418,13 @@ app.get('/api/projects/:projectName/sessions/:sessionId/token-usage', authentica
                 }
             }
 
-            return res.json({
+            return res.json(normalizeAiWorkingTokenBudget({
                 used: totalTokens,
-                total: contextWindow
-            });
+                total: contextWindow,
+            }, {
+                provider: 'codex',
+                source: 'route',
+            }));
         }
 
         // Handle Claude sessions (default)
@@ -2432,11 +2465,14 @@ app.get('/api/projects/:projectName/sessions/:sessionId/token-usage', authentica
         const parsedContextWindow = parseInt(process.env.CONTEXT_WINDOW, 10);
         const contextWindow = Number.isFinite(parsedContextWindow) ? parsedContextWindow : 160000;
         let inputTokens = 0;
+        let outputTokens = 0;
         let cacheCreationTokens = 0;
         let cacheReadTokens = 0;
 
-        // Find the latest assistant message with usage data (scan from end)
-        for (let i = lines.length - 1; i >= 0; i--) {
+        // Sum assistant-message usage across the persisted session so route
+        // reads match the cumulative contract used by live token_budget
+        // frames.
+        for (let i = 0; i < lines.length; i++) {
             try {
                 const entry = JSON.parse(lines[i]);
 
@@ -2444,12 +2480,10 @@ app.get('/api/projects/:projectName/sessions/:sessionId/token-usage', authentica
                 if (entry.type === 'assistant' && entry.message?.usage) {
                     const usage = entry.message.usage;
 
-                    // Use token counts from latest assistant message only
-                    inputTokens = usage.input_tokens || 0;
-                    cacheCreationTokens = usage.cache_creation_input_tokens || 0;
-                    cacheReadTokens = usage.cache_read_input_tokens || 0;
-
-                    break; // Stop after finding the latest assistant message
+                    inputTokens += usage.input_tokens || 0;
+                    outputTokens += usage.output_tokens || 0;
+                    cacheCreationTokens += usage.cache_creation_input_tokens || 0;
+                    cacheReadTokens += usage.cache_read_input_tokens || 0;
                 }
             } catch (parseError) {
                 // Skip lines that can't be parsed
@@ -2457,18 +2491,21 @@ app.get('/api/projects/:projectName/sessions/:sessionId/token-usage', authentica
             }
         }
 
-        // Calculate total context usage (excluding output_tokens, as per ccusage)
-        const totalUsed = inputTokens + cacheCreationTokens + cacheReadTokens;
+        const totalUsed = inputTokens + outputTokens + cacheCreationTokens + cacheReadTokens;
 
-        res.json({
+        res.json(normalizeAiWorkingTokenBudget({
             used: totalUsed,
             total: contextWindow,
             breakdown: {
                 input: inputTokens,
+                output: outputTokens,
                 cacheCreation: cacheCreationTokens,
                 cacheRead: cacheReadTokens
             }
-        });
+        }, {
+            provider: 'claude',
+            source: 'route',
+        }));
     } catch (error) {
         console.error('Error reading session token usage:', error);
         res.status(500).json({ error: 'Failed to read session token usage' });

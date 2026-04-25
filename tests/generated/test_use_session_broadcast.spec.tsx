@@ -26,6 +26,8 @@ const claudeProject = { name: '-home-tmp-proj', fullPath: '/home/tmp/proj', disp
 const claudeSession = { id: 's-claude', __provider: 'claude' as const } as any;
 const codexProject = { name: '-home-code', fullPath: '/home/code', displayName: 'c' } as any;
 const codexSession = { id: 's-codex', __provider: 'codex' as const } as any;
+const cursorProject = { name: '-home-cursor', fullPath: '/home/cursor', displayName: 'cursor' } as any;
+const cursorSession = { id: 's-cursor', __provider: 'cursor' as const } as any;
 const toolsSettings = { allowedTools: ['Read'], disallowedTools: [], skipPermissions: false };
 
 describe('useSessionBroadcast (Phase 2 · B13)', () => {
@@ -115,5 +117,42 @@ describe('useSessionBroadcast (Phase 2 · B13)', () => {
     );
     const msg = FakeBroadcastChannel.lastInstance!.messages[0] as any;
     expect(msg.projectPath).toBe('/abs/from/fullPath');
+  });
+
+  it('re-broadcasts when provider-specific tools settings change shape outside allowedTools keys', () => {
+    const initialCursorSettings = {
+      allowedCommands: ['read_file'],
+      disallowedCommands: [],
+      skipPermissions: false,
+    };
+    const nextCursorSettings = {
+      allowedCommands: ['read_file', 'edit_file'],
+      disallowedCommands: [],
+      skipPermissions: false,
+    };
+
+    const { rerender } = renderHook(
+      ({ settings }) =>
+        useSessionBroadcast(
+          cursorProject,
+          cursorSession,
+          'cursor',
+          'cursor-fast',
+          'default',
+          settings as any,
+        ),
+      { initialProps: { settings: initialCursorSettings } },
+    );
+
+    const ch = FakeBroadcastChannel.lastInstance!;
+    expect(ch.messages).toHaveLength(1);
+    expect((ch.messages[0] as any).toolsSettings).toEqual(initialCursorSettings);
+
+    rerender({ settings: nextCursorSettings });
+
+    const nextChannel = FakeBroadcastChannel.lastInstance!;
+    expect(nextChannel).not.toBe(ch);
+    expect(nextChannel.messages).toHaveLength(1);
+    expect((nextChannel.messages[0] as any).toolsSettings).toEqual(nextCursorSettings);
   });
 });

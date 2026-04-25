@@ -19,7 +19,7 @@ const claudeBinding = {
   sessionId: 's1',
   projectName: '-home-maceo-Dev-temp-testing',
   projectPath: '/home/maceo/Dev/temp_testing',
-  model: 'claude-sonnet-4-6',
+  model: 'sonnet',
   permissionMode: 'default' as const,
   toolsSettings: { allowedTools: [], disallowedTools: [], skipPermissions: false },
 };
@@ -92,7 +92,7 @@ describe('CcuSessionAgent — minimum text envelope (Phase 1 · B2)', () => {
       projectPath: '/home/maceo/Dev/temp_testing',
       cwd: '/home/maceo/Dev/temp_testing',
       sessionId: 's1',
-      model: 'claude-sonnet-4-6',
+      model: 'sonnet',
     });
   });
 });
