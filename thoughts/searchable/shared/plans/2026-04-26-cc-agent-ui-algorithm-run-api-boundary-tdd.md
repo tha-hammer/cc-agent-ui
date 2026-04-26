@@ -13,6 +13,16 @@ related_beads:
   - cam-lml
   - cam-x3p
   - cam-b1x
+behavior_beads:
+  behavior_1: cam-b1x.1
+  behavior_2: cam-b1x.2
+  behavior_3: cam-b1x.3
+  behavior_3A: cam-b1x.4
+  behavior_4: cam-b1x.5
+  behavior_5: cam-b1x.6
+  behavior_6: cam-b1x.7
+  behavior_7: cam-b1x.8
+  behavior_8: cam-b1x.9
 ---
 
 # cc-agent-ui Algorithm Run API Boundary TDD Implementation Plan
@@ -664,6 +674,8 @@ Permission decision success follows the same envelope with `permissionId` instea
 
 ## Behavior 1: Contract Validation Rejects Bad Requests
 
+Assigned bead: `cam-b1x.1`
+
 ### Resource Registry Binding
 
 - `resource_id`: `[PROPOSED] 2d7eb82b-b41e-430b-88a6-ed828a649b24`
@@ -785,6 +797,8 @@ Manual:
 ---
 
 ## Behavior 2: Start Route Creates Metadata And Invokes Command Client
+
+Assigned bead: `cam-b1x.2`
 
 ### Resource Registry Binding
 
@@ -927,6 +941,8 @@ Manual:
 ---
 
 ## Behavior 3: Command Client Uses Explicit NDJSON Frame Protocol
+
+Assigned bead: `cam-b1x.3`
 
 ### Resource Registry Binding
 
@@ -1118,6 +1134,8 @@ Manual:
 
 ## Behavior 3A: Runner Adapter Provides The First Executable Boundary
 
+Assigned bead: `cam-b1x.4`
+
 ### Resource Registry Binding
 
 - `resource_id`: `[PROPOSED] 1a3790cd-808e-47e9-a538-2fc3072774b4`
@@ -1308,6 +1326,8 @@ Manual:
 
 ## Behavior 4: Run Store Serves Safe State And Cursor-Filtered Events
 
+Assigned bead: `cam-b1x.5`
+
 ### Resource Registry Binding
 
 - `resource_id`: `[PROPOSED] 3f65fa2f-4f24-4e0e-8e41-d4d2fee65499`
@@ -1466,6 +1486,8 @@ Manual:
 
 ## Behavior 5: State And Event Routes Are Deterministic
 
+Assigned bead: `cam-b1x.6`
+
 ### Resource Registry Binding
 
 - `resource_id`: `[PROPOSED] bdf59902-ffb7-499b-bccb-865814290356`
@@ -1583,6 +1605,8 @@ Manual:
 
 ## Behavior 6: Lifecycle Commands Are Validated And Forwarded
 
+Assigned bead: `cam-b1x.7`
+
 ### Resource Registry Binding
 
 - `resource_id`: `[PROPOSED] 010bf08c-4ffe-40cb-953b-2a0e09064db3`
@@ -1675,6 +1699,8 @@ Manual:
 ---
 
 ## Behavior 7: Question And Permission Decisions Validate Pending State
+
+Assigned bead: `cam-b1x.8`
 
 ### Resource Registry Binding
 
@@ -1775,6 +1801,8 @@ Manual:
 ---
 
 ## Behavior 8: Route Mount Is Authenticated And Non-Invasive
+
+Assigned bead: `cam-b1x.9`
 
 ### Resource Registry Binding
 
