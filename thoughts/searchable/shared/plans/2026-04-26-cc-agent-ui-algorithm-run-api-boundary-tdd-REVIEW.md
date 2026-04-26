@@ -1,6 +1,6 @@
 ---
 date: 2026-04-26
-reviewer: GoldAnchor
+reviewer: CobaltMarsh
 repository: cc-agent-ui
 source_plan: thoughts/searchable/shared/plans/2026-04-26-cc-agent-ui-algorithm-run-api-boundary-tdd.md
 status: needs_major_revision
@@ -16,237 +16,204 @@ Review date: 2026-04-26
 
 | Category | Status | Issues Found |
 | --- | --- | --- |
-| Contracts | CRITICAL | 4 |
-| Interfaces | CRITICAL | 4 |
+| Contracts | WARNING | 2 |
+| Interfaces | WARNING | 2 |
 | Promises | CRITICAL | 3 |
-| Data Models | CRITICAL | 4 |
-| APIs | CRITICAL | 3 |
+| Data Models | WARNING | 3 |
+| APIs | WARNING | 2 |
 
-Approval status: **Needs Major Revision**. The narrowed `cc-agent-ui` scope is the right correction from the previous cross-repo plan, and the route set is directionally implementable. Implementation should still wait until the plan defines runner event ingestion, authenticated run ownership, the full state/event schemas, and the exact mount-level auth/error behavior.
+Approval status: **Needs Major Revision**. The enhanced plan resolves the earlier broad blockers: it is now scoped to `cc-agent-ui`, defines an NDJSON runner boundary, includes owner-bound metadata, specifies state/event schemas, and aligns mount-level auth with existing `authenticateToken`. Implementation should still wait until the plan fixes the decision-forwarding order and start-failure cleanup semantics.
 
 ## Evidence Reviewed
 
-- The plan narrows scope to `cc-agent-ui` and explicitly excludes Nolme/core changes at plan lines 18-24 and 64-73.
-- The route contract and examples are at plan lines 90-166.
-- The command-client protocol is defined as one JSON request and one JSON response at plan lines 422-457.
-- The run store behavior is described at plan lines 529-616.
-- The state/events route behavior is described at plan lines 630-718.
-- The lifecycle and decision route behaviors are described at plan lines 722-891.
-- The route mount and error-code table are at plan lines 895-1018.
-- Protected app routes are mounted with `authenticateToken` in `server/index.js:431-478`; `/api/agent` is the API-key exception at `server/index.js:467-468`.
-- `authenticateToken` returns plain `{ error }` bodies and uses `401` for missing tokens, `403` for invalid tokens in `server/middleware/auth.js:23-76`.
-- Existing provider CLI streaming uses newline-framed JSON, partial-line buffers, and trailing flushes in `server/gemini-response-handler.js:14-70` and `server/cursor-cli.js:227-264`.
-- Gemini timeout behavior kills the child after a no-output timeout in `server/gemini-cli.js:221-234`.
-- The existing normalized provider boundary is `NormalizedMessage` / `ProviderAdapter` in `server/providers/types.js:13-119`.
-- The current database is opened from `DATABASE_PATH` or `server/database/auth.db` at `server/database/db.js:25-60`; no Algorithm run/event table exists in the current schema.
-- Nolme state sidecars use `~/.claude/projects/<projectName-or-encoded-projectPath>/<sessionId>.nolme-state.json` in `server/agents/nolme-state-store.js:4-70`, with tolerant reads and non-atomic full-file writes at `server/agents/nolme-state-store.js:97-136`.
-- CopilotKit is mounted through `SafeInMemoryAgentRunner` in `server/routes/copilotkit.js:26-48`, and that runner delegates `connect()` to the superclass after pruning errored historic runs in `server/lib/safe-in-memory-agent-runner.js:30-49`.
+- The plan narrows scope and excludes Nolme/core changes at lines 20-28 and 74-85.
+- The resolved boundary decisions define NDJSON runner output, owner checks, one run store, and plain mount-level auth failures at lines 104-119.
+- Metadata, state, event, pending decision, and runner frame schemas are defined at lines 121-323.
+- Route success/failure examples are defined at lines 368-620.
+- Behavior 3 command-client/process-registry tests are defined at lines 887-1063; Behavior 3A runner adapter tests are defined at lines 1067-1243.
+- Run-store and state/event route behavior is defined at lines 1247-1478.
+- Lifecycle and decision route behavior is defined at lines 1482-1666.
+- Mount and regression behavior is defined at lines 1670-1785.
+- Existing API route mount order puts protected APIs before static/catch-all routing in `server/index.js:420-478`.
+- `authenticateToken` returns plain `{ error }` bodies and sets `req.user` from the DB row in `server/middleware/auth.js:23-76`.
+- Existing route tests use real Express apps, `http.createServer`, ephemeral ports, native `fetch`, hoisted module mocks, and explicit server close cleanup, for example `tests/generated/test_copilotkit_route_auth.spec.ts:71-90` and `tests/generated/test_nolme_state_route.spec.ts:17-35`.
+- Existing CLI/process code shows useful local patterns for line buffering, timeout kill, and process registries in `server/cursor-cli.js:227-264`, `server/gemini-cli.js:221-234`, and `server/utils/plugin-process-manager.js:15-132`.
 
 ## Contract Review
 
 ### Well-Defined
 
-- The plan fixes the prior scope problem by keeping this implementation inside `cc-agent-ui` and avoiding Nolme/core edits.
-- The API boundary is versioned and consistently uses `schemaVersion: 1` in success and failure examples.
-- The plan correctly rejects client-supplied event paths and makes server-owned storage the only source for run state/events.
-- The provider enum matches the local provider vocabulary: `claude | cursor | codex | gemini`.
+- The plan now clearly states this is a `cc-agent-ui` API/store/runner-boundary slice, not a core or Nolme implementation.
+- The runner protocol is explicit NDJSON with `accepted`, `event`, `state`, `log`, `result`, and `error` frames.
+- The plan stores `ownerUserId = String(req.user.id)` and requires owner checks on every `/:runId` route.
+- The Algorithm state/event/pending decision schemas are specified with version fields and public/private field exclusions.
+- Mount-level auth behavior matches the real `authenticateToken` plain error bodies for missing and invalid tokens.
 
 ### Missing or Unclear
 
-- CRITICAL: The command-client contract is not sufficient for the planned async run API. The plan returns `202 starting` from `POST /api/algorithm-runs` at lines 111-129, but the runner protocol at lines 422-457 only returns one final JSON response. It does not define how later `AlgorithmEvent` records reach `run-store.js`, how stdout event frames are delimited, or whether the runner is long-lived, request/response, or event-streaming. Existing child-process integrations use newline-framed stream JSON and partial-line handling, not one unframed stdout object.
-- CRITICAL: Authenticated run ownership is absent from the contract. The start response/run metadata at lines 117-124 and run-store end state at lines 57-60 include `runId`, `sessionId`, `projectPath`, `provider`, `status`, and cursor, but no `userId` or access check. Since the route is mounted behind `authenticateToken`, every state/lifecycle/decision route must bind `runId` to `req.user.id` or a documented single-user policy.
-- CRITICAL: The state/event contract is named but not specified. The read route promises `AlgorithmRunState` at line 149, decision routes depend on `pendingQuestion` and `pendingPermission` at lines 825-827, and event tests use `algorithm.run.started` at lines 575-576. The plan does not define the full state fields, event union, terminal statuses, pending decision shapes, or projection rules.
-- WARNING: The plan references an event-store resource id `44b6ef63-f7ea-4988-818f-094bebdc838e` in `@reads/@writes` blocks at lines 601-602, 693, 780, and 868, but no resource registry binding defines that id.
+- WARNING: The accepted-frame status contract is internally inconsistent. Projection says `algorithm.runner.accepted` sets status to `running` at lines 233-235, but the start response after waiting for runner acceptance still shows `status: "starting"` at lines 389-405. Lines 316-321 say later runner frames feed state/events after acceptance, but the plan does not say whether `accepted` itself is durably appended before the `202` response.
+- WARNING: The global `/api` API-key gate is omitted from the route contract. `server/index.js:420` applies `validateApiKey` to all `/api/*` routes before route-specific auth when `API_KEY` is configured. The plan's auth table at lines 1815-1820 only describes `authenticateToken`.
 
 ### Recommendations
 
-- Define the runner protocol as newline-delimited frames, for example `result`, `event`, `state`, `log`, and `error`, with EOF and partial-line behavior. If the runner remains request/response only, remove the async/event promises from the start route.
-- Add `ownerUserId` or `userId` to run metadata and require every read/control route to compare it with `req.user.id`.
-- Add complete schemas for `AlgorithmRunMetadata`, `AlgorithmRunState`, `AlgorithmRunEvent`, `AlgorithmQuestionRequest`, `AlgorithmPermissionRequest`, answer payloads, decision payloads, and terminal status values.
-- Either add the missing `algorithm.event_store` resource binding or merge the event-store responsibility into the defined `algorithm.run_index` resource.
+- Decide whether `accepted` is a stored event. If yes, append it before returning `202` and make the start response/status `running`; if not, remove the `algorithm.runner.accepted` projection rule and keep the start response explicitly `starting`.
+- Add one sentence to Behavior 8: `/api/algorithm-runs` also inherits the existing optional global `/api` `validateApiKey` gate when `API_KEY` is configured.
 
 ## Interface Review
 
 ### Well-Defined
 
-- `server/routes/algorithm-runs.js` is a good local module boundary for the new Express router.
-- `server/algorithm-runs/contracts.js`, `command-client.js`, and `run-store.js` are reasonable file boundaries for validators, process I/O, and persistence.
-- The mount line `app.use('/api/algorithm-runs', authenticateToken, algorithmRunsRouter)` matches the local protected-router pattern in `server/index.js:431-478`.
-- The route set covers start, read, lifecycle, question, and permission workflows.
+- The planned module split is now coherent: `contracts.js`, `command-client.js`, `process-registry.js`, `runner-adapter.js`, `run-store.js`, `sse.js`, and `routes/algorithm-runs.js`.
+- The command-client API table at lines 286-295 is concrete enough to guide implementation.
+- The route mount line at lines 1720-1735 matches the local protected-router pattern in `server/index.js:464-478`.
 
 ### Missing or Unclear
 
-- CRITICAL: The start-route test mock expects `startAlgorithmRun` at plan lines 337-339, while the command-client implementation and command-client tests export `runAlgorithmCommand` at lines 467 and 505. The interface name and wrapper responsibilities are inconsistent.
-- CRITICAL: `event-store.js` appears in the desired end state at line 60, but all TDD examples import event functions from `run-store.js` at lines 565-570. Implementers cannot tell whether there should be one module or two.
-- CRITICAL: The runner configuration interface is ambiguous. The plan says parse `ALGORITHM_RUNNER_COMMAND` with "JSON array support or a documented executable-plus-args format" at line 512. That is not an interface; it is a choice left to implementation.
-- WARNING: The plan does not specify whether Algorithm runner output is translated into existing `NormalizedMessage` frames, a new Algorithm-specific event schema, or both. The current provider boundary is explicitly `NormalizedMessage` in `server/providers/types.js:13-119`.
+- WARNING: Fixture naming is inconsistent. Behavior 3 tests use `tests/fixtures/fake-algorithm-runner.mjs` at lines 936 and 950, while the rest of the plan standardizes on `tests/fixtures/algorithm-runner-fixture.mjs` at lines 67, 116, 338, 1146, and 1205.
+- WARNING: `runAlgorithmCommand` and `startAlgorithmRun` need an explicit config-source contract. The API table says `parseRunnerCommandEnv(value = process.env.ALGORITHM_RUNNER_COMMAND)` at lines 286-295, but test examples pass `executable` and `args` directly at lines 933-957. Both modes can be valid, but route code and tests need to know which is production-default and which is test injection.
 
 ### Recommendations
 
-- Introduce a small public command-client API table: `startAlgorithmRun(input)`, `runAlgorithmCommand(input)`, and `mapRunnerResultToHttp(result)`, or collapse tests and routes onto one exported function.
-- Pick one persistence module boundary: either `run-store.js` owns metadata, snapshots, and JSONL events, or `event-store.js` is separate and has its own resource binding.
-- Define `ALGORITHM_RUNNER_COMMAND` exactly. Prefer a JSON array env var such as `["node","runner.mjs"]` plus tests for invalid JSON, empty array, missing executable, and extra args.
-- State whether Algorithm events are a separate route/store contract only, or whether they also feed the existing provider-normalized runtime surfaces.
+- Use one fixture filename everywhere, preferably `tests/fixtures/algorithm-runner-fixture.mjs`.
+- State that production callers omit `executable/args` and use `ALGORITHM_RUNNER_COMMAND`, while tests may inject `executable/args` to avoid mutating global env.
 
 ## Promise Review
 
 ### Well-Defined
 
-- The plan promises validation before filesystem or runner access.
-- It promises deterministic cursor-filtered event reads.
-- It promises no shell interpolation by using `spawn(command, args, { shell: false })`.
-- It identifies idempotent pause behavior and terminal-run conflicts.
+- Validation-before-runner and validation-before-filesystem are explicit.
+- Runner stdout parsing, stderr privacy, timeout, ENOENT, schema mismatch, run/request id mismatch, and max-output failures are enumerated.
+- SSE backlog-before-heartbeat, disconnect cleanup, heartbeat interval, and max lifetime are now specified.
+- The process registry is explicitly process-local and best-effort, with crash recovery delegated to the run store.
 
 ### Missing or Unclear
 
-- CRITICAL: Event ingestion and ordering are not enforceable as written. The plan says duplicate sequence is rejected at line 553 and reads are deterministic at lines 547-555, but it does not define who allocates sequences, whether append happens before route/SSE emit, how concurrent lifecycle and runner events are serialized, or how partial writes recover.
-- CRITICAL: Start-route lifetime semantics are unclear. A `202 starting` response implies the runner continues after the HTTP handler returns, but the child-process protocol and command-client test are a short request/response call. There is no cleanup, process registry, detached process policy, or crash recovery behavior.
-- WARNING: SSE promises need cleanup rules. The plan mentions heartbeats and terminal close at lines 151 and 648-655, but does not define polling interval, max connection lifetime, client disconnect handling, or watcher teardown.
+- CRITICAL: Decision routes append the clearing event before forwarding the decision to the runner. Lines 284 and 1593-1595 say answering/deciding appends `algorithm.question.answered` or `algorithm.permission.decided` before forwarding. Projection clears pending decisions on those events at lines 238-241. If the runner call then fails with the planned `502 runner_protocol_error` at line 1604, the local state has already cleared the pending question/permission even though the runner never accepted the decision.
+- CRITICAL: Start failure after metadata creation has no cleanup or terminal-state contract. Lines 318-320 require metadata creation before spawning and waiting for `accepted`; lines 780-783 define missing runner, pre-accepted runner error, timeout, and missing project path failures. The plan does not say whether the pre-created run is deleted, marked `failed`, or left as `starting`.
+- WARNING: Start-process registration ordering needs one more invariant. The adapter example emits `accepted` and `result` back-to-back at lines 1182-1187, while `startAlgorithmRun` registers after `accepted` at lines 316-323. The command client must not register an already-terminal child as active when accepted and terminal frames arrive in the same stdout chunk.
 
 ### Recommendations
 
-- Define one sequence allocator in the run store. Require append-before-publish, reject or quarantine out-of-order events, and specify recovery when `events.jsonl` and `state.json` disagree.
-- Define whether `start` is synchronous until the runner exits, asynchronous with a tracked child process, or asynchronous because the external runner owns its own daemon/state.
-- Add SSE teardown requirements: stop polling or watching on `req.close`, emit backlog before heartbeats, and close immediately for terminal states after the backlog.
+- For decision routes, either forward first and append `answered/decided` only after runner success, or split local audit from state-clearing with events such as `decision.submitted` and `decision.forward_failed`. Do not let a failed runner call clear pending state.
+- For start failures, define one behavior: validate runner/project before metadata creation where possible; for failures after creation, append `algorithm.run.failed` with the typed runner error or delete the run directory before returning the error.
+- In `startAlgorithmRun`, specify that accepted is handled, the process is registered, and only then are buffered post-accepted frames dispatched; if a terminal frame is already buffered, registration must immediately unregister.
 
 ## Data Model Review
 
 ### Well-Defined
 
-- The run metadata includes core identity fields: `runId`, `sessionId`, `projectPath`, provider, status, and cursor.
-- The plan keeps filesystem paths out of public state responses.
-- The plan calls for atomic snapshot writes via temp file then rename.
-- The provider and run-id validation concerns are correctly located in pure validators.
+- `AlgorithmRunMetadata`, `AlgorithmRunState`, `AlgorithmRunEvent`, `AlgorithmQuestionRequest`, and `AlgorithmPermissionRequest` are now defined.
+- The storage layout is explicit under `ALGORITHM_RUN_STORE_ROOT`, defaulting to `~/.cosmic-agent/algorithm-runs`.
+- `metadata.lastSequence`, append-before-publish, per-run append lock, snapshot replay, metadata repair, and `state_corrupt` behavior are specified.
+- Public state excludes storage paths, runner commands, raw stderr, private tool input, and `projectPath`.
 
 ### Missing or Unclear
 
-- CRITICAL: There is no complete durable storage schema. The plan alternates between local JSON sidecars and an undefined event store, but does not define filenames, JSON object shapes, `createdAt/updatedAt`, `ownerUserId`, indexes, or whether state lives under `~/.claude/projects`, `DATABASE_PATH`, or a configurable Algorithm root.
-- CRITICAL: `sessionId` is nullable in the start response at line 119, but later metadata and decision/lifecycle behavior depend on the run being correlated with runner state. The plan does not state when `sessionId` becomes non-null or how a returned runner session id updates metadata.
-- CRITICAL: Pending question/permission data models are not defined, even though decision routes validate against them. Required fields, stale clearing, answered/decided events, and public-vs-private payload fields are missing.
-- WARNING: Project path validation only requires an absolute path. Existing `/api/agent` resolves and checks project paths before use in `server/routes/agent.js:891-900`. The Algorithm plan should specify existence/access checks or explicitly delegate those failures to the runner.
+- WARNING: The run-id grammar is still only implied. The plan rejects `../escape` and accepts `valid-run_123` at lines 696-699, while generated examples use `alg_01h...`. Because run ids are directory names, the exact regex should be canonical.
+- WARNING: Store tests need mandatory temp-root isolation. The testing strategy mentions temporary run-store directories at line 626, but the Behavior 4 sample test creates run metadata without showing `ALGORITHM_RUN_STORE_ROOT` setup/cleanup at lines 1297-1304. Without an explicit fixture, tests can write to `~/.cosmic-agent/algorithm-runs`.
+- WARNING: The per-run append lock is process-local. That is fine for the current single Node server model, but the plan should explicitly state that multi-process/clustered app instances are unsupported until a file lock or DB-backed store exists.
 
 ### Recommendations
 
-- Add a data model section with `metadata.json`, `events.jsonl`, and `state.json` examples, or choose SQLite and include table definitions.
-- Add `createdAt`, `updatedAt`, `ownerUserId`, `runnerRequestId`, `runnerPid` or `externalRunHandle`, and `lastSequence` to metadata.
-- Define session-id update rules from runner output and require tests for `sessionId: null -> "..."`.
-- Define pending decision schemas and projection rules before implementing decision routes.
+- Define `validateRunId` as an exact regex and require path resolution to verify the final run directory remains under the configured root.
+- Add a test harness note: every run-store/route integration test must set `ALGORITHM_RUN_STORE_ROOT` to `fs.mkdtemp(...)` and clean it with `rm -rf`/`fs.rm(..., { recursive: true, force: true })`.
+- Add a storage-scope sentence: sequence guarantees are per Node process for the file-backed first pass.
 
 ## API Review
 
 ### Well-Defined
 
-- `POST /api/algorithm-runs` has concrete request and response examples.
-- The route set includes JSON read routes, SSE event reads, lifecycle commands, and decision commands.
-- The plan includes a useful API error-code table.
-- The route mount behind app auth is consistent with local protected APIs.
+- The main endpoint set is complete: start, state, events JSON/SSE, lifecycle, question answer, and permission decision.
+- Success and failure examples exist for start, read, lifecycle, and decisions.
+- Owner mismatch returns a versioned `403 forbidden` after `authenticateToken` succeeds.
+- Regression coverage now includes adding direct `/api/agent` and `/api/sessions` route contract tests before declaring the mount non-invasive.
 
 ### Missing or Unclear
 
-- CRITICAL: The `auth_required` error contract cannot be produced by the router as mounted. `authenticateToken` runs before `algorithmRunsRouter` and returns plain `{ error }`; invalid JWTs return `403`, not the plan's versioned `401` envelope. The error table at lines 1009-1018 and mount test at lines 921-929 need to reflect this or use a route-local auth wrapper.
-- CRITICAL: State/events/lifecycle/decision response bodies are not fully specified. Read routes at lines 145-151 only describe shapes in prose, lifecycle routes only name command payloads at lines 153-159, and decision routes only describe validation at lines 161-166.
-- WARNING: Regression testing says existing `/api/agent`, `/api/sessions`, and CopilotKit/Nolme routes should continue to pass at lines 168-173, but the final regression guard at lines 988-992 omits `/api/agent` and `/api/sessions` route tests.
+- WARNING: Behavior 8 should include the optional global `/api` API-key gate in the auth test matrix or explicitly isolate tests with `delete process.env.API_KEY`.
+- WARNING: The plan asks for SSE timer cleanup tests, but this repo has no existing generated test that exercises a real `text/event-stream` connection or request close. The plan should spell out whether to use fake timers with a mocked response/request or a real HTTP stream test.
 
 ### Recommendations
 
-- Decide whether Algorithm routes inherit existing auth error bodies or install a wrapper that converts auth failures into the versioned envelope before the router.
-- Add success and failure examples for every route, including `state`, JSON `events`, SSE frame format, pause/resume/stop, answer, and permission decision.
-- Add regression commands for at least one `/api/sessions` messages test and one `/api/agent` route contract test, or state that such tests do not currently exist and must be added.
+- Add test setup/teardown for `process.env.API_KEY` in mount tests.
+- Add an SSE test harness pattern before implementation: real HTTP streaming with abort/close, or unit tests around `server/algorithm-runs/sse.js` with fake timers and mocked request/response objects.
 
 ## Critical Issues To Address Before Implementation
 
-1. **Runner/Event Contract**: The child-process protocol cannot produce the promised run event stream.
-   - Impact: `POST /api/algorithm-runs` may return a run stuck in `starting`, and state/events routes may have no source of truth after the initial command response.
-   - Recommendation: define newline-delimited runner frames or another explicit event ingestion mechanism before route implementation.
+1. **Decision Forwarding Order**: Pending state is cleared before runner success is known.
+   - Impact: a failed runner decision can make the UI believe a question or permission was resolved when the runner never received it.
+   - Recommendation: append state-clearing `answered/decided` events only after runner success, or introduce non-clearing submitted/failed audit events.
 
-2. **Run Ownership**: Run metadata has no authenticated owner and no authorization rule for `runId`.
-   - Impact: in multi-user or platform mode, any authenticated caller who knows a `runId` could read state or issue lifecycle/decision commands.
-   - Recommendation: store `ownerUserId` at creation and enforce it in every `/:runId` route.
-
-3. **State/Event/Decision Schemas**: Decision routes depend on state fields that are not defined.
-   - Impact: implementers will invent incompatible `pendingQuestion`, `pendingPermission`, event, and status shapes, making route validation and tests weak.
-   - Recommendation: add full schemas and event projection rules before TDD starts.
-
-4. **Auth/Error Contract**: The versioned `auth_required` envelope conflicts with mount-level `authenticateToken`.
-   - Impact: tests written from the plan will fail against real Express mount behavior, or implementation will duplicate auth logic inconsistently.
-   - Recommendation: revise the plan to accept existing auth bodies or introduce an explicit auth adapter.
-
-5. **Persistence Boundary**: The storage root and module split are not settled.
-   - Impact: implementation may scatter metadata, snapshots, and events across incompatible file/database locations and make replay/corruption handling brittle.
-   - Recommendation: define a single durable store contract and exact file/table layout.
+2. **Start Failure Cleanup**: Metadata is created before spawn/acceptance, but pre-accepted failures do not define cleanup.
+   - Impact: failed starts can leave orphaned `starting` runs and stale event cursors.
+   - Recommendation: validate before create where possible; otherwise mark the run `failed` with a terminal event or delete the run before returning the error.
 
 ## Suggested Plan Amendments
 
 ```diff
-# In Desired End State
-~ Modify: collapse or clearly split run-store/event-store ownership.
-+ Add: run metadata includes ownerUserId, createdAt, updatedAt, lastSequence, and runner handle/session update fields.
+# In Pending Decision Schemas / Behavior 7
+- Answering or deciding appends algorithm.question.answered or algorithm.permission.decided before forwarding the command result to callers.
++ Validate pending state first, forward the decision to the runner, then append algorithm.question.answered or algorithm.permission.decided only after the runner accepts/succeeds.
++ If audit-before-forward is required, append a non-clearing decision.submitted event and append decision.forward_failed on runner failure.
 
-# In Route Contract
-+ Add: route-level authorization rule: req.user.id must match run.ownerUserId for every /:runId route.
-~ Modify: auth_required behavior to match authenticateToken's existing 401/403 plain { error } bodies, or specify a custom wrapper.
-+ Add: full success/failure bodies for state, events, SSE frames, lifecycle, question answer, and permission decision.
+# In Start lifetime semantics / Behavior 2
++ If start fails after metadata creation but before accepted, either delete the run directory or append algorithm.run.failed and persist terminal failed state before returning the mapped error.
++ If accepted and terminal frames arrive in the same stdout chunk, register/unregister ordering must not leave the child in process-registry.
 
-# In Behavior 3: Command Client
-~ Modify: replace "one JSON response from stdout" with a newline-delimited protocol.
-+ Add: frame schemas for result, event, state, log, and error.
-+ Add: tests for partial stdout chunks, non-JSON logs, stderr, ENOENT, non-zero exit, timeout, unsupported schema, closed-without-response, and max output.
+# In Runner Frame Protocol / Route Contract
+~ Decide whether accepted is persisted as algorithm.runner.accepted before the 202 response.
+~ Align the start response status with that decision: starting if accepted is only a handshake, running if accepted is a stored event.
 
-# In Behavior 4: Run Store
-+ Add: storage layout examples for metadata.json, events.jsonl, and state.json, or SQLite table definitions.
-+ Add: sequence allocation, append-before-publish, duplicate/out-of-order behavior, and snapshot recovery rules.
-+ Add: sessionId null-to-known update rules after runner reports a provider/core session id.
+# In Behavior 3 tests
+- tests/fixtures/fake-algorithm-runner.mjs
++ tests/fixtures/algorithm-runner-fixture.mjs
 
-# In Behavior 5: State And Event Routes
-+ Add: SSE disconnect cleanup, heartbeat interval, max connection lifetime, and terminal close semantics.
-+ Add: tests for owner mismatch, backlog-before-heartbeat, and terminal close.
+# In Behavior 4 tests
++ Set ALGORITHM_RUN_STORE_ROOT to a per-test temp directory and clean it after each test.
++ Define validateRunId with an exact regex and assert path containment under the store root.
 
-# In Behavior 7: Decision Routes
-+ Add: AlgorithmQuestionRequest and AlgorithmPermissionRequest schemas.
-+ Add: answered/decided event shapes and stale-clearing projection rules.
-
-# In Integration And Regression Testing
-+ Add: /api/agent and /api/sessions regression tests or create missing route contract tests first.
+# In Behavior 8
++ Account for the existing global /api validateApiKey middleware when API_KEY is set, or explicitly clear API_KEY in focused mount tests.
 ```
 
 ## Review Checklist
 
 ### Contracts
 
-- [x] Component boundaries are identified.
-- [ ] Input/output contracts are fully specified.
-- [ ] Error contracts enumerate all failure modes.
-- [ ] Preconditions and postconditions are documented.
-- [ ] Invariants are identified and enforceable.
+- [x] Component boundaries are clearly defined.
+- [x] Input/output contracts are mostly specified.
+- [x] Error contracts enumerate runner and route failures.
+- [ ] Preconditions and postconditions are fully documented for start and decision failure cases.
+- [ ] Accepted-frame/status invariants are unambiguous.
 
 ### Interfaces
 
-- [ ] All public methods are defined with complete signatures.
-- [ ] Naming follows codebase conventions.
-- [ ] Interface matches existing production paths.
-- [ ] Extension points are considered.
-- [ ] Visibility/versioning strategy is explicit.
+- [x] Public module responsibilities are defined.
+- [x] Naming mostly follows codebase conventions.
+- [ ] Test fixture names are consistent.
+- [ ] Production env config vs test injection is explicit.
+- [x] Route visibility/mounting is appropriate.
 
 ### Promises
 
-- [ ] Behavioral guarantees are documented.
-- [ ] Async operations have timeout/cancellation handling.
-- [ ] Resource cleanup is specified.
-- [ ] Idempotency requirements are addressed.
-- [ ] Ordering guarantees are enforceable.
+- [x] Behavioral guarantees are documented for auth, storage, and SSE.
+- [x] Async timeout/cancellation handling is planned.
+- [ ] Decision failure does not corrupt pending state.
+- [ ] Start failure does not leave orphaned starting runs.
+- [ ] Registration ordering is defined for same-chunk accepted/result frames.
 
 ### Data Models
 
-- [ ] All fields have types.
-- [ ] Required vs optional is clear.
-- [ ] Relationships are documented.
-- [ ] Migration strategy is defined.
-- [ ] Serialization format and version behavior are specified.
+- [x] Fields have types.
+- [x] Required vs optional is clear.
+- [x] Relationships between metadata, state, and events are documented.
+- [ ] Test storage isolation is mandatory.
+- [ ] Run-id grammar and process-scope sequence guarantees are explicit.
 
 ### APIs
 
-- [x] Main endpoints are named.
-- [ ] Request/response formats are fully specified.
-- [ ] Error responses match the actual auth/mount behavior.
-- [ ] Authentication requirements are complete.
-- [ ] Versioning strategy is defined beyond schema-version rejection.
+- [x] All endpoints are named.
+- [x] Request/response formats are mostly specified.
+- [x] Error responses match `authenticateToken` for JWT failures.
+- [ ] Optional global API-key auth is included in the API contract.
+- [ ] SSE cleanup test strategy is concrete.
