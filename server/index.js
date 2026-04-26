@@ -68,6 +68,7 @@ import geminiRoutes from './routes/gemini.js';
 import pluginsRoutes from './routes/plugins.js';
 import messagesRoutes from './routes/messages.js';
 import nolmeStateRouter from './routes/nolme-state.js';
+import algorithmRunsRouter from './routes/algorithm-runs.js';
 import { mountCopilotKit } from './routes/copilotkit.js';
 import { mountNolmeStatic } from './routes/nolme-static.js';
 import { createNormalizedMessage } from './providers/types.js';
@@ -463,6 +464,9 @@ app.use('/api/plugins', authenticateToken, pluginsRoutes);
 
 // Unified session messages route (protected)
 app.use('/api/sessions', authenticateToken, messagesRoutes);
+
+// Algorithm Run API route (protected)
+app.use('/api/algorithm-runs', authenticateToken, algorithmRunsRouter);
 
 // Agent API Routes (uses API key authentication)
 app.use('/api/agent', agentRoutes);
