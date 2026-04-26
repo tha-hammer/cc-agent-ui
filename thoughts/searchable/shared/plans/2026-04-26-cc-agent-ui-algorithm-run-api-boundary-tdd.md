@@ -1,6 +1,6 @@
 ---
 date: 2026-04-26
-status: enhanced
+status: review-fixed
 repository: cc-agent-ui
 scope: cc-agent-ui only
 reference_plan: thoughts/searchable/shared/plans/2026-04-26-algorithm-run-api-boundary.md
@@ -69,7 +69,7 @@ This replacement plan narrows the work to one implementable slice:
 | Run identity | `server/algorithm-runs/run-store.js` owns run metadata keyed by `runId`, including `ownerUserId`, `sessionId`, provider, status, timestamps, runner handle fields, and cursor. |
 | State/events | `server/algorithm-runs/run-store.js` also appends/reads JSONL events, allocates sequences, and projects a server-side `AlgorithmRunState` snapshot. |
 | HTTP routes | `server/routes/algorithm-runs.js` mounts start, state, events, lifecycle, question, and permission routes. |
-| Auth mount | `server/index.js` mounts `/api/algorithm-runs` behind existing `authenticateToken`; auth failures keep the existing plain `{ error }` bodies. |
+| Auth mount | `server/index.js` mounts `/api/algorithm-runs` after the existing optional global `/api` `validateApiKey` gate and behind existing `authenticateToken`; auth failures keep the existing plain `{ error }` bodies. |
 
 ## What We're NOT Doing
 
@@ -105,18 +105,20 @@ The follow-up core-contract research confirms the same registry stance: the plan
 
 This section closes the review findings before implementation starts.
 
-1. Runner output is newline-delimited JSON frames. The start route returns `202` after an `accepted` frame, then a tracked child process continues to stream `event`, `state`, `log`, `error`, and terminal `result` frames into `run-store.js`.
+1. Runner output is newline-delimited JSON frames. The start route returns `202` only after an `accepted` frame has been durably appended as `algorithm.runner.accepted`; the response status is therefore `running`, not `starting`. A tracked child process then continues to stream `event`, `state`, `log`, `error`, and terminal `result` frames into `run-store.js`.
 2. Every run is owned by `ownerUserId = String(req.user.id)` at creation time. Every `/:runId` route reads metadata first and returns a versioned `403 forbidden` response when the authenticated user does not own the run.
 3. `run-store.js` is the only persistence module for metadata, events, and projected state.
 4. `ALGORITHM_RUNNER_COMMAND` is exactly a JSON array of non-empty strings, for example `["node","/abs/path/algorithm-runner.mjs"]`. Invalid JSON, an empty array, a non-string element, or an empty executable is `runner_unavailable`.
 5. Algorithm events are a new route/store contract. They do not feed `NormalizedMessage`, AG-UI, CopilotKit, or Nolme in this plan. Existing provider-normalized runtime surfaces are regression guards only.
 6. Mount-level authentication uses existing `authenticateToken` behavior. Missing tokens return HTTP `401` plain `{ "error": "Access denied. No token provided." }`; invalid JWTs return HTTP `403` plain `{ "error": "Invalid token" }`. Versioned Algorithm envelopes begin only after auth succeeds.
-7. State, event, lifecycle, question, and permission schemas below are canonical for this plan. Tests must assert these shapes before implementation fills in route internals.
-8. The first real executable should be configured as `ALGORITHM_RUNNER_COMMAND='["node","./server/algorithm-runs/runner-adapter.js"]'`.
-9. Tests should use a deterministic fixture executable, for example `ALGORITHM_RUNNER_COMMAND='["node","./tests/fixtures/algorithm-runner-fixture.mjs"]'`.
-10. The runner adapter is a cc-agent-ui compatibility wrapper. It may call out to core behavior later, but route, store, and command-client tests depend only on the NDJSON protocol.
-11. `~/.cosmic-agent/algorithm-runs` remains intentionally separate from core `MEMORY/STATE/algorithms`; the UI store is auth-scoped, sequence-cursored, and sanitized for public API responses.
-12. The only first-pass core-to-API field mapping is the explicit safe mapping in the `Core Runner Adapter Boundary` section below.
+7. `/api/algorithm-runs` also inherits the existing optional global `/api` `validateApiKey` gate from `server/index.js` when `API_KEY` is configured. Missing or wrong `x-api-key` fails before `authenticateToken` with plain HTTP `401` `{ "error": "Invalid API key" }`.
+8. State, event, lifecycle, question, and permission schemas below are canonical for this plan. Tests must assert these shapes before implementation fills in route internals.
+9. The first real executable should be configured as `ALGORITHM_RUNNER_COMMAND='["node","./server/algorithm-runs/runner-adapter.js"]'`.
+10. Production route callers omit `executable` and `args` and use `ALGORITHM_RUNNER_COMMAND`; unit/integration tests may inject `executable` and `args` directly to avoid mutating global process env.
+11. Tests should use a deterministic fixture executable, for example `ALGORITHM_RUNNER_COMMAND='["node","./tests/fixtures/algorithm-runner-fixture.mjs"]'`.
+12. The runner adapter is a cc-agent-ui compatibility wrapper. It may call out to core behavior later, but route, store, and command-client tests depend only on the NDJSON protocol.
+13. `~/.cosmic-agent/algorithm-runs` remains intentionally separate from core `MEMORY/STATE/algorithms`; the UI store is auth-scoped, sequence-cursored, and sanitized for public API responses.
+14. The only first-pass core-to-API field mapping is the explicit safe mapping in the `Core Runner Adapter Boundary` section below.
 
 ## Canonical Data Model And Schemas
 
@@ -133,6 +135,16 @@ ${ALGORITHM_RUN_STORE_ROOT}/${runId}/events.jsonl
 ```
 
 The route never accepts storage paths from clients. `runId` validation must make the path join safe before any filesystem access. `DATABASE_PATH`, `server/database/auth.db`, and Nolme sidecars are not used by this store.
+
+Canonical `runId` grammar:
+
+```text
+^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$
+```
+
+`validateRunId` rejects empty strings, dots, slashes, path separators, URL-encoded traversal, and any value outside this regex. Store path construction must still resolve the candidate directory and verify that the final path remains under the configured store root before reading or writing. The regex is necessary but not sufficient by itself.
+
+The first file-backed implementation supports one Node server process. Per-run append locks are process-local, so multi-process or clustered deployments are unsupported until this store uses an OS file lock or a DB-backed sequence allocator.
 
 ### `AlgorithmRunMetadata`
 
@@ -281,7 +293,7 @@ type AlgorithmPermissionDecisionBody = {
 };
 ```
 
-Answering or deciding appends `algorithm.question.answered` or `algorithm.permission.decided` before forwarding the command result to callers. A stale id returns `404 not_found` and does not call the runner.
+Answering or deciding validates the current pending state first, forwards the decision to the runner, and appends `algorithm.question.answered` or `algorithm.permission.decided` only after the runner accepts/succeeds. A stale id returns `404 not_found` and does not call the runner. A runner failure returns the mapped error and must leave the pending question or permission intact.
 
 ### Runner Frame Protocol
 
@@ -293,6 +305,12 @@ Answering or deciding appends `algorithm.question.answered` or `algorithm.permis
 | `runAlgorithmCommand(input)` | Spawn the configured command for short lifecycle/decision commands, write one request line, consume NDJSON stdout until a `result` or `error` frame, and return a typed result. |
 | `startAlgorithmRun(input)` | Spawn a long-lived start process, write one request line, wait for `accepted`, register the child in `process-registry.js`, and stream later frames to `run-store.js` until exit. |
 | `mapRunnerResultToHttp(result)` | Map command-client failures to the route error table without leaking raw stderr. |
+
+Config source contract:
+
+- Production routes call `runAlgorithmCommand` and `startAlgorithmRun` without `executable` or `args`; the command client reads `ALGORITHM_RUNNER_COMMAND` through `parseRunnerCommandEnv`.
+- Tests may pass `executable` and `args` directly. Direct arguments override env only for that call and are the required pattern for fixture-runner tests.
+- Route tests that need env behavior must save and restore `process.env.ALGORITHM_RUNNER_COMMAND`; route code must not mutate global env.
 
 Request line:
 
@@ -315,11 +333,15 @@ The stdout reader must buffer partial lines and flush one trailing complete line
 
 Start lifetime semantics:
 
+- Validate request shape, project path, and runner command configuration before creating metadata whenever those checks do not require a child process.
 - `POST /api/algorithm-runs` creates metadata with `status: "starting"` and `ownerUserId` before spawning.
+- If spawning or pre-acceptance protocol handling fails after metadata creation, append `algorithm.run.failed`, persist terminal `status: "failed"`, set `endedAt`, and only then return the mapped error. Failed starts must not leave durable `starting` runs.
 - The route calls `startAlgorithmRun` and waits only until `accepted` or a start timeout.
-- After `accepted`, `process-registry.js` owns the child. The HTTP handler returns `202`.
+- On `accepted`, append `algorithm.runner.accepted` before returning `202`; projection sets `status: "running"`, `startedAt`, `externalRunHandle`, and `sessionId` when present.
+- After `accepted` is appended, `process-registry.js` owns the child. The HTTP handler returns `202`.
 - Later runner frames are appended to `run-store.js`; they are the source for state/events routes.
 - On child exit without a terminal event, the registry appends `algorithm.run.failed` with `runner_protocol_error`.
+- If `accepted` and terminal frames arrive in the same stdout chunk, `startAlgorithmRun` must process `accepted`, register the child, drain the buffered post-accepted frames through the store, and immediately unregister after the terminal frame. No already-terminal child may remain active in `process-registry.js`.
 - `stop` sends a control command and, if the process is still registered after the command result, terminates the child.
 
 ## Core Runner Adapter Boundary
@@ -398,14 +420,15 @@ Success response, HTTP 202:
     "sessionId": null,
     "projectPath": "/absolute/project/path",
     "provider": "claude",
-    "status": "starting",
+    "status": "running",
     "createdAt": "2026-04-26T15:04:05.000Z",
-    "updatedAt": "2026-04-26T15:04:05.000Z",
-    "eventCursor": { "sequence": 0 }
+    "updatedAt": "2026-04-26T15:04:06.000Z",
+    "startedAt": "2026-04-26T15:04:06.000Z",
+    "eventCursor": { "sequence": 1 }
   },
   "links": {
     "state": "/api/algorithm-runs/alg_01h.../state",
-    "events": "/api/algorithm-runs/alg_01h.../events?after=0"
+    "events": "/api/algorithm-runs/alg_01h.../events?after=1"
   }
 }
 ```
@@ -517,6 +540,7 @@ SSE cleanup requirements:
 - `req.on('close')` must tear down timers/watchers.
 - Terminal runs close immediately after the backlog and terminal event are sent.
 - Auth for EventSource may use the existing `?token=` query fallback supported by `authenticateToken`.
+- Tests must cover SSE cleanup with unit tests around `server/algorithm-runs/sse.js` using fake timers and mocked request/response objects, plus at least one real HTTP streaming route test that aborts the client connection and observes cleanup.
 
 ### Lifecycle Routes
 
@@ -617,7 +641,7 @@ Question answer success, HTTP 200:
 }
 ```
 
-Permission decision success follows the same envelope with `permissionId` instead of `questionId`. Empty answers return `400 invalid_request`; stale question/permission ids return `404 not_found`; runner failures return `502 runner_protocol_error` unless mapped to a more specific runner code.
+Permission decision success follows the same envelope with `permissionId` instead of `questionId`. Empty answers return `400 invalid_request`; stale question/permission ids return `404 not_found`; runner failures return `502 runner_protocol_error` unless mapped to a more specific runner code and must not clear pending state.
 
 ## Testing Strategy
 
@@ -629,12 +653,12 @@ Permission decision success follows the same envelope with `permissionId` instea
 ## Observable Behaviors
 
 1. Given an Algorithm Run request, when the payload is malformed or unsupported, then the server rejects it before touching the command runner or filesystem.
-2. Given a valid authenticated start request, when `/api/algorithm-runs` is called, then cc-agent-ui creates owner-bound metadata, waits for a runner `accepted` frame, registers the child process, and returns a versioned 202 response.
+2. Given a valid authenticated start request, when `/api/algorithm-runs` is called, then cc-agent-ui creates owner-bound metadata, durably appends `algorithm.runner.accepted`, registers the child process, and returns a versioned 202 response with `status: "running"`.
 3. Given the cc-agent-ui runner adapter executable, when the command client sends a JSON request line, then the adapter emits only the versioned NDJSON frames defined by this plan and never exposes core-private state.
 4. Given stored Algorithm events, when state/events routes are queried, then cc-agent-ui authorizes `ownerUserId`, returns deterministic snapshots, and cursor-filters events without accepting arbitrary event paths.
 5. Given an existing run, when pause/resume/stop routes are called, then cc-agent-ui authorizes the owner, validates lifecycle state, forwards a typed command, and records returned events/state before responding.
-6. Given pending question or permission state, when decision routes are called, then cc-agent-ui authorizes the owner and validates ids against current state before forwarding decisions.
-7. Given an authenticated app server, when `/api/algorithm-runs` is mounted, then mount-level auth failures use existing `{ error }` bodies and existing non-Algorithm routes are unchanged.
+6. Given pending question or permission state, when decision routes are called, then cc-agent-ui authorizes the owner, validates ids against current state, forwards decisions, and clears pending state only after runner success.
+7. Given an authenticated app server, when `/api/algorithm-runs` is mounted, then optional global API-key failures and mount-level JWT auth failures use existing `{ error }` bodies and existing non-Algorithm routes are unchanged.
 
 ---
 
@@ -644,7 +668,7 @@ Permission decision success follows the same envelope with `permissionId` instea
 
 - `resource_id`: `[PROPOSED] 2d7eb82b-b41e-430b-88a6-ed828a649b24`
 - `address_alias`: `algorithm.run_contracts`
-- `predicate_refs`: `schemaVersion == 1`, provider enum, run id safe segment, projectPath absolute and accessible, command enum, status enum, decision body schemas.
+- `predicate_refs`: `schemaVersion == 1`, provider enum, exact run id regex plus path containment, projectPath absolute and accessible, command enum, status enum, decision body schemas.
 - `codepath_ref`: `server/algorithm-runs/contracts.js::validateStartRunRequest`
 - `schema_contract_refs`: `[PROPOSED] .cw9/schema/middleware_schema.json::AlgorithmRunContracts`
 
@@ -663,6 +687,8 @@ Edge cases:
 - `schemaVersion: 2`
 - provider `"nolme"` rejected
 - `runId: "../escape"` rejected
+- `runId: ".hidden"`, `"with/slash"`, and `"bad%2Fescape"` rejected
+- `runId: "valid-run_123"` accepted by the exact regex
 - `projectPath: "relative/path"` rejected
 - non-existent `projectPath` rejected before runner call unless implementation explicitly documents runner-delegated path failures in the test
 - empty prompt rejected for start only
@@ -695,6 +721,9 @@ describe('Algorithm Run contract validation', () => {
 
   it('rejects run ids that can escape the run store', () => {
     expect(validateRunId('../escape').ok).toBe(false);
+    expect(validateRunId('.hidden').ok).toBe(false);
+    expect(validateRunId('with/slash').ok).toBe(false);
+    expect(validateRunId('bad%2Fescape').ok).toBe(false);
     expect(validateRunId('valid-run_123').ok).toBe(true);
   });
 
@@ -773,7 +802,7 @@ Manual:
 
 ### Test Specification
 
-Given a valid start request and a fake command runner, when the route is called, then the server creates a run id, writes owner-bound metadata, invokes `startAlgorithmRun` once, waits for `accepted`, registers the child, and returns a 202 response with links.
+Given a valid start request and a fake command runner, when the route is called, then the server creates a run id, writes owner-bound metadata, invokes `startAlgorithmRun` once, waits for `accepted`, durably appends `algorithm.runner.accepted`, registers the child, and returns a 202 response with `status: "running"` and links.
 
 Edge cases:
 
@@ -782,6 +811,9 @@ Edge cases:
 - command client timeout returns 504.
 - project path missing returns 400 before runner call.
 - metadata includes `ownerUserId: String(req.user.id)`.
+- no metadata is created for validation failures that can be detected before spawning.
+- start failures after metadata creation append `algorithm.run.failed` and persist terminal `failed` state before returning the mapped error.
+- accepted is stored as sequence 1 before the route returns 202.
 - runner `accepted.sessionId` updates metadata when non-null.
 
 ### TDD Cycle
@@ -822,14 +854,21 @@ describe('POST /api/algorithm-runs', () => {
       ownerUserId: '42',
       projectPath: '/tmp/project',
       provider: 'claude',
-      status: 'starting',
+      status: 'running',
       createdAt: '2026-04-26T15:04:05.000Z',
-      updatedAt: '2026-04-26T15:04:05.000Z',
-      eventCursor: { sequence: 0 },
+      updatedAt: '2026-04-26T15:04:06.000Z',
+      startedAt: '2026-04-26T15:04:06.000Z',
+      eventCursor: { sequence: 1 },
     });
 
     // start test app with req.user.id = 42, POST valid body
-    // assert createRunMetadata ownerUserId, startAlgorithmRun payload, status/body/links
+    // assert createRunMetadata ownerUserId, startAlgorithmRun payload,
+    // accepted event append, status/body/links
+  });
+
+  it('marks a pre-acceptance spawn failure as failed instead of leaving a starting run', async () => {
+    // mock metadata creation followed by startAlgorithmRun runner_unavailable/timeout
+    // assert algorithm.run.failed append, terminal metadata, and mapped error response
   });
 });
 ```
@@ -867,6 +906,9 @@ router.post('/', async (req, res) => {
 - Generate run ids in one helper, not in the route body.
 - Store `ownerUserId = String(req.user.id)` in metadata before spawning.
 - Call `startAlgorithmRun`, not `runAlgorithmCommand`, for the async start route.
+- Persist `algorithm.runner.accepted` before the 202 response; the response snapshot is `running` with cursor sequence 1.
+- Validate runner config and project path before metadata creation where possible.
+- For failures after metadata creation but before accepted, append `algorithm.run.failed` and persist terminal failed state before returning the mapped error.
 - If `accepted.sessionId` is non-null, update metadata before responding.
 - Ensure `server/index.js` mount is a single protected line near existing API mounts:
   `app.use('/api/algorithm-runs', authenticateToken, algorithmRunsRouter);`
@@ -906,6 +948,8 @@ Given a configured command executable, when cc-agent-ui sends a command payload,
 
 The protocol is the one defined in `Runner Frame Protocol` above. `startAlgorithmRun` waits for `accepted`; `runAlgorithmCommand` waits for `result` or `error`.
 
+Production code obtains the executable from `ALGORITHM_RUNNER_COMMAND`. Tests may pass `executable` and `args` directly; every direct fixture reference must use `tests/fixtures/algorithm-runner-fixture.mjs`.
+
 ### TDD Cycle
 
 #### Red: Write Failing Tests
@@ -933,7 +977,7 @@ describe('Algorithm command client', () => {
   it('sends a JSON request line and parses NDJSON result frames from a fake runner', async () => {
     const result = await runAlgorithmCommand({
       executable: process.execPath,
-      args: ['tests/fixtures/fake-algorithm-runner.mjs'],
+      args: ['tests/fixtures/algorithm-runner-fixture.mjs'],
       command: 'pause',
       runId: 'alg_1',
       requestId: 'req_1',
@@ -947,7 +991,7 @@ describe('Algorithm command client', () => {
   it('returns accepted from startAlgorithmRun and leaves later frames to the store callbacks', async () => {
     const result = await startAlgorithmRun({
       executable: process.execPath,
-      args: ['tests/fixtures/fake-algorithm-runner.mjs'],
+      args: ['tests/fixtures/algorithm-runner-fixture.mjs'],
       runId: 'alg_1',
       requestId: 'req_1',
       ownerUserId: '42',
@@ -969,6 +1013,11 @@ describe('Algorithm command client', () => {
 
   it('maps non-JSON stdout, unsupported schema, mismatched requestId, and non-zero exit to runner_protocol_error', async () => {
     // fake runners exercise each protocol failure
+  });
+
+  it('registers then immediately unregisters when accepted and terminal frames share one stdout chunk', async () => {
+    // fixture emits accepted + result synchronously in one chunk
+    // assert no terminal child remains registered after buffered frames drain
   });
 });
 ```
@@ -1002,11 +1051,13 @@ export async function startAlgorithmRun(input) {
 #### Refactor
 
 - Parse `ALGORITHM_RUNNER_COMMAND` only as a JSON array of non-empty strings.
+- Use `ALGORITHM_RUNNER_COMMAND` in production callers; direct `executable`/`args` are test injection only.
 - Use `spawn(command, args, { shell: false })`.
 - Include stderr in private diagnostics but never raw stderr in public error bodies.
 - Enforce max stdout/stderr byte budgets.
 - Kill timed-out child processes.
 - Keep stdout line buffering independent from route code so existing CLI integrations are not modified.
+- In `startAlgorithmRun`, process `accepted`, register the child, and only then drain buffered post-accepted frames. If the drained frames are terminal, unregister in the same tick.
 
 #### Process Registry Red/Green
 
@@ -1049,6 +1100,7 @@ Registry requirements:
 
 - The registry is process-local and best-effort; crash recovery comes from `run-store.js` detecting non-terminal runs whose child is absent and appending `algorithm.run.failed`.
 - Register only after `accepted`; unregister on `exit`, `error`, terminal result, timeout, and explicit stop cleanup.
+- Registration is allowed even when terminal frames are already buffered after `accepted`, but unregister must run immediately after the terminal frame is persisted.
 - Never expose child process objects through routes.
 
 ### Success Criteria
@@ -1212,6 +1264,16 @@ process.stdin.on('data', (chunk) => {
 });
 process.stdin.on('end', () => {
   const request = JSON.parse(input.trim());
+  if (request.command === 'start') {
+    process.stdout.write(JSON.stringify({
+      schemaVersion: 1,
+      kind: 'accepted',
+      requestId: request.requestId,
+      runId: request.runId,
+      externalRunHandle: 'fixture-run',
+      sessionId: null,
+    }) + '\n');
+  }
   process.stdout.write(JSON.stringify({
     schemaVersion: 1,
     kind: 'result',
@@ -1266,6 +1328,8 @@ Given run metadata and event JSONL stored under the server-owned run directory, 
 
 Edge cases:
 
+- every run-store and route integration test sets `ALGORITHM_RUN_STORE_ROOT` to a per-test temp directory and removes it during cleanup
+- `validateRunId` enforces `^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$` and store helpers verify final path containment under the store root
 - missing run returns `not_found`
 - malformed JSONL line returns `state_corrupt`
 - normal append allocates `sequence: lastSequence + 1`
@@ -1284,7 +1348,10 @@ Edge cases:
 File: `tests/generated/test_algorithm_run_store.spec.ts`
 
 ```ts
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 import {
   appendAlgorithmEvent,
   createRunMetadata,
@@ -1294,6 +1361,24 @@ import {
 } from '../../server/algorithm-runs/run-store.js';
 
 describe('Algorithm run store', () => {
+  let previousRoot: string | undefined;
+  let tempRoot: string;
+
+  beforeEach(async () => {
+    previousRoot = process.env.ALGORITHM_RUN_STORE_ROOT;
+    tempRoot = await mkdtemp(join(tmpdir(), 'algorithm-runs-'));
+    process.env.ALGORITHM_RUN_STORE_ROOT = tempRoot;
+  });
+
+  afterEach(async () => {
+    if (previousRoot === undefined) {
+      delete process.env.ALGORITHM_RUN_STORE_ROOT;
+    } else {
+      process.env.ALGORITHM_RUN_STORE_ROOT = previousRoot;
+    }
+    await rm(tempRoot, { recursive: true, force: true });
+  });
+
   it('stores metadata and returns events after a cursor', async () => {
     await createRunMetadata({
       runId: 'alg_1',
@@ -1328,6 +1413,11 @@ describe('Algorithm run store', () => {
     expect(JSON.stringify(state)).not.toContain('events.jsonl');
     expect(JSON.stringify(state)).not.toContain('/tmp/p');
   });
+
+  it('rejects unsafe run ids and verifies path containment under the store root', async () => {
+    // validateRunId('../escape') and '.hidden' fail before any filesystem access
+    // resolved store paths must remain descendants of tempRoot
+  });
 });
 ```
 
@@ -1359,6 +1449,7 @@ export async function readAlgorithmRunState(runId) {
 - Use atomic write via temp file then rename for snapshots.
 - Store under a server-owned root, defaulting to `~/.cosmic-agent/algorithm-runs/<runId>/`.
 - Use one per-run append lock so runner frames and lifecycle/decision route events serialize through the same sequence allocator.
+- Document that sequence guarantees are per Node process for the file-backed first pass; clustered app instances need a future file lock or DB store.
 - Add small helpers for event JSONL parse and projection.
 
 ### Success Criteria
@@ -1392,6 +1483,11 @@ Manual:
 ### Test Specification
 
 Given an existing run owned by the authenticated user with events 1 through 3, when a caller requests `after=1`, then the response contains events 2 and 3 and cursor 3. Given `stream=1`, the route emits backlog SSE events in sequence order before heartbeats, tears down timers on disconnect, and closes for terminal runs.
+
+SSE harness pattern:
+
+- Route integration tests use a real HTTP server and native `fetch`/stream reader or `AbortController` to assert `text/event-stream`, backlog-before-heartbeat ordering, and client abort behavior.
+- `server/algorithm-runs/sse.js` unit tests use `vi.useFakeTimers()` with mocked `req`/`res` event emitters to assert polling, heartbeat, max lifetime, and close cleanup without waiting for wall-clock time.
 
 Edge cases:
 
@@ -1431,7 +1527,13 @@ describe('Algorithm run state/events routes', () => {
   });
 
   it('tears down SSE timers when the request closes', async () => {
+    // unit-test sse.js with fake timers and mocked req/res emitters
     // simulate req.close and assert watcher/timers are cleared
+  });
+
+  it('aborts a real SSE HTTP stream and releases route resources', async () => {
+    // open /events?stream=1 against a real ephemeral HTTP server
+    // abort the fetch/EventSource equivalent and assert cleanup hook ran
   });
 });
 ```
@@ -1590,9 +1692,9 @@ Manual:
 
 ### Test Specification
 
-Given current state with a pending question owned by the authenticated user, when the matching question id is answered, then the route appends `algorithm.question.answered`, forwards `{ command: "answerQuestion", runId, questionId, answer }`, and returns the updated state. Given a stale id, the route returns 404 and does not call the runner.
+Given current state with a pending question owned by the authenticated user, when the matching question id is answered, then the route forwards `{ command: "answerQuestion", runId, questionId, answer }`, appends `algorithm.question.answered` only after runner success, and returns the updated state. Given a stale id, the route returns 404 and does not call the runner.
 
-Permission decisions follow the same shape with `{ schemaVersion: 1, allow: boolean, message?, updatedInput? }` and append `algorithm.permission.decided`.
+Permission decisions follow the same shape with `{ schemaVersion: 1, allow: boolean, message?, updatedInput? }` and append `algorithm.permission.decided` only after runner success. If the runner fails, the route returns the mapped runner error and the pending question or permission remains visible in state.
 
 Edge cases:
 
@@ -1601,7 +1703,7 @@ Edge cases:
 - stale question id rejected
 - stale permission id rejected
 - permission decision requires boolean `allow`
-- runner failure returns 502 with stable error envelope
+- runner failure returns 502 with stable error envelope and does not append a clearing `answered`/`decided` event
 
 ### TDD Cycle
 
@@ -1622,6 +1724,11 @@ describe('Algorithm decision routes', () => {
   it('rejects stale permission ids before command-client call', async () => {
     // mock pendingPermission.id = p1, POST /permissions/p2/decision
   });
+
+  it('keeps pending state when the runner rejects a matching decision', async () => {
+    // mock pendingQuestion.id = q1 and command client runner_protocol_error
+    // assert no algorithm.question.answered append and pendingQuestion remains q1
+  });
 });
 ```
 
@@ -1636,7 +1743,7 @@ File: `server/routes/algorithm-runs.js`
  * @path.id forward-algorithm-run-decision-command
  * @gwt.given an Algorithm run has a pending question or permission request
  * @gwt.when a matching decision route is posted
- * @gwt.then cc-agent-ui validates the pending id before forwarding the decision command
+ * @gwt.then cc-agent-ui validates the pending id, forwards the command, and clears pending state only after runner success
  * @reads 2d7eb82b-b41e-430b-88a6-ed828a649b24,332cd3c7-78dc-4c2e-b6d4-61e18711a5c6,3f65fa2f-4f24-4e0e-8e41-d4d2fee65499
  * @writes 3f65fa2f-4f24-4e0e-8e41-d4d2fee65499
  * @raises invalid_request:InvalidDecisionRequest, forbidden:AlgorithmRunForbidden, not_found:PendingDecisionNotFound, runner_protocol_error:AlgorithmRunnerProtocolError
@@ -1653,7 +1760,7 @@ async function handleDecision(req, res) {
 - Validate answer/decision bodies with `contracts.js` before reading or forwarding.
 - Read metadata and enforce owner before pending-state lookup.
 - Keep provider-specific Claude pending-permission functions out of this route; this route talks only to the Algorithm command client.
-- Record returned decision events through the run store.
+- Record returned decision events through the run store only after runner success; failed forwards leave pending state intact.
 
 ### Success Criteria
 
@@ -1685,7 +1792,7 @@ Manual:
 
 ### Test Specification
 
-Given the app route mount, when unauthenticated callers hit `/api/algorithm-runs`, then existing `authenticateToken` rejects them before the route handler with its plain `{ error }` body. Given existing routes, when their tests run, then they are unchanged. Because this checkout does not currently include direct `/api/agent` or `/api/sessions` route contract tests, Behavior 8 includes adding minimal smoke tests for those routes before declaring the mount non-invasive.
+Given the app route mount, when unauthenticated callers hit `/api/algorithm-runs`, then existing `authenticateToken` rejects them before the route handler with its plain `{ error }` body. When `API_KEY` is configured, the inherited global `/api` `validateApiKey` middleware rejects missing or wrong `x-api-key` before route-specific JWT auth. Given existing routes, when their tests run, then they are unchanged. Because this checkout does not currently include direct `/api/agent` or `/api/sessions` route contract tests, Behavior 8 includes adding minimal smoke tests for those routes before declaring the mount non-invasive.
 
 ### TDD Cycle
 
@@ -1695,6 +1802,14 @@ File: `tests/generated/test_algorithm_runs_mount_auth.spec.ts`
 
 ```ts
 describe('Algorithm run route mount auth', () => {
+  beforeEach(() => {
+    delete process.env.API_KEY;
+  });
+
+  afterEach(() => {
+    delete process.env.API_KEY;
+  });
+
   it('rejects unauthenticated requests before algorithm route code runs', async () => {
     // request without token, assert 401 { error: 'Access denied. No token provided.' }
     // assert algorithm route handler is not called
@@ -1702,6 +1817,12 @@ describe('Algorithm run route mount auth', () => {
 
   it('keeps invalid-token behavior as authenticateToken plain 403', async () => {
     // request with invalid bearer token, assert 403 { error: 'Invalid token' }
+  });
+
+  it('inherits the optional global /api API-key gate when API_KEY is configured', async () => {
+    process.env.API_KEY = 'test-api-key';
+    // request without x-api-key, assert 401 { error: 'Invalid API key' }
+    // request with x-api-key but no JWT reaches authenticateToken and returns missing-token 401
   });
 
   it('mounts under /api/algorithm-runs without changing /api/agent or /api/sessions', async () => {
@@ -1739,7 +1860,7 @@ app.use('/api/algorithm-runs', authenticateToken, algorithmRunsRouter);
 
 - Keep mount order near `server/index.js:464-478`.
 - Do not place the route under `/api/nolme` or `/api/copilotkit`.
-- Do not apply API-key auth from `/api/agent`; this is app-authenticated server API.
+- Do not add a route-specific API-key gate from `/api/agent`; this remains an app-authenticated server API, while still inheriting the existing optional global `/api` `validateApiKey` middleware.
 - Do not wrap or replace `authenticateToken`; owner authorization belongs inside `algorithmRunsRouter` after auth succeeds.
 
 ### Success Criteria
@@ -1812,10 +1933,11 @@ Algorithm router errors after `authenticateToken` succeeds use versioned envelop
 | `runner_protocol_error` | 502 | Runner exited non-zero, emitted malformed JSON/NDJSON, returned unsupported schema, mismatched run/request ids, or exceeded output budget. |
 | `state_corrupt` | 500 | Server-owned run state cannot be parsed. |
 
-Mount-level auth failures are not versioned Algorithm envelopes because `authenticateToken` runs before the router:
+Global API-key and mount-level auth failures are not versioned Algorithm envelopes because `validateApiKey` and `authenticateToken` run before the router:
 
 | Case | HTTP | Body |
 | --- | --- | --- |
+| `API_KEY` configured and `x-api-key` missing or wrong | 401 | `{ "error": "Invalid API key" }` |
 | Missing token | 401 | `{ "error": "Access denied. No token provided." }` |
 | Invalid token | 403 | `{ "error": "Invalid token" }` |
 
