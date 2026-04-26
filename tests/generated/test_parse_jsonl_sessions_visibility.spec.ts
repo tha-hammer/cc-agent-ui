@@ -131,4 +131,121 @@ describe('parseJsonlSessions visibility regression (Phase 1 · B12)', () => {
 
     expect(result.sessions).toEqual([]);
   });
+
+  it('hides an option-label title-generation subprocess', async () => {
+    const sessionId = '18a9b4ce-2e5e-4cc6-97fb-f350b362b5c0';
+    const filePath = writeJsonl(`${sessionId}.jsonl`, [
+      { type: 'queue-operation', operation: 'enqueue', sessionId, content: 'H — Lease negotiation (key terms, exclusivity, CAM)' },
+      { type: 'queue-operation', operation: 'dequeue', sessionId },
+      {
+        type: 'user',
+        sessionId,
+        parentUuid: null,
+        timestamp: '2026-04-26T01:28:22.079Z',
+        message: {
+          role: 'user',
+          content: 'H — Lease negotiation (key terms, exclusivity, CAM)',
+        },
+      },
+      { type: 'ai-title', sessionId, aiTitle: 'Lease negotiation key terms and CAM' },
+      {
+        type: 'assistant',
+        sessionId,
+        message: {
+          role: 'assistant',
+          content: [{
+            type: 'thinking',
+            thinking: [
+              'The user has sent a brief message: "H — Lease negotiation (key terms, exclusivity, CAM)"',
+              'I need to create a 2-4 word COMPLETE SENTENCE summarizing the user\'s CURRENT MESSAGE',
+              'Start with a gerund (-ing verb)',
+            ].join('\n'),
+          }],
+        },
+      },
+      {
+        type: 'assistant',
+        sessionId,
+        message: {
+          role: 'assistant',
+          content: [{ type: 'text', text: 'Negotiating lease terms.' }],
+        },
+      },
+      { type: 'last-prompt', sessionId, lastPrompt: 'H — Lease negotiation (key terms, exclusivity, CAM)' },
+    ]);
+
+    const result = await parseJsonlSessions(filePath);
+
+    expect(result.sessions).toEqual([]);
+  });
+
+  it('hides a natural-language title-generation subprocess', async () => {
+    const sessionId = '22818ae0-6d0a-4124-8fdc-dfa236298e7d';
+    const filePath = writeJsonl(`${sessionId}.jsonl`, [
+      { type: 'queue-operation', operation: 'enqueue', sessionId, content: "Let's research the laundromat business" },
+      { type: 'queue-operation', operation: 'dequeue', sessionId },
+      {
+        type: 'user',
+        sessionId,
+        parentUuid: null,
+        timestamp: '2026-04-25T21:56:17.131Z',
+        message: {
+          role: 'user',
+          content: "Let's research the laundromat business",
+        },
+      },
+      { type: 'ai-title', sessionId, aiTitle: 'Research laundromat business' },
+      {
+        type: 'assistant',
+        sessionId,
+        message: {
+          role: 'assistant',
+          content: [{
+            type: 'thinking',
+            thinking: [
+              'The user wants to research the laundromat business.',
+              'But wait, my job here is to generate a 4-word title for this work session.',
+            ].join('\n'),
+          }],
+        },
+      },
+      {
+        type: 'assistant',
+        sessionId,
+        message: {
+          role: 'assistant',
+          content: [{ type: 'text', text: 'Research Laundromat Business Opportunities' }],
+        },
+      },
+      { type: 'last-prompt', sessionId, lastPrompt: "Let's research the laundromat business" },
+    ]);
+
+    const result = await parseJsonlSessions(filePath);
+
+    expect(result.sessions).toEqual([]);
+  });
+
+  it('hides an ai-title-only option-label subprocess', async () => {
+    const sessionId = 'e4398c31-5480-4ee8-8fa8-b85d348910ab';
+    const filePath = writeJsonl(`${sessionId}.jsonl`, [
+      { type: 'queue-operation', operation: 'enqueue', sessionId, content: 'Both / comparing' },
+      { type: 'queue-operation', operation: 'dequeue', sessionId },
+      {
+        type: 'user',
+        sessionId,
+        parentUuid: null,
+        timestamp: '2026-04-25T21:13:27.057Z',
+        message: {
+          role: 'user',
+          content: 'Both / comparing',
+        },
+      },
+      { type: 'ai-title', sessionId, aiTitle: 'Comparing two approaches or options' },
+      { type: 'last-prompt', sessionId, lastPrompt: 'Both / comparing' },
+    ]);
+
+    const result = await parseJsonlSessions(filePath);
+
+    expect(result.sessions).toEqual([]);
+  });
 });

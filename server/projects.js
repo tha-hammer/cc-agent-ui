@@ -1284,10 +1284,30 @@ export function isMetaSession(entries) {
   let progressCount = 0;
   let assistantCount = 0;
   let firstUserMessage = null;
+  let hasAiTitle = false;
+  const assistantTexts = [];
   for (const entry of entries) {
     if (!entry) continue;
     if (entry.type === 'progress') progressCount++;
-    else if (entry.type === 'assistant') assistantCount++;
+    else if (entry.type === 'assistant') {
+      assistantCount++;
+
+      const content = entry.message?.content;
+      if (typeof content === 'string') {
+        assistantTexts.push(content);
+      } else if (Array.isArray(content)) {
+        for (const part of content) {
+          if (!part || typeof part !== 'object') continue;
+          if (part.type === 'text' && typeof part.text === 'string') {
+            assistantTexts.push(part.text);
+          } else if (part.type === 'thinking' && typeof part.thinking === 'string') {
+            assistantTexts.push(part.thinking);
+          }
+        }
+      }
+    } else if (entry.type === 'ai-title') {
+      hasAiTitle = true;
+    }
     else if (!firstUserMessage && entry.type === 'user') {
       const content = entry.message?.content;
       if (typeof content === 'string') {
@@ -1314,7 +1334,21 @@ export function isMetaSession(entries) {
     return true;
   }
 
-  return normalizedPrompt.startsWith('CONTEXT:') && normalizedPrompt.includes('CURRENT MESSAGE:');
+  if (normalizedPrompt.startsWith('CONTEXT:') && normalizedPrompt.includes('CURRENT MESSAGE:')) {
+    return true;
+  }
+
+  const looksLikeSelectionLabel = /^[A-Z]\s+[—-]\s+/.test(normalizedPrompt)
+    || normalizedPrompt.includes(' / ');
+  if (hasAiTitle && assistantCount === 0 && looksLikeSelectionLabel) {
+    return true;
+  }
+
+  const assistantTranscript = assistantTexts.join('\n');
+  const hasTitleGeneratorReasoning = /2-4 word complete sentence|4-word title|current message|start with a gerund|maximum 4 words/i
+    .test(assistantTranscript);
+
+  return hasAiTitle && hasTitleGeneratorReasoning;
 }
 
 // Add a project manually to the config (without creating folders)
