@@ -69,4 +69,109 @@ describe('P2 · projectPhaseTimeline', () => {
       },
     ])
   })
+
+  it('derives the active 3/7 algorithm state from assistant headers when the sidecar is empty', () => {
+    const projection = projectPhaseTimeline([
+      {
+        id: 'algorithm-run',
+        kind: 'text',
+        role: 'assistant',
+        content: [
+          '♻︎ Entering the SAI ALGORITHM… (v3.8.1) ═════════════',
+          '🗒️ TASK: Research laundromat business comprehensively',
+          '',
+          '━━━ 👁️ OBSERVE ━━━ 1/7',
+          'Loaded the prior research context and identified the remaining gaps.',
+          '',
+          '━━━ 🧠 THINK ━━━ 2/7',
+          'Risk: avoid duplicating the earlier laundromat research.',
+          '',
+          '━━━ 📋 PLAN ━━━ 3/7',
+          'Research will be split into 3 parallel clusters.',
+          '- Cluster A',
+          '- Cluster B',
+          '- Cluster C',
+          '',
+          '━━━ 🔨 BUILD ━━━ 4/7',
+          '',
+          '━━━ ⚡ EXECUTE ━━━ 5/7',
+        ].join('\n'),
+      },
+    ])
+
+    expect(projection.source).toBe('algorithm')
+    expect(projection.phaseKey).toBe('plan')
+    expect(projection.progress).toEqual({ current: 3, total: 7 })
+    expect(projection.phases.map((phase) => phase.title)).toEqual([
+      'Observe',
+      'Think',
+      'Plan',
+      'Build',
+      'Execute',
+      'Verify',
+      'Learn',
+    ])
+    expect(projection.phases.map((phase) => phase.status)).toEqual([
+      'complete',
+      'complete',
+      'active',
+      'idle',
+      'idle',
+      'idle',
+      'idle',
+    ])
+  })
+
+  it('ignores completed PRD state from an older run once a newer algorithm cycle starts', () => {
+    const projection = projectPhaseTimeline([
+      {
+        id: 'older-complete',
+        kind: 'tool_result',
+        toolUseResult: {
+          filePath: '/workspace/demo-project/PRD.md',
+          content: [
+            '---',
+            'phase: complete',
+            'progress: 16/16',
+            '---',
+          ].join('\n'),
+        },
+      },
+      {
+        id: 'new-cycle',
+        kind: 'text',
+        role: 'assistant',
+        content: [
+          '♻︎ Entering the SAI ALGORITHM… (v3.8.1) ═════════════',
+          '🗒️ TASK: Research laundromat business comprehensively',
+          '',
+          '━━━ 👁️ OBSERVE ━━━ 1/7',
+          'Loaded the prior research context and identified the remaining gaps.',
+          '',
+          '━━━ 🧠 THINK ━━━ 2/7',
+          'Risk: avoid duplicating the earlier laundromat research.',
+          '',
+          '━━━ 📋 PLAN ━━━ 3/7',
+          'Research will be split into 3 parallel clusters.',
+          '',
+          '━━━ 🔨 BUILD ━━━ 4/7',
+          '',
+          '━━━ ⚡ EXECUTE ━━━ 5/7',
+        ].join('\n'),
+      },
+    ])
+
+    expect(projection.source).toBe('algorithm')
+    expect(projection.phaseKey).toBe('plan')
+    expect(projection.progress).toEqual({ current: 3, total: 7 })
+    expect(projection.phases.map((phase) => phase.status)).toEqual([
+      'complete',
+      'complete',
+      'active',
+      'idle',
+      'idle',
+      'idle',
+      'idle',
+    ])
+  })
 })

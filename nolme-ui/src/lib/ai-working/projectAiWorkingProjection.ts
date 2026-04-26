@@ -67,7 +67,16 @@ function normalizeMessages(rawMessages: unknown): AiWorkingMessage[] {
 
 function deriveCurrentPhaseIndex(phases: NolmePhase[]): number {
   const activeIndex = phases.findIndex((phase) => phase.status === 'active');
-  return activeIndex >= 0 ? activeIndex : 0;
+  if (activeIndex >= 0) {
+    return activeIndex;
+  }
+
+  const firstIncompleteIndex = phases.findIndex((phase) => phase.status !== 'complete');
+  if (firstIncompleteIndex >= 0) {
+    return firstIncompleteIndex;
+  }
+
+  return phases.length > 0 ? phases.length - 1 : 0;
 }
 
 function projectQuickActions(state: NolmeAgentStateLike): string[] {

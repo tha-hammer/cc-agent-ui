@@ -94,6 +94,115 @@ function extractAlgorithmPhaseKeys(messages: AiWorkingMessage[]): Array<Exclude<
   return orderedKeys
 }
 
+function phaseFromHeaderLine(
+  line: string,
+): Exclude<AiWorkingPhaseKey, 'complete'> | null {
+  for (const phase of AI_WORKING_PHASES) {
+    const phaseKey = phase.key as Exclude<AiWorkingPhaseKey, 'complete'>
+    if (line.startsWith(phase.header)) {
+      return phaseKey
+    }
+  }
+
+  return null
+}
+
+function findLatestAlgorithmCycleStartIndex(messages: AiWorkingMessage[]): number {
+  let latestStartIndex = -1
+
+  for (let index = 0; index < messages.length; index += 1) {
+    const text = getAssistantText(messages[index]!)
+    if (!text) {
+      continue
+    }
+
+    const lines = text.split(/\r?\n/)
+    const hasObserveHeader = lines.some((line) => phaseFromHeaderLine(line.trim()) === 'observe')
+    const hasTaskLine = Boolean(extractAssistantTaskLine(text))
+    const hasExplicitEntryBanner = /entering\s+the\s+sai\s+algorithm/i.test(text)
+
+    if (hasObserveHeader && (hasTaskLine || hasExplicitEntryBanner)) {
+      latestStartIndex = index
+    }
+  }
+
+  return latestStartIndex
+}
+
+function scopeToLatestAlgorithmCycle(messages: AiWorkingMessage[]): AiWorkingMessage[] {
+  const startIndex = findLatestAlgorithmCycleStartIndex(messages)
+  return startIndex >= 0 ? messages.slice(startIndex) : messages
+}
+
+function extractAlgorithmHeaderState(messages: AiWorkingMessage[]): {
+  phaseKey: Exclude<AiWorkingPhaseKey, 'complete'> | null
+  progress: AiWorkingProgress | null
+  totalPhases: number | null
+} {
+  let latestSeenPhase: Exclude<AiWorkingPhaseKey, 'complete'> | null = null
+  let latestSeenProgress: AiWorkingProgress | null = null
+  let latestSubstantivePhase: Exclude<AiWorkingPhaseKey, 'complete'> | null = null
+  let latestSubstantiveProgress: AiWorkingProgress | null = null
+  let totalPhases: number | null = null
+
+  for (const message of messages) {
+    const text = getAssistantText(message)
+    if (!text) {
+      continue
+    }
+
+    const lines = text.split(/\r?\n/)
+    let currentPhase: Exclude<AiWorkingPhaseKey, 'complete'> | null = null
+    let currentProgress: AiWorkingProgress | null = null
+    let currentHasBody = false
+
+    for (const rawLine of lines) {
+      const line = rawLine.trim()
+      const phaseKey = phaseFromHeaderLine(line)
+
+      if (phaseKey) {
+        if (currentPhase && currentHasBody) {
+          latestSubstantivePhase = currentPhase
+          latestSubstantiveProgress = currentProgress
+        }
+
+        currentPhase = phaseKey
+        currentHasBody = false
+        latestSeenPhase = phaseKey
+
+        const progressMatch = line.match(/(\d+)\s*\/\s*(\d+)/)
+        currentProgress = progressMatch
+          ? {
+              current: Number.parseInt(progressMatch[1], 10),
+              total: Number.parseInt(progressMatch[2], 10),
+            }
+          : null
+
+        if (currentProgress) {
+          latestSeenProgress = currentProgress
+          totalPhases = currentProgress.total
+        }
+        continue
+      }
+
+      if (currentPhase && line) {
+        currentHasBody = true
+      }
+    }
+
+    if (currentPhase && currentHasBody) {
+      latestSubstantivePhase = currentPhase
+      latestSubstantiveProgress = currentProgress
+    }
+  }
+
+  return {
+    phaseKey: latestSubstantivePhase ?? latestSeenPhase,
+    progress: latestSubstantiveProgress ?? latestSeenProgress,
+    totalPhases,
+  }
+}
+
 function extractMarkers(content: string, markers: AiWorkingMarkerState): void {
   const capture = content.match(/^CAPTURE:\s*(.+)$/im)
   const next = content.match(/^NEXT:\s*(.+)$/im)
@@ -439,22 +548,34 @@ function phaseSortIndex(phaseKey: AiWorkingPhaseKey): number {
  * @gwt.then derives ordered workflow phases and the active phase
  */
 export function projectPhaseTimeline(messages: AiWorkingMessage[]): AiWorkingPhaseProjection {
-  const workflowProjection = projectFromWorkflowTools(messages)
+  const scopedMessages = scopeToLatestAlgorithmCycle(messages)
+  const workflowProjection = projectFromWorkflowTools(scopedMessages)
   if (workflowProjection) {
     return workflowProjection
   }
 
-  const state = extractConversationState(messages)
-  let phaseKeys: AiWorkingPhaseKey[] = extractAlgorithmPhaseKeys(messages)
+  const state = extractConversationState(scopedMessages)
+  const algorithmHeaderState = extractAlgorithmHeaderState(scopedMessages)
+  let phaseKeys: AiWorkingPhaseKey[] = extractAlgorithmPhaseKeys(scopedMessages)
+  const derivedPhaseKey = state.phaseKey ?? algorithmHeaderState.phaseKey
+  const derivedProgress = state.progress ?? algorithmHeaderState.progress
 
-  if (phaseKeys.length === 0 && !state.phaseKey) {
+  if (
+    algorithmHeaderState.totalPhases
+    && algorithmHeaderState.totalPhases > phaseKeys.length
+    && algorithmHeaderState.totalPhases <= PHASE_ORDER.length
+  ) {
+    phaseKeys = PHASE_ORDER.slice(0, algorithmHeaderState.totalPhases)
+  }
+
+  if (phaseKeys.length === 0 && !derivedPhaseKey) {
     const markerPhases = buildMarkerPhases(state.markers)
     if (markerPhases.length > 0) {
       return {
         phases: markerPhases,
         currentReviewLine: '',
-        phaseKey: state.markers.completed ? 'complete' : state.markers.next ? 'plan' : null,
-        progress: state.progress,
+        phaseKey: state.markers.completed ? 'complete' : state.markers.next ? 'plan' : derivedPhaseKey,
+        progress: derivedProgress,
         source: 'marker',
       }
     }
@@ -468,21 +589,25 @@ export function projectPhaseTimeline(messages: AiWorkingMessage[]): AiWorkingPha
     }
   }
 
-  if (state.phaseKey && state.phaseKey !== 'complete' && !phaseKeys.includes(state.phaseKey)) {
-    phaseKeys = [...phaseKeys, state.phaseKey].sort(
+  if (derivedPhaseKey && derivedPhaseKey !== 'complete' && !phaseKeys.includes(derivedPhaseKey)) {
+    phaseKeys = [...phaseKeys, derivedPhaseKey].sort(
       (left, right) => phaseSortIndex(left) - phaseSortIndex(right),
     )
   }
 
-  if (phaseKeys.length === 0 && state.phaseKey) {
-    phaseKeys = [state.phaseKey]
+  if (phaseKeys.length === 0 && derivedPhaseKey) {
+    phaseKeys = [derivedPhaseKey]
   }
 
   return {
-    phases: buildPhases(phaseKeys, state),
-    currentReviewLine: resolveCurrentReviewLine(messages, state.progress),
-    phaseKey: state.phaseKey,
-    progress: state.progress,
+    phases: buildPhases(phaseKeys, {
+      ...state,
+      phaseKey: derivedPhaseKey,
+      progress: derivedProgress,
+    }),
+    currentReviewLine: resolveCurrentReviewLine(scopedMessages, derivedProgress),
+    phaseKey: derivedPhaseKey,
+    progress: derivedProgress,
     source: state.phaseKey || state.progress ? 'prd' : 'algorithm',
   }
 }
