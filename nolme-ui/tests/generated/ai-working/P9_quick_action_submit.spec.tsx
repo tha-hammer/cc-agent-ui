@@ -76,5 +76,6 @@ describe('P9 · shared submit seam', () => {
     expect(submitPrompt).toHaveBeenNthCalledWith(2, 'Quick action prompt');
     expect(submitPrompt).toHaveBeenCalledTimes(2);
     expect(appendMessageSpy).not.toHaveBeenCalled();
+    expect(useCopilotChatSuggestionsSpy).not.toHaveBeenCalled();
   });
 });

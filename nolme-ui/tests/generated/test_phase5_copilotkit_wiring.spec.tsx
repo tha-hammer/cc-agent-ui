@@ -160,16 +160,16 @@ describe('Phase 5 · B28 useCoAgent state binding', () => {
   });
 });
 
-/* --------------------------- B29 quick-action suggestions --------------- */
+/* --------------------------- B29 quick-action chips ---------------------- */
 
-describe('Phase 5 · B29 useCopilotChatSuggestions', () => {
-  it('registers with agent.state-derived deps and renders chips from state.quickActions', () => {
+describe('Phase 5 · B29 quick-action chips stay local to Nolme', () => {
+  it('renders chips from agent.state.quickActions without registering CopilotKit suggestion generation', () => {
     setState({
       currentPhaseIndex: 1,
       quickActions: ['Draft brief', 'Summarize audience'],
     });
     const { getByText } = render(<QuickActionChipRowBound />);
-    expect(useCopilotChatSuggestionsSpy).toHaveBeenCalled();
+    expect(useCopilotChatSuggestionsSpy).not.toHaveBeenCalled();
     expect(getByText('Draft brief')).toBeInTheDocument();
     expect(getByText('Summarize audience')).toBeInTheDocument();
   });
