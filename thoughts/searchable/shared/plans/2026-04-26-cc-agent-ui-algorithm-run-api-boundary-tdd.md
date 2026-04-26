@@ -1,6 +1,6 @@
 ---
 date: 2026-04-26
-status: revised
+status: enhanced
 repository: cc-agent-ui
 scope: cc-agent-ui only
 reference_plan: thoughts/searchable/shared/plans/2026-04-26-algorithm-run-api-boundary.md
@@ -8,8 +8,10 @@ review_reference: thoughts/searchable/shared/plans/2026-04-26-cc-agent-ui-algori
 related_research:
   - thoughts/searchable/shared/research/2026-04-26-cc-agent-ui-harness-middleware-interfaces.md
   - thoughts/searchable/shared/research/2026-04-26-nolme-algorithm-interface-surfaces.md
+  - thoughts/searchable/shared/research/2026-04-26-cc-agent-ui-core-algorithm-run-api-contracts.md
 related_beads:
   - cam-lml
+  - cam-x3p
   - cam-b1x
 ---
 
@@ -23,6 +25,8 @@ This plan does not use the Nolme adapter. It does not modify `nolme-ui/`, `serve
 
 This plan also does not modify `cosmic-agent-core`. It defines the cc-agent-ui side of the Algorithm Run API boundary: HTTP routes, request/response contracts, command-client integration, run metadata/state/event storage, validation, and automated tests.
 
+The first implementation pass may add a cc-agent-ui-owned runner adapter executable under `server/algorithm-runs/`. That adapter is an executable compatibility boundary that speaks the plan's NDJSON protocol; it is not a `cosmic-agent-core` code change and it must not make route code import core internals.
+
 ## Overview
 
 The referenced plan attempted to define a cross-repo Algorithm Run boundary spanning `cosmic-agent-core`, `cc-agent-ui`, and Nolme. Its review found critical gaps: no executable Node-to-core boundary, undefined run identity, incomplete route contracts, unclear event ordering, and Nolme production hydration risk.
@@ -32,6 +36,7 @@ This replacement plan narrows the work to one implementable slice:
 - `cc-agent-ui` exposes authenticated `/api/algorithm-runs` routes.
 - `cc-agent-ui` validates versioned Algorithm Run API payloads at its server boundary.
 - `cc-agent-ui` calls an external Algorithm command runner through an explicit child-process newline-delimited JSON frame protocol.
+- The first real runner executable is a cc-agent-ui-owned compatibility adapter, not the current core `Tools/algorithm.ts` CLI directly.
 - `cc-agent-ui` stores and serves authenticated run metadata, state snapshots, and event cursors from one local run store.
 - `cc-agent-ui` never reads arbitrary client-supplied event paths and never depends on Nolme AG-UI projection.
 
@@ -47,6 +52,9 @@ This replacement plan narrows the work to one implementable slice:
 - `server/agents/ccu-session-agent.js:67-129` shows a reusable provider dispatch mapping, but this plan does not target that Nolme/CopilotKit adapter.
 - `server/agents/ag-ui-event-translator.js:89-258` maps provider frames to AG-UI events, but this plan does not target AG-UI or Nolme state deltas.
 - Existing generated tests use Vitest with route-level HTTP servers and module mocks, for example `tests/generated/test_nolme_state_route.spec.ts:420-469`, `tests/generated/test_copilotkit_route_auth.spec.ts:541-617`, and `tests/generated/test_ag_ui_event_translator.spec.ts:1-174`.
+- Core AAI documentation supports a CLI-first, stdio-friendly architecture, but it does not define this plan's HTTP API or NDJSON runner frame protocol.
+- The live core Algorithm CLI at `/home/maceo/Dev/cosmic-agent-core/v4.2.0/.claude/AAI/Tools/algorithm.ts` uses subcommands/flags, PRD frontmatter, `LoopAlgorithmState`, and `MEMORY/STATE/algorithms`; it does not accept one JSON request line or emit the planned `accepted | event | state | log | result | error` frame stream.
+- No existing `AlgorithmRunState`, `AlgorithmRunEvent`, `algorithm.run.started`, or `algorithm.phase.changed` symbols were found in the reviewed cc-agent-ui/core surfaces.
 
 ## Desired End State
 
@@ -56,6 +64,7 @@ This replacement plan narrows the work to one implementable slice:
 | --- | --- |
 | Contract validation | `server/algorithm-runs/contracts.js` validates supported schema version, provider, run ids, command payloads, decisions, and error envelopes. |
 | Core command boundary | `server/algorithm-runs/command-client.js` spawns an env-configured command using one JSON request line on stdin and newline-delimited JSON frames on stdout, with deterministic timeout/error behavior. |
+| Runner adapter executable | `server/algorithm-runs/runner-adapter.js` is the first cc-agent-ui-owned executable for `ALGORITHM_RUNNER_COMMAND`; tests can swap in `tests/fixtures/algorithm-runner-fixture.mjs`. |
 | Active runner lifetime | `server/algorithm-runs/process-registry.js` tracks start-run child processes after HTTP `202`, terminates them on timeout/stop, and removes them on exit. |
 | Run identity | `server/algorithm-runs/run-store.js` owns run metadata keyed by `runId`, including `ownerUserId`, `sessionId`, provider, status, timestamps, runner handle fields, and cursor. |
 | State/events | `server/algorithm-runs/run-store.js` also appends/reads JSONL events, allocates sequences, and projects a server-side `AlgorithmRunState` snapshot. |
@@ -70,6 +79,8 @@ This replacement plan narrows the work to one implementable slice:
 - No `server/agents/ccu-session-agent.js` changes.
 - No `cosmic-agent-core` changes.
 - No direct import from `cosmic-agent-core` TypeScript/Bun files.
+- No direct configuration of `/home/maceo/Dev/cosmic-agent-core/v4.2.0/.claude/AAI/Tools/algorithm.ts` as `ALGORITHM_RUNNER_COMMAND`; the current CLI does not speak the required NDJSON protocol.
+- No use of core `MEMORY/STATE/algorithms` files as the public API source of truth.
 - No arbitrary filesystem path reads supplied by clients.
 - No transcript parsing as Algorithm state.
 
@@ -88,6 +99,8 @@ Schema sources requested by the planning workflow:
 
 No verified TLA+ model exists for this Algorithm Run API boundary in this checkout. Existing `.cw9/specs/gwt-0001..0014` cover fork/session behavior, not this route/store/client boundary.
 
+The follow-up core-contract research confirms the same registry stance: the plan must continue to mark Algorithm Run resources as `[PROPOSED]` until a canonical `specs/schemas/resource_registry.json` appears or is created.
+
 ## Review-Resolved Boundary Decisions
 
 This section closes the review findings before implementation starts.
@@ -99,6 +112,11 @@ This section closes the review findings before implementation starts.
 5. Algorithm events are a new route/store contract. They do not feed `NormalizedMessage`, AG-UI, CopilotKit, or Nolme in this plan. Existing provider-normalized runtime surfaces are regression guards only.
 6. Mount-level authentication uses existing `authenticateToken` behavior. Missing tokens return HTTP `401` plain `{ "error": "Access denied. No token provided." }`; invalid JWTs return HTTP `403` plain `{ "error": "Invalid token" }`. Versioned Algorithm envelopes begin only after auth succeeds.
 7. State, event, lifecycle, question, and permission schemas below are canonical for this plan. Tests must assert these shapes before implementation fills in route internals.
+8. The first real executable should be configured as `ALGORITHM_RUNNER_COMMAND='["node","./server/algorithm-runs/runner-adapter.js"]'`.
+9. Tests should use a deterministic fixture executable, for example `ALGORITHM_RUNNER_COMMAND='["node","./tests/fixtures/algorithm-runner-fixture.mjs"]'`.
+10. The runner adapter is a cc-agent-ui compatibility wrapper. It may call out to core behavior later, but route, store, and command-client tests depend only on the NDJSON protocol.
+11. `~/.cosmic-agent/algorithm-runs` remains intentionally separate from core `MEMORY/STATE/algorithms`; the UI store is auth-scoped, sequence-cursored, and sanitized for public API responses.
+12. The only first-pass core-to-API field mapping is the explicit safe mapping in the `Core Runner Adapter Boundary` section below.
 
 ## Canonical Data Model And Schemas
 
@@ -303,6 +321,49 @@ Start lifetime semantics:
 - Later runner frames are appended to `run-store.js`; they are the source for state/events routes.
 - On child exit without a terminal event, the registry appends `algorithm.run.failed` with `runner_protocol_error`.
 - `stop` sends a control command and, if the process is still registered after the command result, terminates the child.
+
+## Core Runner Adapter Boundary
+
+The executable behind `ALGORITHM_RUNNER_COMMAND` is required because Algorithm runs are long-lived and operationally separate from the HTTP request lifecycle. The route code must not import `cosmic-agent-core` internals, and the current core Algorithm CLI must not be configured directly because it accepts flags/subcommands and emits human-oriented console output rather than the required request-line/NDJSON protocol.
+
+First-pass executable:
+
+```bash
+ALGORITHM_RUNNER_COMMAND='["node","./server/algorithm-runs/runner-adapter.js"]'
+```
+
+Test executable:
+
+```bash
+ALGORITHM_RUNNER_COMMAND='["node","./tests/fixtures/algorithm-runner-fixture.mjs"]'
+```
+
+`server/algorithm-runs/runner-adapter.js` owns only the compatibility boundary:
+
+- read exactly one JSON request line from stdin
+- validate `schemaVersion`, `kind`, `command`, `requestId`, `runId`, and `ownerUserId`
+- emit `accepted` before long-running start work is considered accepted
+- emit only versioned NDJSON frames defined by this plan
+- map current or future core state into sanitized `AlgorithmRunState` fields
+- return typed `error` frames instead of leaking raw stderr, PRD paths, core state paths, private tool input, or raw console output
+
+Minimal safe mapping from core `LoopAlgorithmState` or PRD-derived state to this API:
+
+| Core field/concept | Algorithm Run API field |
+| --- | --- |
+| `sessionId` | `metadata.sessionId`, `state.sessionId` once known |
+| mode / PRD mode | `metadata.algorithmMode` |
+| current phase / PRD phase | `state.phase` |
+| started timestamp | `startedAt` |
+| completed timestamp | `endedAt` |
+| active/running state | `status: "running"` |
+| PRD/core paused outcome | `status: "paused"` |
+| PRD/core completed outcome | `status: "completed"` |
+| PRD/core failed outcome | `status: "failed"` |
+| PRD/core stopped outcome | `status: "cancelled"` |
+| core handle / PRD slug / core session handle | `metadata.externalRunHandle` |
+
+The adapter must not expose `prdPath`, `loopPrdPath`, `projectPath`, raw criteria bodies, agent internals, capabilities, raw console output, raw stderr, or private tool input through public state. Future core work may add a native runner mode that speaks the same protocol; if that happens, only `ALGORITHM_RUNNER_COMMAND` should change.
 
 ## Route Contract
 
@@ -561,7 +622,7 @@ Permission decision success follows the same envelope with `permissionId` instea
 ## Testing Strategy
 
 - Framework: Vitest via `npm test -- <file>`.
-- Unit tests: contract validators, command client, run id/path validation, event replay.
+- Unit tests: contract validators, command client, runner adapter, run id/path validation, event replay.
 - Integration tests: Express route behavior with module mocks and temporary run-store directories.
 - Regression tests: CopilotKit/Nolme route tests continue to pass without modification, and missing direct `/api/agent` and `/api/sessions` route contract tests are added before the mount behavior is considered complete.
 
@@ -569,10 +630,11 @@ Permission decision success follows the same envelope with `permissionId` instea
 
 1. Given an Algorithm Run request, when the payload is malformed or unsupported, then the server rejects it before touching the command runner or filesystem.
 2. Given a valid authenticated start request, when `/api/algorithm-runs` is called, then cc-agent-ui creates owner-bound metadata, waits for a runner `accepted` frame, registers the child process, and returns a versioned 202 response.
-3. Given stored Algorithm events, when state/events routes are queried, then cc-agent-ui authorizes `ownerUserId`, returns deterministic snapshots, and cursor-filters events without accepting arbitrary event paths.
-4. Given an existing run, when pause/resume/stop routes are called, then cc-agent-ui authorizes the owner, validates lifecycle state, forwards a typed command, and records returned events/state before responding.
-5. Given pending question or permission state, when decision routes are called, then cc-agent-ui authorizes the owner and validates ids against current state before forwarding decisions.
-6. Given an authenticated app server, when `/api/algorithm-runs` is mounted, then mount-level auth failures use existing `{ error }` bodies and existing non-Algorithm routes are unchanged.
+3. Given the cc-agent-ui runner adapter executable, when the command client sends a JSON request line, then the adapter emits only the versioned NDJSON frames defined by this plan and never exposes core-private state.
+4. Given stored Algorithm events, when state/events routes are queried, then cc-agent-ui authorizes `ownerUserId`, returns deterministic snapshots, and cursor-filters events without accepting arbitrary event paths.
+5. Given an existing run, when pause/resume/stop routes are called, then cc-agent-ui authorizes the owner, validates lifecycle state, forwards a typed command, and records returned events/state before responding.
+6. Given pending question or permission state, when decision routes are called, then cc-agent-ui authorizes the owner and validates ids against current state before forwarding decisions.
+7. Given an authenticated app server, when `/api/algorithm-runs` is mounted, then mount-level auth failures use existing `{ error }` bodies and existing non-Algorithm routes are unchanged.
 
 ---
 
@@ -999,6 +1061,186 @@ Automated:
 Manual:
 
 - Review confirms no shell string interpolation is introduced.
+
+---
+
+## Behavior 3A: Runner Adapter Provides The First Executable Boundary
+
+### Resource Registry Binding
+
+- `resource_id`: `[PROPOSED] 1a3790cd-808e-47e9-a538-2fc3072774b4`
+- `address_alias`: `algorithm.runner_adapter`
+- `predicate_refs`: JSON request line, command enum, core-compatible state source, safe public field mapping, private-output suppression.
+- `codepath_ref`: `server/algorithm-runs/runner-adapter.js::handleRunnerRequest`
+- `schema_contract_refs`: `[PROPOSED] .cw9/schema/middleware_schema.json::AlgorithmRunnerAdapter`
+
+### Schema Interface Mapping
+
+- `loop_mode`: `low_context_detail`
+- `mapped_contracts`: runner executable stdin/stdout protocol and safe core-to-API state projection -> proposed middleware schema.
+- `registry_updates`: add runner adapter resource to canonical registry when available.
+
+### Test Specification
+
+Given `ALGORITHM_RUNNER_COMMAND='["node","./server/algorithm-runs/runner-adapter.js"]'`, when the command client sends one versioned request line, then the adapter emits valid NDJSON frames and returns typed `error` frames for invalid input. Given a core-like state object, when the adapter maps it to public API state, then only the safe fields listed in `Core Runner Adapter Boundary` appear.
+
+Edge cases:
+
+- invalid JSON request line -> `error.code = "runner_protocol_error"`
+- unsupported schema version -> `error.code = "runner_protocol_error"`
+- unknown command -> `error.code = "invalid_request"`
+- `start` emits `accepted` before later state/result frames
+- lifecycle/decision commands emit `result` or typed `error`
+- mapped state includes `sessionId`, `phase`, status, timestamps, and `externalRunHandle`
+- mapped state omits `prdPath`, `loopPrdPath`, `projectPath`, raw criteria bodies, agent internals, capabilities, raw console output, raw stderr, and private tool input
+- fixture runner under `tests/fixtures/algorithm-runner-fixture.mjs` remains deterministic and does not depend on core checkout state
+
+### TDD Cycle
+
+#### Red: Write Failing Tests
+
+File: `tests/generated/test_algorithm_runner_adapter.spec.ts`
+
+```ts
+import { describe, expect, it } from 'vitest';
+import { runAlgorithmCommand, startAlgorithmRun } from '../../server/algorithm-runs/command-client.js';
+import { mapCoreAlgorithmStateToRunState } from '../../server/algorithm-runs/runner-adapter.js';
+
+describe('Algorithm runner adapter executable', () => {
+  it('emits accepted and result frames through the command client', async () => {
+    const result = await startAlgorithmRun({
+      executable: process.execPath,
+      args: ['./server/algorithm-runs/runner-adapter.js'],
+      runId: 'alg_1',
+      requestId: 'req_1',
+      ownerUserId: '42',
+      payload: { prompt: 'test', provider: 'claude' },
+      timeoutMs: 1000,
+      onFrame: () => {},
+    });
+    expect(result.ok).toBe(true);
+    expect(result.accepted.runId).toBe('alg_1');
+  });
+
+  it('maps core-like state to public AlgorithmRunState without private fields', () => {
+    const state = mapCoreAlgorithmStateToRunState({
+      sessionId: 'sess_1',
+      currentPhase: 'plan',
+      loopStatus: 'paused',
+      prdPath: '/private/prd.md',
+      projectPath: '/private/project',
+      rawStderr: 'secret',
+      capabilities: ['private-capability'],
+    });
+    expect(state.sessionId).toBe('sess_1');
+    expect(state.phase).toBe('plan');
+    expect(state.status).toBe('paused');
+    expect(JSON.stringify(state)).not.toContain('/private');
+    expect(JSON.stringify(state)).not.toContain('secret');
+    expect(JSON.stringify(state)).not.toContain('private-capability');
+  });
+
+  it('uses the fixture runner for deterministic protocol tests', async () => {
+    const result = await runAlgorithmCommand({
+      executable: process.execPath,
+      args: ['./tests/fixtures/algorithm-runner-fixture.mjs'],
+      command: 'pause',
+      runId: 'alg_1',
+      requestId: 'req_2',
+      ownerUserId: '42',
+      payload: {},
+      timeoutMs: 1000,
+    });
+    expect(result.ok).toBe(true);
+  });
+});
+```
+
+#### Green: Minimal Implementation
+
+File: `server/algorithm-runs/runner-adapter.js`
+
+```js
+import { pathToFileURL } from 'node:url';
+
+/**
+ * @rr.id 1a3790cd-808e-47e9-a538-2fc3072774b4
+ * @rr.alias algorithm.runner_adapter
+ * @path.id adapt-core-algorithm-runner-protocol
+ * @gwt.given cc-agent-ui needs a first executable for ALGORITHM_RUNNER_COMMAND
+ * @gwt.when the runner adapter receives one versioned JSON request line
+ * @gwt.then it emits only valid Algorithm runner NDJSON frames and sanitizes core-private state
+ * @reads 1a3790cd-808e-47e9-a538-2fc3072774b4,332cd3c7-78dc-4c2e-b6d4-61e18711a5c6
+ * @writes N/A
+ * @raises invalid_request:InvalidAlgorithmRunnerRequest, runner_protocol_error:AlgorithmRunnerProtocolError
+ * @schema.contract .cw9/schema/middleware_schema.json::AlgorithmRunnerAdapter [PROPOSED]
+ */
+export function mapCoreAlgorithmStateToRunState(coreState) {
+  return { schemaVersion: 1, sessionId: coreState.sessionId ?? null };
+}
+
+export async function handleRunnerRequest(request) {
+  if (request.command === 'start') {
+    return [
+      { schemaVersion: 1, kind: 'accepted', requestId: request.requestId, runId: request.runId, sessionId: null },
+      { schemaVersion: 1, kind: 'result', requestId: request.requestId, runId: request.runId, ok: true, status: 'completed' },
+    ];
+  }
+  return [{ schemaVersion: 1, kind: 'result', requestId: request.requestId, runId: request.runId, ok: true }];
+}
+
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+  let input = '';
+  process.stdin.setEncoding('utf8');
+  process.stdin.on('data', (chunk) => {
+    input += chunk;
+  });
+  process.stdin.on('end', async () => {
+    const frames = await handleRunnerRequest(JSON.parse(input.trim()));
+    for (const frame of frames) process.stdout.write(`${JSON.stringify(frame)}\n`);
+  });
+}
+```
+
+File: `tests/fixtures/algorithm-runner-fixture.mjs`
+
+```js
+process.stdin.setEncoding('utf8');
+let input = '';
+process.stdin.on('data', (chunk) => {
+  input += chunk;
+});
+process.stdin.on('end', () => {
+  const request = JSON.parse(input.trim());
+  process.stdout.write(JSON.stringify({
+    schemaVersion: 1,
+    kind: 'result',
+    requestId: request.requestId,
+    runId: request.runId,
+    ok: true,
+    status: 'completed',
+  }) + '\n');
+});
+```
+
+#### Refactor
+
+- Keep the adapter executable as a thin protocol boundary; do not move route or store responsibilities into it.
+- Guard executable stdin/stdout behavior behind an ESM entrypoint check so pure mapping helpers stay importable in tests.
+- Export pure mapping helpers so tests can verify private-field suppression without spawning a process.
+- Keep the fixture runner separate from the adapter so protocol tests are deterministic even if core behavior changes.
+- If native core NDJSON support is later added, keep this adapter as a compatibility fallback and change only `ALGORITHM_RUNNER_COMMAND`.
+
+### Success Criteria
+
+Automated:
+
+- `npm test -- tests/generated/test_algorithm_runner_adapter.spec.ts`
+- `npm test -- tests/generated/test_algorithm_command_client.spec.ts`
+
+Manual:
+
+- Review confirms the app is not configured to point directly at core `Tools/algorithm.ts`.
 
 ---
 
@@ -1521,6 +1763,7 @@ Run these after each behavior lands:
 ```bash
 npm test -- tests/generated/test_algorithm_run_contracts.spec.ts
 npm test -- tests/generated/test_algorithm_command_client.spec.ts
+npm test -- tests/generated/test_algorithm_runner_adapter.spec.ts
 npm test -- tests/generated/test_algorithm_process_registry.spec.ts
 npm test -- tests/generated/test_algorithm_run_store.spec.ts
 npm test -- tests/generated/test_algorithm_runs_route_start.spec.ts
@@ -1546,12 +1789,13 @@ These regression tests are not because this plan touches Nolme. They are guards 
 1. Add pure contract validators.
 2. Add command-client NDJSON frame protocol with fake-runner tests.
 3. Add process-registry lifetime and cleanup tests.
-4. Add run store and event projection tests.
-5. Add start route.
-6. Add state/events routes.
-7. Add lifecycle routes.
-8. Add decision routes.
-9. Mount the router behind app auth and run regression tests.
+4. Add runner adapter executable and deterministic fixture-runner tests.
+5. Add run store and event projection tests.
+6. Add start route.
+7. Add state/events routes.
+8. Add lifecycle routes.
+9. Add decision routes.
+10. Mount the router behind app auth and run regression tests.
 
 ## API Error Codes
 
@@ -1581,6 +1825,7 @@ Mount-level auth failures are not versioned Algorithm envelopes because `authent
 - Applied review: `thoughts/searchable/shared/plans/2026-04-26-cc-agent-ui-algorithm-run-api-boundary-tdd-REVIEW.md`
 - Harness middleware research: `thoughts/searchable/shared/research/2026-04-26-cc-agent-ui-harness-middleware-interfaces.md`
 - Nolme surface research, used only to identify non-targets: `thoughts/searchable/shared/research/2026-04-26-nolme-algorithm-interface-surfaces.md`
+- Core contract research: `thoughts/searchable/shared/research/2026-04-26-cc-agent-ui-core-algorithm-run-api-contracts.md`
 - Route mount pattern: `server/index.js:464-478`
 - External API route pattern: `server/routes/agent.js:618-988`
 - WebSocket writer and provider dispatch: `server/index.js:1532-1619`
@@ -1588,3 +1833,4 @@ Mount-level auth failures are not versioned Algorithm envelopes because `authent
 - Provider normalized message contract: `server/providers/types.js:13-119`
 - Explicit non-target Nolme adapter: `server/agents/ccu-session-agent.js:67-345`
 - Explicit non-target AG-UI translator: `server/agents/ag-ui-event-translator.js:89-258`
+- Core CLI posture and current non-NDJSON Algorithm CLI: `/home/maceo/Dev/cosmic-agent-core/v4.2.0/.claude/AAI/PAISYSTEMARCHITECTURE.md:154`, `/home/maceo/Dev/cosmic-agent-core/v4.2.0/.claude/AAI/Tools/algorithm.ts:81`, `/home/maceo/Dev/cosmic-agent-core/v4.2.0/.claude/AAI/Tools/algorithm.ts:148`
