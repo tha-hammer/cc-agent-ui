@@ -1,6 +1,6 @@
 ---
 date: 2026-04-27
-status: draft
+status: revised
 repository: cc-agent-ui
 scope: cc-agent-ui and nolme-ui
 related_research:
@@ -8,6 +8,7 @@ related_research:
 related_beads:
   - cam-11u
   - cam-b1x
+  - cam-ecx
 ---
 
 # Algorithm Run API to Nolme UI TDD Implementation Plan
@@ -18,11 +19,24 @@ Connect the implemented Algorithm Run API to `/nolme` by test-driving the smalle
 
 - a run resolves to the provider session Nolme already hydrates from;
 - Algorithm phase/status/artifact signals project into `NolmeAgentState`;
-- the projected state is persisted to the provider session sidecar;
-- `/nolme/?runId=<runId>` can resolve the normal Nolme session binding;
-- CopilotKit reconnect for a fresh `/nolme` page replays provider history instead of depending only on in-memory runtime history.
+- the projected Algorithm-owned slices are merged into the provider session sidecar without overwriting Nolme-owned fields;
+- `/nolme/?runId=<runId>` can resolve the normal Nolme session binding while representing waiting/error states explicitly;
+- CopilotKit reconnect for a fresh `/nolme` page replays provider history through the production runner connect path instead of depending only on in-memory runtime history.
 
 The end state should make `/nolme` show chat history, phase pills, selected task details, and deliverables for a bound Algorithm run without making the Algorithm run id become the Nolme thread id.
+
+## Review Resolution Summary
+
+This revision incorporates the blocking findings from `2026-04-27-cam-11u-tdd-algorithm-run-api-nolme-connection-REVIEW.md`:
+
+- Sidecar sync is now a patch contract. Algorithm owns only `phases`, `currentPhaseIndex`, `currentReviewLine`, and `resources`; all Nolme-owned and extension fields are preserved.
+- Sync is now driven by a non-circular run-store append observer after durable event persistence, covering direct route appends and runner frame appends.
+- Projection now consumes `{ metadata, state, events }` and writes only validated Algorithm-owned slices, with resource defaults matching `normalizeNolmeState()`.
+- The launch route remains an Algorithm-envelope endpoint; `/api/nolme/state/:sessionId` remains raw-state-compatible.
+- `/nolme/?runId=` now requires a status-bearing resolver with explicit precedence over localStorage and BroadcastChannel while run-launch mode is active.
+- CopilotKit reconnect now targets the real `AgentRunnerConnectRequest` surface: forwarded `x-ccu-*` headers parsed into a binding and passed to a shared provider-history hydration helper.
+- Invalid/missing connect binding headers now delegate to `super.connect(request)`.
+- `useHydratedState()` now has a regression requirement that sidecar fetch/parse failures preserve message hydration and fallback projections.
 
 ## Current State Analysis
 
@@ -46,20 +60,28 @@ The end state should make `/nolme` show chat history, phase pills, selected task
 - `InMemoryAgentRunner.connect()` emits nothing when no in-memory store exists for the thread (`node_modules/@copilotkit/runtime/src/v2/runtime/runner/in-memory.ts:294`).
 - `SafeInMemoryAgentRunner.connect()` currently only prunes bad in-memory history and delegates to `super.connect()` (`server/lib/safe-in-memory-agent-runner.js:30`).
 - `NolmeChat` renders CopilotKit's chat component by thread id; it does not receive `useHydratedState().messages` directly (`nolme-ui/src/components/NolmeChat.tsx:22`).
+- `writeState(binding, state)` writes the whole Nolme sidecar payload, so Algorithm sync must first `readState(binding)` and patch only Algorithm-owned slices (`server/agents/nolme-state-store.js:131`).
+- The existing sidecar can also contain profile, quick actions, task notifications, token budget, and active skill context, and those fields are not owned by Algorithm sync (`nolme-ui/src/lib/ai-working/normalizeNolmeState.ts:185`).
+- `normalizeNolmeState()` defaults invalid resource badges to `P1`, invalid tones from badge, and invalid actions to `download`; server projection must mirror those defaults before writing Algorithm sidecar slices (`nolme-ui/src/lib/ai-working/normalizeNolmeState.ts:74`).
+- `normalizeNolmeState()` currently treats raw non-empty phase/resource arrays as explicit even if normalization drops their entries, so Algorithm sync must guarantee it never writes malformed non-empty arrays (`nolme-ui/src/lib/ai-working/normalizeNolmeState.ts:207`).
+- CopilotKit connect receives only `threadId`, optional `headers`, and optional `joinCode`; there is no connect-time `agent` or `forwardedProps` contract (`node_modules/@copilotkit/runtime/src/v2/runtime/runner/agent-runner.ts:17`).
+- CopilotKit forwards only `authorization` and `x-*` headers into runner connect, which makes `x-ccu-*` the required binding propagation surface (`node_modules/@copilotkit/runtime/src/v2/runtime/handlers/header-utils.ts:5`).
+- `NolmeApp` currently passes the binding through CopilotKit `properties`, which helps run calls but does not make the binding available to the production connect path (`nolme-ui/src/NolmeApp.tsx:126`).
 
 ## Desired End State
 
-Given an Algorithm run id, `/nolme` can resolve a normal `NolmeSessionBinding` once `AlgorithmRunState.sessionId` is available. The server writes a compatible `NolmeAgentState` sidecar for that provider session whenever runner frames or run events contain phase/review/resource information. The UI hydrates the provider session from existing message and state endpoints, and CopilotKit connect replays provider history on a fresh page load.
+Given an Algorithm run id, `/nolme` can resolve a normal `NolmeSessionBinding` once `AlgorithmRunState.sessionId` is available. The server merges compatible Algorithm-owned `NolmeAgentState` slices into that provider session sidecar whenever runner frames or run events contain phase/review/resource information. The UI hydrates the provider session from existing message and state endpoints, and CopilotKit connect replays provider history on a fresh page load.
 
 ### Observable Behaviors
 
 1. Given Algorithm state/events with phase information, when the projection runs, then it returns a valid `NolmeAgentState` phase list, active index, review line, and terminal completion state.
 2. Given Algorithm state/events with resource/artifact information, when the projection runs, then it returns normalized Nolme resources without breaking the existing message fallback.
-3. Given a bound Algorithm run, when the server syncs the run to Nolme, then the provider session sidecar is written at the same location `/api/nolme/state/:sessionId` already reads.
-4. Given an authenticated bound Algorithm run id, when `/api/algorithm-runs/:runId/nolme` is called, then it returns the normal Nolme binding, projected state, and `/nolme/?runId=<runId>` launch URL.
-5. Given `/nolme/?runId=<runId>`, when the launch endpoint reports the run is bound, then `useCcuSession()` produces the resolved binding and the existing hydration path loads messages/state.
-6. Given a fresh `/nolme` page with no CopilotKit in-memory history, when CopilotKit connect runs for a valid Nolme binding, then provider history and sidecar state are emitted instead of an empty stream.
+3. Given a bound Algorithm run, when the server syncs the run to Nolme, then only `phases`, `currentPhaseIndex`, `currentReviewLine`, and `resources` are patched into the provider session sidecar at the same location `/api/nolme/state/:sessionId` already reads.
+4. Given an authenticated bound Algorithm run id, when `/api/algorithm-runs/:runId/nolme` is called, then it returns the normal Nolme binding, the merged Nolme state visible to that session, and `/nolme/?runId=<runId>` launch URL.
+5. Given `/nolme/?runId=<runId>`, when the launch endpoint reports the run is waiting, ready, or errored, then the Nolme session resolver returns a status-bearing result rather than collapsing every non-ready state to "No session selected".
+6. Given a fresh `/nolme` page with no CopilotKit in-memory history, when CopilotKit connect runs with valid `x-ccu-*` binding headers, then provider history and sidecar state are emitted instead of an empty stream.
 7. Given the resolved run launch and provider history, when the Nolme dashboard renders, then the chat column, phase bar, selected task card, and deliverables rail are populated.
+8. Given Nolme message history exists but sidecar state is missing, non-OK, network-failed, or invalid JSON, when hydration runs, then messages still hydrate and ai-working projections fall back to defaults/message-derived state.
 
 ## What We're NOT Doing
 
@@ -69,6 +91,8 @@ Given an Algorithm run id, `/nolme` can resolve a normal `NolmeSessionBinding` o
 - Not depending on private core fields, raw stderr, or arbitrary client-supplied paths.
 - Not replacing message-history fallback projection; explicit Algorithm-projected sidecar state only fills the existing explicit state channel.
 - Not solving multi-process sidecar locking beyond the current file-store behavior.
+- Not changing `/api/nolme/state/:sessionId` to the Algorithm `{ ok, schemaVersion }` envelope; that endpoint must keep returning raw Nolme state because `useHydratedState()` expects raw state.
+- Not allowing Algorithm sync to overwrite Nolme-owned sidecar fields such as `profile`, `quickActions`, `taskNotifications`, `tokenBudget`, or `activeSkill`.
 
 ## Resource Registry And Schema Binding
 
@@ -87,10 +111,10 @@ No verified TLA+ model exists for this connection path in the checkout. Schema r
 
 - Framework: Vitest for server and UI; React Testing Library for hooks/components.
 - Server unit tests: pure Algorithm-to-Nolme projection and connect-binding/header parsing.
-- Server integration tests: algorithm run route, run-store sync, Nolme sidecar write, CopilotKit runner connect fallback.
-- UI hook tests: `runId` launch resolution in `useCcuSession` or a new hook it composes.
+- Server integration tests: algorithm run route, run-store append observer sync, real Nolme sidecar write/read path, CopilotKit runner connect fallback.
+- UI hook tests: status-bearing `runId` launch resolution in `useCcuSession` or a new hook it composes.
 - UI component tests: existing hydration/projection dashboard tests extended with run-launch inputs.
-- Regression tests: existing Algorithm API tests, Nolme hydration/projection tests, and CopilotKit route auth tests.
+- Regression tests: existing Algorithm API tests, Nolme hydration/projection tests, malformed sidecar fallback tests, and CopilotKit route auth tests.
 
 Run focused tests after each behavior, then:
 
@@ -98,6 +122,7 @@ Run focused tests after each behavior, then:
 npm test -- tests/generated/test_algorithm_run_store.spec.ts tests/generated/test_algorithm_runs_route_state_events.spec.ts
 npm test -- tests/generated/test_copilotkit_route_auth.spec.ts tests/generated/test_safe_in_memory_agent_runner.spec.ts tests/generated/test_ccu_session_agent_hydration.spec.ts
 npm --prefix nolme-ui test -- tests/generated/test_use_hydrated_state.spec.tsx tests/generated/ai-working/P0_projection_boundary.spec.ts tests/generated/ai-working/P1_merge_precedence.spec.ts
+npm --prefix nolme-ui test -- tests/generated/test_algorithm_run_launch_binding.spec.tsx tests/generated/nolme-chat/J1_hydration_replay.spec.tsx
 npm run typecheck
 npm --prefix nolme-ui run typecheck
 ```
@@ -108,14 +133,14 @@ npm --prefix nolme-ui run typecheck
 
 - `resource_id`: `[PROPOSED] 9fbdb725-1ddf-4d46-b995-c8cb15303511`
 - `address_alias`: `algorithm.nolme_phase_projection`
-- `predicate_refs`: Algorithm run state with `sessionId`, `provider`, `status`, `phase`, and ordered events.
+- `predicate_refs`: Algorithm run metadata plus public state and ordered events; metadata supplies `projectPath`/provider context that public state intentionally omits.
 - `codepath_ref`: `[PROPOSED] server/algorithm-runs/nolme-projection.js::projectAlgorithmRunToNolmeState`
 - `schema_contract_refs`: `N/A`; uses `server/algorithm-runs/contracts.js::AlgorithmRunState` and `nolme-ui/src/lib/types.ts::NolmeAgentState`.
 
 ### Schema Interface Mapping
 
 - `loop_mode`: `low_context_detail`
-- `mapped_contracts`: `AlgorithmRunState.phase/status` -> `NolmeAgentState.phases/currentPhaseIndex/currentReviewLine`.
+- `mapped_contracts`: `{ metadata, state, events }` -> Algorithm-owned `NolmeAgentState` slices: `phases/currentPhaseIndex/currentReviewLine`.
 - `registry_updates`: add `schema_refs` to the proposed registry entry when the canonical registry exists.
 
 ### Test Specification
@@ -131,6 +156,7 @@ Edge cases:
 - invalid phase catalog entries are dropped;
 - `currentPhaseIndex` is clamped to the projected phase list;
 - terminal failed/cancelled runs do not incorrectly mark every phase complete.
+- malformed non-empty phase arrays are never written; invalid entries are dropped and an all-invalid phase payload projects to an empty `phases` slice so UI message fallback is not suppressed by Algorithm sync.
 
 ### TDD Cycle
 
@@ -150,6 +176,10 @@ describe('projectAlgorithmRunToNolmeState phase projection', () => {
 
   it('uses event review-line payloads for currentReviewLine', () => {
     // latest algorithm.phase.changed payload has currentReviewLine.
+  });
+
+  it('drops malformed phase payloads instead of writing invalid explicit arrays', () => {
+    // invalid catalog entries produce phases: [] and currentPhaseIndex: 0.
   });
 });
 ```
@@ -171,16 +201,12 @@ File: `server/algorithm-runs/nolme-projection.js`
  * @raises invalid_request:InvalidAlgorithmNolmeProjectionInput
  * @schema.contract N/A; server/algorithm-runs/contracts.js::AlgorithmRunState, nolme-ui/src/lib/types.ts::NolmeAgentState
  */
-export function projectAlgorithmRunToNolmeState({ state, events }) {
+export function projectAlgorithmRunToNolmeState({ metadata, state, events }) {
   return {
-    schemaVersion: 1,
     phases: [],
     currentPhaseIndex: 0,
     currentReviewLine: '',
     resources: [],
-    profile: null,
-    quickActions: [],
-    taskNotifications: [],
   };
 }
 ```
@@ -190,6 +216,7 @@ export function projectAlgorithmRunToNolmeState({ state, events }) {
 - Extract a small server-owned phase catalog matching Nolme's Observe/Think/Plan/Build/Execute/Verify/Learn names.
 - Normalize phase ids with the same case-insensitive tolerance as `projectPhaseTimeline()`.
 - Keep this module dependency-light; do not import React or Nolme UI code into the server.
+- Keep the projector restricted to Algorithm-owned slices; sidecar merge code owns preserving Nolme-owned fields.
 
 ### Success Criteria
 
@@ -216,7 +243,7 @@ Manual:
 ### Schema Interface Mapping
 
 - `loop_mode`: `low_context_detail`
-- `mapped_contracts`: Algorithm resource/artifact event payload -> `NolmeResource`.
+- `mapped_contracts`: Algorithm resource/artifact event payload -> validated `NolmeResource`.
 - `registry_updates`: proposed `algorithm.nolme_resource_projection` entry should reference the eventual artifact event schema.
 
 ### Test Specification
@@ -225,12 +252,21 @@ Given Algorithm events that include a valid resource payload compatible with Nol
 
 Given no explicit resources, when projection executes, then it leaves `resources` empty so existing Nolme message-history fallback can still derive deliverables from provider messages.
 
+Validation/defaulting boundary:
+
+- Server projection owns validation for Algorithm-written resources and must write only valid `NolmeResource` rows.
+- Invalid/missing `badge` mirrors `normalizeNolmeState()` and defaults to `P1`.
+- Invalid/missing `tone` derives from the normalized badge using `P1 -> emerald`, `P2 -> iris`, `P3/P4 -> gold`.
+- Invalid/missing `action` defaults to `download`.
+- Missing `title` or `subtitle` rejects that resource event entry rather than writing a malformed row.
+
 Edge cases:
 
-- invalid badge defaults or rejects consistently with `normalizeNolmeState`;
+- invalid badge defaults to `P1` consistently with `normalizeNolmeState`;
 - duplicate resource ids keep the latest event;
 - resources from failed runs remain visible if produced before failure;
 - URL is optional and never required for `download` resources.
+- malformed non-empty resource arrays are never written; an all-invalid resource payload projects to an empty `resources` slice so UI message fallback is not suppressed by Algorithm sync.
 
 ### TDD Cycle
 
@@ -246,6 +282,28 @@ describe('projectAlgorithmRunToNolmeState resource projection', () => {
 
   it('leaves resources empty when no explicit Algorithm artifact exists', () => {
     // existing message fallback remains UI-side responsibility.
+  });
+
+  it('defaults invalid badge, tone, and action consistently with normalizeNolmeState', () => {
+    // badge -> P1, tone -> emerald, action -> download.
+  });
+
+  it('drops resource entries missing required title or subtitle', () => {
+    // all invalid entries produce resources: [].
+  });
+});
+```
+
+File: `tests/generated/test_algorithm_run_store.spec.ts`
+
+```ts
+describe('algorithm.resource.added event support', () => {
+  it('accepts algorithm.resource.added through appendAlgorithmEvent and rebuildState', async () => {
+    // append resource event, force state rebuild/read, assert event log remains valid.
+  });
+
+  it('accepts algorithm.resource.added through persistRunnerFrame({ kind: "event" })', async () => {
+    // persist runner event frame and assert readAlgorithmEventsSince includes it.
   });
 });
 ```
@@ -292,10 +350,12 @@ Automated:
 
 - `npm test -- tests/generated/test_algorithm_nolme_projection.spec.ts`
 - `npm test -- tests/generated/test_algorithm_run_contracts.spec.ts`
+- `npm test -- tests/generated/test_algorithm_run_store.spec.ts`
 
 Manual:
 
 - A valid projected resource appears in `/api/nolme/state/:sessionId`.
+- `appendAlgorithmEvent()`, state rebuild, and `persistRunnerFrame({ kind: "event" })` all accept and preserve `algorithm.resource.added`.
 
 ---
 
@@ -307,17 +367,33 @@ Manual:
 - `address_alias`: `algorithm.nolme_sidecar_sync`
 - `predicate_refs`: Algorithm metadata has `provider` and `projectPath`; state has non-null `sessionId`.
 - `codepath_ref`: `[PROPOSED] server/algorithm-runs/nolme-sync.js::syncAlgorithmRunToNolmeState`
-- `schema_contract_refs`: `N/A`; uses `server/agents/nolme-state-store.js::writeState`.
+- `schema_contract_refs`: `N/A`; uses `server/agents/nolme-state-store.js::readState` and `server/agents/nolme-state-store.js::writeState`.
 
 ### Schema Interface Mapping
 
 - `loop_mode`: `low_context_detail`
-- `mapped_contracts`: run metadata/state/events -> `writeState(binding, NolmeAgentState)`.
+- `mapped_contracts`: run metadata/state/events -> `readState(binding)` -> patch Algorithm-owned slices -> `writeState(binding, mergedState)`.
 - `registry_updates`: add sidecar sync resource with reads from run-store and writes to Nolme sidecar when registry exists.
 
 ### Test Specification
 
-Given a run with `provider: "claude"`, `projectPath`, and bound `sessionId`, when a phase/resource event is appended, then the sync writes the projected `NolmeAgentState` through `writeState()` using the normal provider session binding.
+Given a run with `provider: "claude"`, `projectPath`, and bound `sessionId`, when a phase/resource event is appended, then the sync writes the projected Algorithm slices through the real `readState()`/`writeState()` sidecar path using the normal provider session binding.
+
+Sidecar ownership contract:
+
+- Algorithm sync owns only `phases`, `currentPhaseIndex`, `currentReviewLine`, and `resources`.
+- Before writing, sync must read the existing sidecar with `readState(binding)`.
+- The write payload must preserve every non-Algorithm field already present, including `profile`, `quickActions`, `taskNotifications`, `tokenBudget`, `activeSkill`, and unknown extension fields.
+- Sync must never write raw event payload arrays directly; it writes only the normalized projector output described in Behaviors 1 and 2.
+
+Post-append sync contract:
+
+- `run-store.js` must not import `nolme-sync.js`.
+- Add a non-circular append observer surface in `run-store.js`, for example `registerAlgorithmEventAppendObserver(observer)`.
+- `appendAlgorithmEvent()` calls registered observers only after the event is durably appended and metadata/state files are updated.
+- Observer failures are caught and logged as warnings; they never reject the already-durable Algorithm event append.
+- Register the Nolme sync observer during server startup and in tests that assert sync behavior.
+- Direct route appends, lifecycle appends, decision-route appends, runner `state` frames, runner `event` frames, runner `log` frames, and terminal frame appends must all travel through `appendAlgorithmEvent()` so the observer sees them.
 
 Given a run without `sessionId`, when sync executes, then no sidecar is written and the run remains pollable through the Algorithm API.
 
@@ -327,6 +403,8 @@ Edge cases:
 - sidecar write failure logs a warning but does not corrupt Algorithm run state;
 - repeated events update the same sidecar idempotently;
 - owner-only metadata stays out of the sidecar.
+- direct lifecycle/decision route appends trigger the same sync observer as runner-frame appends;
+- observer registration is idempotent or removable in tests so test order does not duplicate sync writes.
 
 ### TDD Cycle
 
@@ -343,6 +421,18 @@ describe('syncAlgorithmRunToNolmeState', () => {
   it('does not write a sidecar before the provider session is bound', async () => {
     // state.sessionId null; assert no write.
   });
+
+  it('preserves Nolme-owned sidecar fields while patching Algorithm slices', async () => {
+    // seed tokenBudget/activeSkill/profile/quickActions/taskNotifications, sync, assert all remain.
+  });
+
+  it('syncs after direct appendAlgorithmEvent callers, not only persistRunnerFrame', async () => {
+    // append lifecycle/decision-style event directly and assert sidecar update.
+  });
+
+  it('logs sidecar sync failure without rejecting the durable event append', async () => {
+    // make writeState fail; appendAlgorithmEvent still resolves and event is readable.
+  });
 });
 ```
 
@@ -357,22 +447,27 @@ File: `server/algorithm-runs/nolme-sync.js`
  * @path.id sync-algorithm-run-to-nolme-sidecar
  * @gwt.given an Algorithm run has metadata, state, events, and a provider session id
  * @gwt.when syncAlgorithmRunToNolmeState executes
- * @gwt.then the projected NolmeAgentState is persisted through the existing sidecar store
+ * @gwt.then Algorithm-owned Nolme slices are merged into the existing sidecar store
  * @reads 9fbdb725-1ddf-4d46-b995-c8cb15303511,3ebb7305-7e3b-41ba-9282-f7d12b601d3b
  * @writes 948658d5-1e47-4f6f-b426-dc63a7547ba7
  * @raises state_corrupt:AlgorithmRunStateCorrupt
- * @schema.contract N/A; server/agents/nolme-state-store.js::writeState
+ * @schema.contract N/A; server/agents/nolme-state-store.js::readState, server/agents/nolme-state-store.js::writeState
  */
 export async function syncAlgorithmRunToNolmeState(runId) {
-  return { synced: false };
+  // Read run metadata/state/events through exported run-store APIs.
+  // Build binding from metadata + state, read existing sidecar, patch only
+  // Algorithm-owned slices, then write the merged payload.
+  return { synced: false, reason: 'not_bound' };
 }
 ```
 
 #### Refactor
 
-- Call sync from the same append path that already updates Algorithm projected state, after the event is durably appended.
+- Add `readAlgorithmRunSnapshot(runId)` or equivalent exported run-store API so sync can read metadata, public state, and ordered events without reaching into private file paths.
+- Call sync through the append observer after the event is durably appended and state files are updated.
 - Make sync best-effort after Algorithm state persistence; do not let a sidecar write failure lose the Algorithm event.
 - Keep all sidecar writes going through `writeState()`, never direct file writes.
+- Keep sidecar sync registered outside `run-store.js` to avoid circular imports.
 
 ### Success Criteria
 
@@ -380,6 +475,7 @@ Automated:
 
 - `npm test -- tests/generated/test_algorithm_nolme_sidecar_sync.spec.ts`
 - `npm test -- tests/generated/test_nolme_state_sidecar.spec.ts`
+- `npm test -- tests/generated/test_algorithm_run_store.spec.ts tests/generated/test_algorithm_runs_route_lifecycle.spec.ts tests/generated/test_algorithm_runs_route_decisions.spec.ts`
 
 Manual:
 
@@ -393,19 +489,19 @@ Manual:
 
 - `resource_id`: `[PROPOSED] 8bf231d3-1342-4675-a539-2b9e0eb40545`
 - `address_alias`: `algorithm.nolme_launch_route`
-- `predicate_refs`: authenticated owner, run metadata, public Algorithm state, projected Nolme state.
+- `predicate_refs`: authenticated owner, run metadata, public Algorithm state, merged Nolme state.
 - `codepath_ref`: `[PROPOSED] server/routes/algorithm-runs.js::GET /:runId/nolme`
 - `schema_contract_refs`: `N/A`; uses `server/routes/algorithm-runs.js` response envelope conventions.
 
 ### Schema Interface Mapping
 
 - `loop_mode`: `low_context_detail`
-- `mapped_contracts`: Algorithm run id -> `{ ready, binding?, state?, nolmeUrl, runStatus }`.
+- `mapped_contracts`: Algorithm run id -> versioned Algorithm launch envelope `{ ok, schemaVersion, ready, binding?, state?, nolmeUrl, runStatus }`; `/api/nolme/state/:sessionId` remains raw-state-compatible.
 - `registry_updates`: add launch route schema refs when canonical schemas exist.
 
 ### Test Specification
 
-Given an authenticated owner requests `/api/algorithm-runs/:runId/nolme` for a bound run, when the route executes, then it returns `ok: true`, `ready: true`, a normal `NolmeSessionBinding`, projected `NolmeAgentState`, and `nolmeUrl: "/nolme/?runId=<runId>"`.
+Given an authenticated owner requests `/api/algorithm-runs/:runId/nolme` for a bound run, when the route executes, then it returns `ok: true`, `ready: true`, a normal `NolmeSessionBinding`, the merged `NolmeAgentState` visible through the sidecar path, and `nolmeUrl: "/nolme/?runId=<runId>"`.
 
 Given the run has no `sessionId` yet, when the route executes, then it returns `ready: false`, the current run status/cursor, and no binding.
 
@@ -416,12 +512,13 @@ Edge cases:
 - owner mismatch -> `403 forbidden`;
 - corrupt run state -> `500 state_corrupt`;
 - no private `projectPath` in the public `state`, but binding may include the owner-authorized `projectPath` needed by Nolme.
+- launch route uses `makeApiSuccess()`/`makeApiError()` and existing Algorithm owner authorization, but does not change the Nolme sidecar route envelope.
 
 ### TDD Cycle
 
 #### Red: Write Failing Tests
 
-File: `tests/generated/test_algorithm_runs_nolme_launch_route.spec.ts`
+File: `tests/generated/test_algorithm_runs_route_nolme_launch.spec.ts`
 
 ```ts
 describe('GET /api/algorithm-runs/:runId/nolme', () => {
@@ -471,7 +568,7 @@ router.get('/:runId/nolme', async (req, res) => {
 
 Automated:
 
-- `npm test -- tests/generated/test_algorithm_runs_nolme_launch_route.spec.ts`
+- `npm test -- tests/generated/test_algorithm_runs_route_nolme_launch.spec.ts`
 - `npm test -- tests/generated/test_algorithm_runs_route_state_events.spec.ts`
 
 Manual:
@@ -493,7 +590,7 @@ Manual:
 ### Schema Interface Mapping
 
 - `loop_mode`: `low_context_detail`
-- `mapped_contracts`: launch route response -> `NolmeSessionBinding`.
+- `mapped_contracts`: URL/direct binding sources plus launch route response -> `{ status, binding, error, source }`.
 - `registry_updates`: add Nolme launch hook resource when canonical registry exists.
 
 ### Test Specification
@@ -502,12 +599,31 @@ Given the URL is `/nolme/?runId=alg_1` and the launch route returns `ready: true
 
 Given the launch route returns `ready: false`, when the hook runs, then Nolme remains in a loading/waiting state and polls again without showing "No session selected".
 
+Session resolver interface:
+
+```ts
+type CcuSessionResolution =
+  | { status: 'idle'; binding: null; error: null; source: 'none' }
+  | { status: 'resolving-run'; binding: null; error: null; source: 'runId' }
+  | { status: 'waiting-run'; binding: null; error: null; source: 'runId'; runStatus: string }
+  | { status: 'ready'; binding: NolmeSessionBinding; error: null; source: 'url' | 'runId' | 'localStorage' | 'broadcast' }
+  | { status: 'error'; binding: null; error: Error; source: 'runId' | 'url' };
+```
+
+Launch-mode precedence:
+
+- An explicit URL `sessionId` binding wins over `runId`.
+- While the URL contains an active `runId` and no explicit `sessionId`, localStorage, storage events, and `BroadcastChannel('ccu-session')` must not replace the run-bound resolver state.
+- When the URL no longer contains `runId`, localStorage and BroadcastChannel behavior remains the current behavior.
+- Ready `runId` resolution may write the resolved binding to `localStorage('nolme-current-binding')`, but that cached value is not considered authoritative until the user leaves run-launch mode.
+
 Edge cases:
 
 - URL with explicit `sessionId` still wins over `runId`;
 - launch route `403` or `404` surfaces a hydration/launch error;
 - polling stops after unmount;
-- changing `runId` re-resolves and does not reuse stale binding.
+- changing `runId` re-resolves and does not reuse stale binding;
+- `/nolme/?runId=alg_1` ignores a stale `localStorage('nolme-current-binding')` and later live sidebar broadcasts until the URL changes.
 
 ### TDD Cycle
 
@@ -527,6 +643,14 @@ describe('Algorithm run launch binding', () => {
 
   it('keeps explicit sessionId URL params ahead of runId', () => {
     // URL has both; assert direct binding.
+  });
+
+  it('ignores stale localStorage and BroadcastChannel bindings while runId is active', async () => {
+    // URL has runId only; stale cached/live binding must not hydrate the app.
+  });
+
+  it('returns an error status for launch 403/404 responses', async () => {
+    // assert status error instead of null binding/no-session placeholder.
   });
 });
 ```
@@ -549,15 +673,16 @@ File: `nolme-ui/src/hooks/useAlgorithmRunLaunch.ts`
  * @schema.contract N/A; nolme-ui/src/lib/types.ts::NolmeSessionBinding
  */
 export function useAlgorithmRunLaunch() {
-  return { status: 'idle' as const, binding: null, error: null };
+  return { status: 'idle' as const, binding: null, error: null, source: 'none' as const };
 }
 ```
 
 #### Refactor
 
-- Compose this into `useCcuSession()` rather than duplicating binding validation.
+- Compose this into `useCcuSession()` or a `useResolvedCcuSession()` wrapper consumed by `NolmeApp`; the consumed interface must be status-bearing.
 - Keep URL/localStorage/BroadcastChannel precedence explicit.
 - Use `nolmeFetch()` so auth header behavior stays aligned with `useHydratedState()`.
+- Update `NolmeApp` to branch on `status` so `waiting-run` renders the existing loading skeleton or a small waiting state, while only `idle` renders "No session selected".
 
 ### Success Criteria
 
@@ -579,13 +704,13 @@ Manual:
 - `resource_id`: `[PROPOSED] c3d509d2-5fb2-4a44-a5a1-1d0b2fa48a8c`
 - `address_alias`: `nolme.copilotkit_connect_hydration`
 - `predicate_refs`: connect request has `threadId` plus forwarded Nolme binding headers; in-memory runner history may be empty.
-- `codepath_ref`: `server/lib/safe-in-memory-agent-runner.js::connect`, `[PROPOSED] server/agents/nolme-connect-binding.js::bindingFromConnectHeaders`
-- `schema_contract_refs`: `N/A`; uses CopilotKit runner connect request headers and `server/agents/ccu-session-agent.js::connect`.
+- `codepath_ref`: `server/lib/safe-in-memory-agent-runner.js::connect`, `[PROPOSED] server/agents/nolme-connect-binding.js::bindingFromConnectHeaders`, `[PROPOSED] server/agents/nolme-connect-hydration.js::hydrateNolmeConnect`
+- `schema_contract_refs`: `N/A`; uses CopilotKit `AgentRunnerConnectRequest.headers` plus the same provider-history/sidecar contracts currently exercised by `server/agents/ccu-session-agent.js::connect`.
 
 ### Schema Interface Mapping
 
 - `loop_mode`: `low_context_detail`
-- `mapped_contracts`: Nolme binding headers -> `CcuSessionAgent.connect()` forwarded props.
+- `mapped_contracts`: `x-ccu-*` headers -> `bindingFromConnectHeaders()` -> shared `hydrateNolmeConnect({ binding, threadId, runId?, userId? })` helper.
 - `registry_updates`: add connect hydration resource with reads from provider history and sidecar when registry exists.
 
 ### Test Specification
@@ -594,10 +719,19 @@ Given a fresh thread with no in-memory history and connect headers containing `x
 
 Given in-memory history exists for the thread, when connect executes, then it preserves `super.connect()` behavior and does not duplicate provider history.
 
+Connect interface contract:
+
+- The UI must send Nolme binding values through CopilotKit `headers`, not only through `properties`.
+- Required headers: `x-ccu-provider`, `x-ccu-session-id`, `x-ccu-project-name`, `x-ccu-project-path`.
+- Optional headers: `x-ccu-model`, `x-ccu-permission-mode`, `x-ccu-run-id`.
+- String header values that may contain path separators or spaces are URI-encoded once by the UI and decoded exactly once by `bindingFromConnectHeaders()`.
+- `SafeInMemoryAgentRunner.connect()` receives only `{ threadId, headers, joinCode? }`; do not design against connect-time `agent` or `forwardedProps`.
+- Provider-history replay lives in `hydrateNolmeConnect()` and is reused by both `SafeInMemoryAgentRunner.connect()` and `CcuSessionAgent.connect()` so replay semantics stay identical.
+
 Edge cases:
 
 - missing binding headers falls back to `super.connect()`;
-- invalid provider header falls back to empty connect rather than throwing;
+- invalid provider header falls back to `super.connect(request)` rather than throwing, returning a false provider error, or manufacturing an empty completed stream;
 - header values are decoded exactly once;
 - authenticated user id from `x-cc-user-id` is still available when constructing `CcuSessionAgent`.
 
@@ -616,6 +750,14 @@ describe('SafeInMemoryAgentRunner provider-history connect fallback', () => {
   it('does not fetch provider history when in-memory events already exist', async () => {
     // seed a run, then connect and assert fetchHistory not called.
   });
+
+  it('delegates to super.connect(request) for missing or invalid binding headers', async () => {
+    // invalid provider/missing session header; assert normal in-memory connect path is used.
+  });
+
+  it('uses the same hydrateNolmeConnect helper as CcuSessionAgent.connect', async () => {
+    // spy shared helper from both call sites and compare emitted event semantics.
+  });
 });
 ```
 
@@ -624,6 +766,10 @@ File: `nolme-ui/tests/generated/nolme-chat/J1_hydration_replay.spec.tsx`
 ```tsx
 it('passes Nolme binding headers to CopilotKit so server connect can hydrate history', () => {
   // render NolmeApp with binding, assert CopilotKit headers include x-ccu-* fields.
+});
+
+it('keeps auth and x-ccu binding headers together in CopilotKit provider props', () => {
+  // assert Authorization remains present when binding headers are added.
 });
 ```
 
@@ -669,6 +815,23 @@ connect(request) {
 }
 ```
 
+File: `server/agents/nolme-connect-hydration.js`
+
+```js
+/**
+ * @rr.id c3d509d2-5fb2-4a44-a5a1-1d0b2fa48a8c
+ * @rr.alias nolme.copilotkit_connect_hydration
+ * @path.id hydrate-nolme-connect-from-provider-history
+ * @gwt.given a validated Nolme binding and CopilotKit connect thread id
+ * @gwt.when hydrateNolmeConnect executes
+ * @gwt.then provider history and sidecar state are emitted as AG-UI events
+ * @schema.contract N/A; provider history adapter messages, Nolme sidecar state
+ */
+export function hydrateNolmeConnect({ binding, threadId, runId = null, userId = null }) {
+  return null;
+}
+```
+
 File: `nolme-ui/src/NolmeApp.tsx`
 
 ```ts
@@ -677,16 +840,18 @@ const providerProps = {
     Authorization: 'Bearer ...',
     'x-ccu-provider': binding.provider,
     'x-ccu-session-id': binding.sessionId,
-    'x-ccu-project-name': binding.projectName,
-    'x-ccu-project-path': binding.projectPath,
+    'x-ccu-project-name': encodeURIComponent(binding.projectName),
+    'x-ccu-project-path': encodeURIComponent(binding.projectPath),
   },
+  properties: { binding },
 };
 ```
 
 #### Refactor
 
 - Keep provider-history hydration behind a small injectable dependency so tests can mock without creating a real Express runtime.
-- Do not call `CcuSessionAgent.connect()` if `super.connect()` emits historic memory events.
+- Do not call provider-history hydration if `super.connect()` emits historic memory events.
+- Refactor `CcuSessionAgent.connect()` to delegate to `hydrateNolmeConnect()` instead of maintaining separate replay logic.
 - Do not expose binding headers to non-CopilotKit routes.
 
 ### Success Criteria
@@ -732,8 +897,9 @@ Given `/nolme/?runId=alg_1` resolves to a bound run, messages contain provider h
 Edge cases:
 
 - launch ready false shows waiting state, not empty no-session state;
-- sidecar missing still lets message-derived phases/resources appear;
+- sidecar missing, non-OK, network failed, or invalid JSON still lets provider messages hydrate and message-derived phases/resources appear;
 - explicit sidecar state wins over contradictory messages;
+- server-generated Algorithm sidecar phase/resource arrays are validated before write, so Algorithm sync cannot create malformed explicit arrays that blank message-derived fallback;
 - failed run shows status/review line without marking all phases complete.
 
 ### TDD Cycle
@@ -750,6 +916,20 @@ describe('Nolme Algorithm run launch workspace', () => {
 
   it('keeps message-derived fallback when sidecar resources are empty', async () => {
     // sidecar default, messages include tool_result filePath.
+  });
+});
+```
+
+File: `nolme-ui/tests/generated/test_use_hydrated_state.spec.tsx`
+
+```tsx
+describe('useHydratedState sidecar failure fallback', () => {
+  it('returns ready with messages and default state when state fetch fails', async () => {
+    // messages 200, state network reject; assert ready and projected message fallback remains available.
+  });
+
+  it('returns ready with messages and default state when state JSON is invalid', async () => {
+    // messages 200, state body invalid JSON; assert no hydration error.
   });
 });
 ```
@@ -781,6 +961,7 @@ export function NolmeApp() {
 - Reuse existing `AiWorkingHydrationProvider` and rail bindings.
 - Add only the launch/loading branch needed for `runId`; avoid a separate Algorithm-specific dashboard mode.
 - Keep visual changes out of this behavior unless tests show existing components cannot render the projected state.
+- Update `useHydratedState()` so sidecar state fetch/parse failures degrade to default Nolme state while preserving successfully fetched provider messages.
 
 ### Success Criteria
 
@@ -800,7 +981,7 @@ Server route flow:
 ```bash
 npm test -- tests/generated/test_algorithm_nolme_projection.spec.ts
 npm test -- tests/generated/test_algorithm_nolme_sidecar_sync.spec.ts
-npm test -- tests/generated/test_algorithm_runs_nolme_launch_route.spec.ts
+npm test -- tests/generated/test_algorithm_runs_route_nolme_launch.spec.ts
 npm test -- tests/generated/test_safe_runner_provider_history_connect.spec.ts
 ```
 
@@ -808,6 +989,7 @@ UI flow:
 
 ```bash
 npm --prefix nolme-ui test -- tests/generated/test_algorithm_run_launch_binding.spec.tsx
+npm --prefix nolme-ui test -- tests/generated/test_use_hydrated_state.spec.tsx
 npm --prefix nolme-ui test -- tests/generated/algorithm-run/P0_run_launch_workspace.spec.tsx
 npm --prefix nolme-ui run typecheck
 ```
@@ -833,12 +1015,13 @@ Manual verification:
 
 1. Add pure Algorithm-to-Nolme projection tests and module.
 2. Extend Algorithm event/frame contracts only as needed for resource/review-line payloads.
-3. Add sidecar sync after durable Algorithm event persistence.
+3. Add non-circular append observer registration plus sidecar merge sync after durable Algorithm event persistence.
 4. Add `/api/algorithm-runs/:runId/nolme` launch route.
-5. Add `/nolme/?runId=` binding resolution.
-6. Add connect-header propagation and provider-history fallback in the safe runner.
-7. Add dashboard-level run-launch regression tests.
-8. Run full server/UI regression commands.
+5. Add status-bearing `/nolme/?runId=` binding resolution and launch-mode precedence.
+6. Add `x-ccu-*` header propagation, connect header parsing, and shared provider-history hydration in the safe runner and `CcuSessionAgent`.
+7. Harden sidecar fetch/parse fallback in `useHydratedState()`.
+8. Add dashboard-level run-launch regression tests.
+9. Run full server/UI regression commands.
 
 ## References
 
@@ -848,14 +1031,18 @@ Manual verification:
 - Algorithm routes: `server/routes/algorithm-runs.js:79`, `server/routes/algorithm-runs.js:164`, `server/routes/algorithm-runs.js:176`
 - Algorithm contracts: `server/algorithm-runs/contracts.js:22`
 - Algorithm run store: `server/algorithm-runs/run-store.js:76`, `server/algorithm-runs/run-store.js:412`
+- Nolme sidecar store: `server/agents/nolme-state-store.js:131`
 - Nolme binding/state types: `nolme-ui/src/lib/types.ts:20`, `nolme-ui/src/lib/types.ts:63`
 - Nolme binding resolution: `nolme-ui/src/hooks/useCcuSession.ts:21`
 - Nolme hydration: `nolme-ui/src/hooks/useHydratedState.ts:31`, `nolme-ui/src/hooks/useHydratedState.ts:63`
+- Nolme state normalization: `nolme-ui/src/lib/ai-working/normalizeNolmeState.ts:74`, `nolme-ui/src/lib/ai-working/normalizeNolmeState.ts:207`
 - Nolme projection: `nolme-ui/src/lib/ai-working/projectAiWorkingProjection.ts:117`
 - Phase fallback projection: `nolme-ui/src/lib/ai-working/projectPhaseTimeline.ts:352`, `nolme-ui/src/lib/ai-working/projectPhaseTimeline.ts:550`
 - Deliverable fallback projection: `nolme-ui/src/lib/ai-working/projectDeliverables.ts:240`
 - Nolme chat binding: `nolme-ui/src/components/NolmeChat.tsx:22`
 - Tested agent connect path: `server/agents/ccu-session-agent.js:291`
 - Production runtime connect path: `node_modules/@copilotkit/runtime/src/v2/runtime/handlers/sse/connect.ts:12`
+- CopilotKit connect request shape: `node_modules/@copilotkit/runtime/src/v2/runtime/runner/agent-runner.ts:17`
+- CopilotKit forwarded headers: `node_modules/@copilotkit/runtime/src/v2/runtime/handlers/header-utils.ts:5`
 - In-memory connect behavior: `node_modules/@copilotkit/runtime/src/v2/runtime/runner/in-memory.ts:294`
 - Safe runner override: `server/lib/safe-in-memory-agent-runner.js:30`
