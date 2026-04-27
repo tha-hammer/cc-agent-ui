@@ -1,0 +1,55 @@
+[Unit]
+Description=cc-agent-ui (CloudCLI / claudecodeui fork) — web chat for Claude Code
+Documentation=https://github.com/tha-hammer/cc-agent-ui
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=cloudcli
+Group=cloudcli
+WorkingDirectory=/home/cloudcli/Dev/cosmic-agent-memory/cc-agent-ui
+Environment=PATH=/home/cloudcli/.bun/bin:/home/cloudcli/.local/bin:/usr/local/bin:/usr/bin:/bin
+Environment=HOME=/home/cloudcli
+Environment=HOST=127.0.0.1
+Environment=SERVER_PORT=3001
+Environment=CONTEXT_WINDOW=160000
+Environment=VITE_CONTEXT_WINDOW=160000
+ExecStart=/usr/bin/node server/index.js
+Restart=always
+RestartSec=3
+
+# Logging — journald (queryable via `journalctl -u cc-agent-ui`)
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=cc-agent-ui
+
+# Hardening (defense-in-depth, validated to keep Node + child CLIs working)
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/home/cloudcli
+ProtectHome=false
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+ProtectProc=invisible
+RestrictSUIDSGID=true
+RestrictRealtime=true
+RestrictNamespaces=true
+LockPersonality=true
+RemoveIPC=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+CapabilityBoundingSet=
+AmbientCapabilities=
+UMask=0027
+MemoryMax=4G
+TasksMax=2048
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

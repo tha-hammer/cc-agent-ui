@@ -93,6 +93,16 @@ Open `http://localhost:3001` — all your existing sessions are discovered autom
 
 Visit the **[documentation →](https://cloudcli.ai/docs)** for more full configuration options, PM2, remote server setup and more
 
+### Production VPS Deployment
+
+For deploying cc-agent-ui to a production single-tenant VPS (Alpha customers, self-hosted clients), use the included installer:
+
+```bash
+# As root on the target Ubuntu 22+/24+ VPS
+curl -fsSL https://raw.githubusercontent.com/tha-hammer/cc-agent-ui/main/scripts/deploy/install-vps.sh | bash
+```
+
+It creates a dedicated non-root `cloudcli` user, installs a hardened systemd unit, and refuses to install if the unit declares `User=root`. **Never run cc-agent-ui as root in production.** See **[docs/DEPLOY.md](docs/DEPLOY.md)** for the full runbook, reverse-proxy/TLS setup, and a migration script for existing root-owned installs.
 
 ---
 
