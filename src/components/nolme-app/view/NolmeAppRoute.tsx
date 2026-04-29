@@ -29,7 +29,8 @@ import { cn } from '../../../lib/utils';
 import { useWebSocket } from '../../../contexts/WebSocketContext';
 import { api, authenticatedFetch } from '../../../utils/api';
 import { formatTimeAgo } from '../../../utils/dateUtils';
-import type { Project, ProjectSession, SessionProvider } from '../../../types/app';
+import type { Project, ProjectSession, ProjectsUpdatedMessage, SessionProvider } from '../../../types/app';
+import type { NormalizedMessage } from '../../../stores/useSessionStore';
 import { CLAUDE_MODELS } from '../../../../shared/modelConstants';
 import './NolmeAppRoute.css';
 
@@ -135,14 +136,25 @@ type SessionWithProvider = ProjectSession & {
 
 type LoadingSessionsByProject = Record<string, boolean>;
 
-type NormalizedMessage = {
-  id?: string;
-  sessionId?: string;
-  timestamp?: string;
-  provider?: SessionProvider;
-  kind?: string;
-  role?: 'user' | 'assistant';
-  content?: string;
+type SessionMessage = Partial<NormalizedMessage> & Record<string, unknown>;
+
+type UnifiedSessionMessagesBody = {
+  messages?: SessionMessage[];
+  error?: string | { message?: string };
+  message?: string;
+};
+
+type RefreshSessionOptions = {
+  showSpinner?: boolean;
+};
+
+type ArtifactCandidate = {
+  id: string;
+  title: string;
+  subtitle: string;
+  url?: string | null;
+  tone?: AlgorithmDeliverable['tone'];
+  action?: AlgorithmDeliverable['action'];
 };
 
 const ALGORITHM_PHASE_TITLES = ['Observe', 'Think', 'Plan', 'Build', 'Execute', 'Verify', 'Learn'] as const;
@@ -166,6 +178,11 @@ function readInitialRunId() {
   } catch {
     return '';
   }
+}
+
+function readInitialRunIdIsExplicit() {
+  if (typeof window === 'undefined') return false;
+  return new URLSearchParams(window.location.search).has('runId');
 }
 
 function getProjectPath(project: Project | null | undefined) {
@@ -219,6 +236,300 @@ function toTranscriptItem(message: NormalizedMessage): ChatTranscriptItem | null
     role: message.role,
     body: String(message.content),
     timestamp: message.timestamp || new Date().toISOString(),
+  };
+}
+
+function mapTranscriptMessages(messages: SessionMessage[]) {
+  return messages.map((message) => toTranscriptItem(message as NormalizedMessage)).filter(Boolean) as ChatTranscriptItem[];
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === 'object' && !Array.isArray(value));
+}
+
+function normalizeProjectsPayload(data: unknown): Project[] {
+  if (Array.isArray(data)) return data as Project[];
+  if (isRecord(data) && Array.isArray(data.projects)) return data.projects as Project[];
+  return [];
+}
+
+function asString(value: unknown) {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function isCompletedStatus(value: unknown) {
+  const status = asString(value).toLowerCase();
+  return !status || ['complete', 'completed', 'done', 'success', 'succeeded'].includes(status);
+}
+
+function isHttpUrl(value: string) {
+  return /^https?:\/\//i.test(value);
+}
+
+function basename(value: string) {
+  const normalized = value.replace(/\\/g, '/');
+  return normalized.split('/').filter(Boolean).at(-1) || value;
+}
+
+function inferDeliverableTone(value: string): AlgorithmDeliverable['tone'] {
+  if (/\b(csv|xlsx?|spreadsheet|sheet|table)\b/i.test(value)) return 'sheet';
+  if (isHttpUrl(value)) return 'link';
+  return 'document';
+}
+
+function getRecordString(record: Record<string, unknown>, keys: string[]) {
+  for (const key of keys) {
+    const value = asString(record[key]);
+    if (value) return value;
+  }
+  return '';
+}
+
+function createArtifactCandidate(
+  source: Record<string, unknown>,
+  id: string,
+  fallbackSubtitle: string,
+  fallbackTitle = 'Completed task output',
+): ArtifactCandidate | null {
+  if (!isCompletedStatus(source.status)) return null;
+
+  const url = getRecordString(source, ['url', 'href', 'link']);
+  const path = getRecordString(source, ['path', 'filePath', 'file', 'filename']);
+  const summary = getRecordString(source, ['summary', 'title', 'name', 'label']);
+  const title = summary || (path ? basename(path) : '') || (url ? basename(url) : '') || fallbackTitle;
+  const subtitle = getRecordString(source, ['subtitle', 'description']) || fallbackSubtitle;
+  const toneSource = [title, subtitle, url, path].filter(Boolean).join(' ');
+
+  return {
+    id,
+    title,
+    subtitle,
+    tone: inferDeliverableTone(toneSource),
+    action: url && isHttpUrl(url) ? 'link' : undefined,
+    url: url && isHttpUrl(url) ? url : null,
+  };
+}
+
+function extractXmlTag(text: string, tag: string) {
+  const match = text.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'i'));
+  return match?.[1]?.replace(/<[^>]+>/g, '').trim() || '';
+}
+
+function parseTaskNotificationXml(text: string, id: string): ArtifactCandidate | null {
+  if (!/<task-notification[\s>]/i.test(text)) return null;
+  const status = extractXmlTag(text, 'status');
+  if (!isCompletedStatus(status)) return null;
+  const summary = extractXmlTag(text, 'summary') || extractXmlTag(text, 'title');
+  const url = extractXmlTag(text, 'url');
+  const source = {
+    status,
+    summary,
+    url,
+  };
+  return createArtifactCandidate(source, id, 'Completed task output');
+}
+
+function tryParseJson(text: string): unknown {
+  const trimmed = text.trim();
+  if (!trimmed || !/^[{[]/.test(trimmed)) return null;
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    return null;
+  }
+}
+
+function artifactCandidatesFromValue(
+  value: unknown,
+  idPrefix: string,
+  fallbackSubtitle: string,
+): ArtifactCandidate[] {
+  if (Array.isArray(value)) {
+    return value.flatMap((item, index) => artifactCandidatesFromValue(item, `${idPrefix}-${index}`, fallbackSubtitle));
+  }
+  if (!isRecord(value)) return [];
+
+  const candidates: ArtifactCandidate[] = [];
+  const direct = createArtifactCandidate(value, idPrefix, fallbackSubtitle);
+  if (direct) candidates.push(direct);
+
+  for (const key of ['artifact', 'artifacts', 'deliverable', 'deliverables', 'output', 'outputs', 'result', 'results']) {
+    if (key in value) {
+      candidates.push(...artifactCandidatesFromValue(value[key], `${idPrefix}-${key}`, fallbackSubtitle));
+    }
+  }
+
+  return candidates;
+}
+
+function extractFinalReportTitle(text: string) {
+  const afterMarker = text.split(/REPORT DELIVERED/i).at(-1) || text;
+  const heading = afterMarker.match(/^\s{0,3}#{1,3}\s+(.+)$/m)?.[1]?.trim();
+  if (heading) return heading;
+  const firstLine = afterMarker
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .find((line) => line && !/REPORT DELIVERED/i.test(line));
+  return firstLine || 'Final assistant report';
+}
+
+function deriveSessionDeliverables(messages: SessionMessage[]): AlgorithmDeliverable[] {
+  const candidates: ArtifactCandidate[] = [];
+
+  messages.forEach((message, index) => {
+    const id = String(message.id || `${message.kind || 'message'}-${index}`);
+    const content = asString(message.content);
+
+    if (message.kind === 'task_notification') {
+      const direct = createArtifactCandidate(message, id, 'Completed task output');
+      if (direct) candidates.push(direct);
+    }
+
+    const xmlCandidate = content ? parseTaskNotificationXml(content, `${id}-xml`) : null;
+    if (xmlCandidate) candidates.push(xmlCandidate);
+
+    const jsonCandidate = content ? tryParseJson(content) : null;
+    candidates.push(...artifactCandidatesFromValue(jsonCandidate, `${id}-json`, 'Completed task output'));
+
+    if (isRecord(message.toolResult)) {
+      const toolResultContent = asString(message.toolResult.content);
+      const toolResultValue = toolResultContent ? tryParseJson(toolResultContent) : null;
+      candidates.push(...artifactCandidatesFromValue(
+        message.toolResult.toolUseResult ?? toolResultValue,
+        `${id}-tool-result`,
+        getRecordString(message, ['toolName']) ? `${getRecordString(message, ['toolName'])} result` : 'Completed task output',
+      ));
+    }
+  });
+
+  const seen = new Set<string>();
+  const deliverables = candidates
+    .filter((candidate) => candidate.title)
+    .filter((candidate) => {
+      const key = `${candidate.title.toLowerCase()}::${candidate.url || ''}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .map((candidate, index) => ({
+      id: candidate.id || `session-deliverable-${index}`,
+      title: candidate.title,
+      subtitle: candidate.subtitle,
+      tone: candidate.tone || 'document',
+      action: candidate.action,
+      url: candidate.url ?? null,
+    }));
+
+  if (deliverables.length > 0) return deliverables;
+
+  const finalReport = [...messages].reverse().find((message) => (
+    message.kind === 'text' &&
+    message.role === 'assistant' &&
+    typeof message.content === 'string' &&
+    /REPORT DELIVERED/i.test(message.content)
+  ));
+
+  if (!finalReport?.content) return [];
+
+  return [{
+    id: `${String(finalReport.id || 'final-report')}-deliverable`,
+    title: extractFinalReportTitle(finalReport.content),
+    subtitle: 'Final assistant report',
+    tone: 'document',
+    url: null,
+  }];
+}
+
+function mergeRunStateWithDerivedState(
+  runState: AlgorithmRunState | null,
+  derivedRunState: AlgorithmRunState | null,
+) {
+  if (!derivedRunState) return runState;
+  if (!runState) return derivedRunState;
+  if (runState.phases && runState.phases.length > 0) return runState;
+  return {
+    ...derivedRunState,
+    ...runState,
+    phase: runState.phase || derivedRunState.phase,
+    phases: derivedRunState.phases,
+    currentPhaseIndex: derivedRunState.currentPhaseIndex,
+    currentReviewLine: runState.currentReviewLine || derivedRunState.currentReviewLine,
+    taskTitle: runState.taskTitle || derivedRunState.taskTitle,
+  };
+}
+
+function selectRightPanelRunState({
+  runState,
+  derivedRunState,
+  sessionDeliverables,
+  selectedSessionId,
+  chatSessionId,
+  explicitRunMode,
+}: {
+  runState: AlgorithmRunState | null;
+  derivedRunState: AlgorithmRunState | null;
+  sessionDeliverables: AlgorithmDeliverable[];
+  selectedSessionId: string | null;
+  chatSessionId: string | null;
+  explicitRunMode: boolean;
+}) {
+  const baseRunState = mergeRunStateWithDerivedState(runState, derivedRunState);
+  if (sessionDeliverables.length === 0) return baseRunState;
+
+  const runDeliverables = baseRunState?.deliverables ?? [];
+  const selectedSessionIds = [selectedSessionId, chatSessionId].filter(Boolean) as string[];
+  const runMatchesSelectedSession = Boolean(baseRunState?.sessionId && selectedSessionIds.includes(baseRunState.sessionId));
+  const canUseRunDeliverables = runDeliverables.length > 0 && (
+    explicitRunMode ||
+    selectedSessionIds.length === 0 ||
+    runMatchesSelectedSession
+  );
+
+  if (canUseRunDeliverables) return baseRunState;
+
+  return {
+    runId: baseRunState?.runId || 'selected-session-deliverables',
+    provider: baseRunState?.provider || 'claude',
+    status: baseRunState?.status || 'completed',
+    ...baseRunState,
+    deliverables: sessionDeliverables,
+  };
+}
+
+function isProjectsUpdatedMessage(message: unknown): message is ProjectsUpdatedMessage {
+  return isRecord(message) && message.type === 'projects_updated' && Array.isArray(message.projects);
+}
+
+function getChangedSessionId(changedFile?: string) {
+  if (!changedFile) return '';
+  return basename(changedFile).replace(/\.jsonl$/i, '');
+}
+
+function doesProjectUpdateTargetSession(message: ProjectsUpdatedMessage, session: SessionWithProvider | null) {
+  if (!session) return false;
+  return getChangedSessionId(message.changedFile) === session.id;
+}
+
+function applyProjectsUpdatedMessage(
+  projectsMessage: ProjectsUpdatedMessage,
+  currentProjects: Project[],
+  selectedProject: Project | null,
+  selectedSession: SessionWithProvider | null,
+) {
+  const nextProjects = projectsMessage.projects.length > 0 ? projectsMessage.projects : currentProjects;
+  const nextSelectedProject = selectedProject
+    ? nextProjects.find((project) => project.name === selectedProject.name) || selectedProject
+    : selectedProject;
+  const nextSelectedSession = nextSelectedProject && selectedSession
+    ? getProjectSessions(nextSelectedProject).find((session) => (
+      session.id === selectedSession.id && session.__provider === selectedSession.__provider
+    )) || selectedSession
+    : selectedSession;
+
+  return {
+    projects: nextProjects,
+    selectedProject: nextSelectedProject,
+    selectedSession: nextSelectedSession,
   };
 }
 
@@ -328,7 +639,10 @@ export default function NolmeAppRoute() {
   const [activePanel, setActivePanel] = useState<NavPanelId>('chat');
   const [showSettings, setShowSettings] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [projectsLoading, setProjectsLoading] = useState(true);
+  const [projectsError, setProjectsError] = useState<string | null>(null);
   const [activeRunId] = useState(readInitialRunId);
+  const [explicitRunMode] = useState(readInitialRunIdIsExplicit);
   const [chatView, setChatView] = useState<ChatView>(activeRunId ? 'composer' : 'projects');
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [selectedSession, setSelectedSession] = useState<SessionWithProvider | null>(null);
@@ -337,6 +651,7 @@ export default function NolmeAppRoute() {
   const [loadingSessionId, setLoadingSessionId] = useState<string | null>(null);
   const [runState, setRunState] = useState<AlgorithmRunState | null>(null);
   const [derivedRunState, setDerivedRunState] = useState<AlgorithmRunState | null>(null);
+  const [sessionDeliverables, setSessionDeliverables] = useState<AlgorithmDeliverable[]>([]);
   const [runError, setRunError] = useState<string | null>(null);
   const [prompt, setPrompt] = useState('');
   const [isStartingRun, setIsStartingRun] = useState(false);
@@ -357,22 +672,30 @@ export default function NolmeAppRoute() {
   const eventSourceRef = useRef<EventSource | null>(null);
   const searchSourceRef = useRef<EventSource | null>(null);
   const processedRealtimeIdsRef = useRef(new Set<string>());
+  const processedProjectsUpdatedRef = useRef<unknown>(null);
+  const sessionRefreshRequestIdRef = useRef(0);
+  const selectedSessionRef = useRef<SessionWithProvider | null>(null);
+  const chatSessionIdRef = useRef<string | null>(null);
   const algorithmOutputTextRef = useRef('');
   const runEventSequence = runState?.eventCursor?.sequence ?? null;
   const rightPanelRunState = useMemo(() => {
-    if (!derivedRunState) return runState;
-    if (!runState) return derivedRunState;
-    if (runState.phases && runState.phases.length > 0) return runState;
-    return {
-      ...derivedRunState,
-      ...runState,
-      phase: runState.phase || derivedRunState.phase,
-      phases: derivedRunState.phases,
-      currentPhaseIndex: derivedRunState.currentPhaseIndex,
-      currentReviewLine: runState.currentReviewLine || derivedRunState.currentReviewLine,
-      taskTitle: runState.taskTitle || derivedRunState.taskTitle,
-    };
-  }, [derivedRunState, runState]);
+    return selectRightPanelRunState({
+      runState,
+      derivedRunState,
+      sessionDeliverables,
+      selectedSessionId: selectedSession?.id ?? null,
+      chatSessionId,
+      explicitRunMode,
+    });
+  }, [chatSessionId, derivedRunState, explicitRunMode, runState, selectedSession?.id, sessionDeliverables]);
+
+  useEffect(() => {
+    selectedSessionRef.current = selectedSession;
+  }, [selectedSession]);
+
+  useEffect(() => {
+    chatSessionIdRef.current = chatSessionId;
+  }, [chatSessionId]);
 
   const captureAlgorithmOutput = useCallback((content: string) => {
     algorithmOutputTextRef.current = `${algorithmOutputTextRef.current}${content}`;
@@ -399,11 +722,27 @@ export default function NolmeAppRoute() {
   };
 
   useEffect(() => {
+    let cancelled = false;
+    setProjectsLoading(true);
+    setProjectsError(null);
+
     api.projects()
-      .then((response) => (response.ok ? response.json() : []))
+      .then(async (response) => {
+        if (!response.ok) {
+          const body = await response.json().catch(() => null);
+          throw new Error(
+            body?.error ||
+            body?.message ||
+            `Failed to load projects (${response.status || 'unknown status'})`,
+          );
+        }
+        return response.json();
+      })
       .then((data) => {
-        const nextProjects = Array.isArray(data) ? data : [];
+        if (cancelled) return;
+        const nextProjects = normalizeProjectsPayload(data);
         setProjects(nextProjects);
+        setProjectsError(null);
         setExpandedProjects((previous) => {
           if (previous.size > 0) return previous;
           const firstProject = nextProjects[0]?.name;
@@ -414,7 +753,20 @@ export default function NolmeAppRoute() {
           return nextProjects.find((project) => project.name === previous.name) || previous;
         });
       })
-      .catch(() => setProjects([]));
+      .catch((error) => {
+        if (cancelled) return;
+        setProjects([]);
+        setProjectsError(error instanceof Error ? error.message : 'Failed to load projects');
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setProjectsLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -445,10 +797,14 @@ export default function NolmeAppRoute() {
   };
 
   const openComposerForProject = (project: Project) => {
+    sessionRefreshRequestIdRef.current += 1;
     setSelectedProject(project);
     setSelectedSession(null);
+    selectedSessionRef.current = null;
     setChatSessionId(null);
+    chatSessionIdRef.current = null;
     setChatMessages([]);
+    setSessionDeliverables([]);
     algorithmOutputTextRef.current = '';
     setDerivedRunState(null);
     setRunError(null);
@@ -456,19 +812,16 @@ export default function NolmeAppRoute() {
     setActivePanel('chat');
   };
 
-  const openSession = async (project: Project, session: SessionWithProvider) => {
+  const loadSelectedSessionMessages = useCallback(async (
+    project: Project,
+    session: SessionWithProvider,
+    options: RefreshSessionOptions = {},
+  ) => {
     const provider = getSessionProvider(session);
-    setSelectedProject(project);
-    setSelectedSession(session);
-    setChatSessionId(session.id);
-    setChatView('composer');
-    setActivePanel('chat');
-    setRunError(null);
-    setLoadingSessionId(session.id);
-    try {
-      localStorage.setItem('selected-provider', provider);
-    } catch {
-      // Ignore storage failures.
+    const requestId = sessionRefreshRequestIdRef.current + 1;
+    sessionRefreshRequestIdRef.current = requestId;
+    if (options.showSpinner) {
+      setLoadingSessionId(session.id);
     }
 
     try {
@@ -476,13 +829,20 @@ export default function NolmeAppRoute() {
         projectName: project.name,
         projectPath: getProjectPath(project),
       });
+      const body = await response.json().catch(() => ({})) as UnifiedSessionMessagesBody;
       if (!response.ok) {
-        throw new Error(`Failed to load session ${session.id}`);
+        const errorMessage = typeof body.error === 'string'
+          ? body.error
+          : body.error?.message || body.message || `Failed to load session ${session.id}`;
+        throw new Error(errorMessage);
       }
-      const body = await response.json();
-      const messages = Array.isArray(body.messages)
-        ? body.messages.map(toTranscriptItem).filter(Boolean) as ChatTranscriptItem[]
-        : [];
+
+      const isLatestRequest = sessionRefreshRequestIdRef.current === requestId;
+      const isCurrentSession = selectedSessionRef.current?.id === session.id && chatSessionIdRef.current === session.id;
+      if (!isLatestRequest || !isCurrentSession) return;
+
+      const rawMessages = Array.isArray(body.messages) ? body.messages : [];
+      const messages = mapTranscriptMessages(rawMessages);
       setChatMessages(messages);
       const algorithmOutput = messages
         .filter((message) => message.role === 'assistant')
@@ -490,11 +850,43 @@ export default function NolmeAppRoute() {
         .join('\n');
       algorithmOutputTextRef.current = algorithmOutput;
       setDerivedRunState(deriveAlgorithmRunStateFromText(algorithmOutput));
+      setSessionDeliverables(deriveSessionDeliverables(rawMessages));
+      setRunError(null);
     } catch (error) {
-      setRunError(error instanceof Error ? error.message : 'Failed to load session');
+      const isLatestRequest = sessionRefreshRequestIdRef.current === requestId;
+      const isCurrentSession = selectedSessionRef.current?.id === session.id && chatSessionIdRef.current === session.id;
+      if (isLatestRequest && isCurrentSession) {
+        setRunError(error instanceof Error ? error.message : 'Failed to load session');
+      }
     } finally {
-      setLoadingSessionId(null);
+      const isLatestRequest = sessionRefreshRequestIdRef.current === requestId;
+      if (isLatestRequest && options.showSpinner) {
+        setLoadingSessionId(null);
+      }
     }
+  }, []);
+
+  const openSession = async (project: Project, session: SessionWithProvider) => {
+    const provider = getSessionProvider(session);
+    setSelectedProject(project);
+    setSelectedSession(session);
+    selectedSessionRef.current = session;
+    setChatSessionId(session.id);
+    chatSessionIdRef.current = session.id;
+    setChatView('composer');
+    setActivePanel('chat');
+    setRunError(null);
+    setChatMessages([]);
+    setSessionDeliverables([]);
+    algorithmOutputTextRef.current = '';
+    setDerivedRunState(null);
+    try {
+      localStorage.setItem('selected-provider', provider);
+    } catch {
+      // Ignore storage failures.
+    }
+
+    await loadSelectedSessionMessages(project, session, { showSpinner: true });
   };
 
   const deleteSession = async (project: Project, session: SessionWithProvider) => {
@@ -525,9 +917,13 @@ export default function NolmeAppRoute() {
       )));
 
       if (selectedSession?.id === session.id) {
+        sessionRefreshRequestIdRef.current += 1;
         setSelectedSession(null);
+        selectedSessionRef.current = null;
         setChatSessionId(null);
+        chatSessionIdRef.current = null;
         setChatMessages([]);
+        setSessionDeliverables([]);
         setChatView('projects');
       }
     } catch (error) {
@@ -641,7 +1037,27 @@ export default function NolmeAppRoute() {
 
   useEffect(() => {
     const message = latestMessage;
-    if (!message || message.provider !== 'claude') return;
+    if (!message) return;
+
+    if (isProjectsUpdatedMessage(message)) {
+      if (processedProjectsUpdatedRef.current === message) return;
+      processedProjectsUpdatedRef.current = message;
+
+      const update = applyProjectsUpdatedMessage(message, projects, selectedProject, selectedSession);
+      setProjects(update.projects);
+      setProjectsLoading(false);
+      setProjectsError(null);
+      setSelectedProject(update.selectedProject);
+      setSelectedSession(update.selectedSession);
+      selectedSessionRef.current = update.selectedSession;
+
+      if (doesProjectUpdateTargetSession(message, selectedSession) && update.selectedProject && update.selectedSession) {
+        void loadSelectedSessionMessages(update.selectedProject, update.selectedSession, { showSpinner: false });
+      }
+      return;
+    }
+
+    if (message.provider !== 'claude') return;
     if (message.id && processedRealtimeIdsRef.current.has(message.id)) return;
     if (message.id) {
       processedRealtimeIdsRef.current.add(message.id);
@@ -709,7 +1125,7 @@ export default function NolmeAppRoute() {
     if (message.kind === 'complete') {
       setIsStartingRun(false);
     }
-  }, [captureAlgorithmOutput, chatSessionId, latestMessage]);
+  }, [captureAlgorithmOutput, chatSessionId, latestMessage, loadSelectedSessionMessages, projects, selectedProject, selectedSession]);
 
   useEffect(() => {
     if (searchSourceRef.current) {
@@ -911,6 +1327,8 @@ export default function NolmeAppRoute() {
       ) : chatView === 'projects' ? (
         <ProjectsPanel
           projects={projects}
+          isLoading={projectsLoading}
+          error={projectsError}
           expandedProjects={expandedProjects}
           selectedSession={selectedSession}
           loadingSessionsByProject={loadingSessionsByProject}
@@ -1105,6 +1523,8 @@ function SearchPanel({
 
 function ProjectsPanel({
   projects,
+  isLoading,
+  error,
   expandedProjects,
   selectedSession,
   loadingSessionsByProject,
@@ -1117,6 +1537,8 @@ function ProjectsPanel({
   onLoadMoreSessions,
 }: {
   projects: Project[];
+  isLoading: boolean;
+  error: string | null;
   expandedProjects: Set<string>;
   selectedSession: SessionWithProvider | null;
   loadingSessionsByProject: LoadingSessionsByProject;
@@ -1138,7 +1560,15 @@ function ProjectsPanel({
           </div>
         </header>
 
-        {projects.length === 0 ? (
+        {isLoading ? (
+          <div className="nolme-app__panel-loading" role="status" aria-label="Loading projects">
+            <Loader2 aria-hidden="true" size={24} />
+            <strong>Loading projects</strong>
+            <span>Scanning saved project sessions.</span>
+          </div>
+        ) : error ? (
+          <EmptyPanel icon={AlertCircle} title="Projects failed to load" body={error} />
+        ) : projects.length === 0 ? (
           <EmptyPanel icon={Folder} title="No projects found" body="Saved projects and sessions will appear here once they are available." />
         ) : (
           <div className="nolme-app__project-list">

@@ -41,6 +41,21 @@ function jsonResponse(body: unknown, ok = true) {
   });
 }
 
+function deferredResponse() {
+  let resolveResponse: (value: { ok: boolean; json: () => Promise<unknown> }) => void = () => {};
+  const promise = new Promise<{ ok: boolean; json: () => Promise<unknown> }>((resolve) => {
+    resolveResponse = resolve;
+  });
+
+  return {
+    promise,
+    resolve: (body: unknown, ok = true) => resolveResponse({
+      ok,
+      json: async () => body,
+    }),
+  };
+}
+
 class FakeEventSource {
   static instances: FakeEventSource[] = [];
   url: string;
@@ -111,6 +126,7 @@ describe('NolmeAppRoute', () => {
     FakeEventSource.instances = [];
     (globalThis as any).EventSource = FakeEventSource;
     (window as any).EventSource = FakeEventSource;
+    window.history.replaceState({}, '', '/');
     webSocketState.latestMessage = null;
 
     projectsSpy.mockReset().mockReturnValue(jsonResponse([
@@ -255,6 +271,41 @@ describe('NolmeAppRoute', () => {
     expect(screen.getByLabelText('codex session')).toBeInTheDocument();
   });
 
+  it('shows a projects loading state instead of an empty browser while projects are scanning', async () => {
+    const projectsResponse = deferredResponse();
+    projectsSpy.mockReturnValueOnce(projectsResponse.promise);
+
+    render(<NolmeAppRoute />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Chat' }));
+
+    expect(screen.getByRole('status', { name: /Loading projects/i })).toBeInTheDocument();
+    expect(screen.queryByText('No projects found')).not.toBeInTheDocument();
+
+    projectsResponse.resolve([
+      {
+        name: 'demo-project',
+        displayName: 'maceo',
+        path: '/workspace/demo-project',
+        fullPath: '/workspace/demo-project',
+        sessionMeta: { hasMore: false, total: 1 },
+        sessions: [
+          {
+            id: 'claude-session-1',
+            summary: 'cool!! what do you mean by zero-knowledge',
+            lastActivity: '2026-04-28T12:00:00.000Z',
+            messageCount: 99,
+          },
+        ],
+        codexSessions: [],
+        geminiSessions: [],
+        cursorSessions: [],
+      },
+    ]);
+
+    expect(await screen.findByText('cool!! what do you mean by zero-knowledge')).toBeInTheDocument();
+  });
+
   it('opens the existing settings surface from the nav panel', () => {
     render(<NolmeAppRoute />);
 
@@ -359,6 +410,314 @@ describe('NolmeAppRoute', () => {
         resume: true,
       }),
     }));
+  });
+
+  it('applies project and selected-session metadata from project update events', async () => {
+    const oneMinuteAgo = new Date(Date.now() - 65_000).toISOString();
+    const { rerender } = render(<NolmeAppRoute />);
+    fireEvent.click(screen.getByRole('button', { name: 'Chat' }));
+
+    expect(await screen.findByText('99')).toBeInTheDocument();
+
+    webSocketState.latestMessage = {
+      type: 'projects_updated',
+      changedFile: '/workspace/demo-project/.claude/projects/claude-session-1.jsonl',
+      projects: [
+        {
+          name: 'demo-project',
+          displayName: 'maceo',
+          path: '/workspace/demo-project',
+          fullPath: '/workspace/demo-project',
+          sessionMeta: { hasMore: true, total: 2 },
+          sessions: [
+            {
+              id: 'claude-session-1',
+              summary: 'cool!! what do you mean by zero-knowledge',
+              lastActivity: oneMinuteAgo,
+              messageCount: 100,
+            },
+          ],
+          codexSessions: [],
+          geminiSessions: [],
+          cursorSessions: [],
+        },
+      ],
+    };
+
+    rerender(<NolmeAppRoute />);
+
+    expect(await screen.findByText('100')).toBeInTheDocument();
+    expect(screen.getByText('1 min ago')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Open session cool!! what do you mean/i })).toBeInTheDocument();
+  });
+
+  it('refreshes the selected /app session when its project file changes', async () => {
+    const { rerender } = render(<NolmeAppRoute />);
+
+    fireEvent.click(await screen.findByRole('button', { name: /Open session cool!! what do you mean/i }));
+    expect(await screen.findByText('Existing answer')).toBeInTheDocument();
+
+    unifiedSessionMessagesSpy.mockReturnValueOnce(jsonResponse({
+      messages: [
+        {
+          id: 'm1-new',
+          sessionId: 'claude-session-1',
+          provider: 'claude',
+          kind: 'text',
+          role: 'user',
+          content: 'Existing question',
+          timestamp: '2026-04-28T12:00:00.000Z',
+        },
+        {
+          id: 'm2-new',
+          sessionId: 'claude-session-1',
+          provider: 'claude',
+          kind: 'text',
+          role: 'assistant',
+          content: 'Updated answer',
+          timestamp: '2026-04-29T12:01:00.000Z',
+        },
+      ],
+    }));
+
+    webSocketState.latestMessage = {
+      type: 'projects_updated',
+      changedFile: '/workspace/demo-project/.claude/projects/claude-session-1.jsonl',
+      projects: [
+        {
+          name: 'demo-project',
+          displayName: 'maceo',
+          path: '/workspace/demo-project',
+          fullPath: '/workspace/demo-project',
+          sessions: [
+            {
+              id: 'claude-session-1',
+              summary: 'cool!! what do you mean by zero-knowledge',
+              lastActivity: '2026-04-29T12:01:00.000Z',
+              messageCount: 100,
+            },
+          ],
+          codexSessions: [],
+          geminiSessions: [],
+          cursorSessions: [],
+        },
+      ],
+    };
+
+    rerender(<NolmeAppRoute />);
+
+    await waitFor(() => expect(unifiedSessionMessagesSpy).toHaveBeenCalledTimes(2));
+    expect(await screen.findByText('Updated answer')).toBeInTheDocument();
+    expect(screen.queryByText('Existing answer')).not.toBeInTheDocument();
+  });
+
+  it('does not refresh the selected /app session when another project file changes', async () => {
+    const { rerender } = render(<NolmeAppRoute />);
+
+    fireEvent.click(await screen.findByRole('button', { name: /Open session cool!! what do you mean/i }));
+    expect(await screen.findByText('Existing answer')).toBeInTheDocument();
+    expect(unifiedSessionMessagesSpy).toHaveBeenCalledTimes(1);
+
+    unifiedSessionMessagesSpy.mockReturnValueOnce(jsonResponse({
+      messages: [
+        {
+          id: 'other',
+          sessionId: 'claude-session-1',
+          provider: 'claude',
+          kind: 'text',
+          role: 'assistant',
+          content: 'Should not replace the selected session',
+          timestamp: '2026-04-29T12:01:00.000Z',
+        },
+      ],
+    }));
+
+    webSocketState.latestMessage = {
+      type: 'projects_updated',
+      changedFile: '/workspace/demo-project/.claude/projects/another-session.jsonl',
+      projects: [],
+    };
+    rerender(<NolmeAppRoute />);
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(unifiedSessionMessagesSpy).toHaveBeenCalledTimes(1);
+    expect(screen.getByText('Existing answer')).toBeInTheDocument();
+    expect(screen.queryByText('Should not replace the selected session')).not.toBeInTheDocument();
+  });
+
+  it('keeps the existing transcript visible when selected-session refresh fails', async () => {
+    const { rerender } = render(<NolmeAppRoute />);
+
+    fireEvent.click(await screen.findByRole('button', { name: /Open session cool!! what do you mean/i }));
+    expect(await screen.findByText('Existing answer')).toBeInTheDocument();
+
+    unifiedSessionMessagesSpy.mockReturnValueOnce(jsonResponse({ error: 'Refresh failed' }, false));
+
+    webSocketState.latestMessage = {
+      type: 'projects_updated',
+      changedFile: '/workspace/demo-project/.claude/projects/claude-session-1.jsonl',
+      projects: [],
+    };
+    rerender(<NolmeAppRoute />);
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Refresh failed');
+    expect(screen.getByText('Existing answer')).toBeInTheDocument();
+  });
+
+  it('keeps the latest selected-session refresh result when overlapping refreshes resolve out of order', async () => {
+    const { rerender } = render(<NolmeAppRoute />);
+
+    fireEvent.click(await screen.findByRole('button', { name: /Open session cool!! what do you mean/i }));
+    expect(await screen.findByText('Existing answer')).toBeInTheDocument();
+
+    const firstRefresh = deferredResponse();
+    const secondRefresh = deferredResponse();
+    unifiedSessionMessagesSpy
+      .mockReturnValueOnce(firstRefresh.promise)
+      .mockReturnValueOnce(secondRefresh.promise);
+
+    webSocketState.latestMessage = {
+      type: 'projects_updated',
+      changedFile: '/workspace/demo-project/.claude/projects/claude-session-1.jsonl',
+      projects: [],
+    };
+    rerender(<NolmeAppRoute />);
+
+    webSocketState.latestMessage = {
+      type: 'projects_updated',
+      changedFile: '/workspace/demo-project/.claude/projects/claude-session-1.jsonl',
+      projects: [],
+      sequence: 2,
+    };
+    rerender(<NolmeAppRoute />);
+
+    secondRefresh.resolve({
+      messages: [
+        {
+          id: 'newer',
+          sessionId: 'claude-session-1',
+          provider: 'claude',
+          kind: 'text',
+          role: 'assistant',
+          content: 'Newer response',
+          timestamp: '2026-04-29T12:02:00.000Z',
+        },
+      ],
+    });
+
+    expect(await screen.findByText('Newer response')).toBeInTheDocument();
+
+    firstRefresh.resolve({
+      messages: [
+        {
+          id: 'older',
+          sessionId: 'claude-session-1',
+          provider: 'claude',
+          kind: 'text',
+          role: 'assistant',
+          content: 'Older response',
+          timestamp: '2026-04-29T12:01:00.000Z',
+        },
+      ],
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(screen.getByText('Newer response')).toBeInTheDocument();
+    expect(screen.queryByText('Older response')).not.toBeInTheDocument();
+  });
+
+  it('shows completed task notifications from the selected session as deliverables', async () => {
+    unifiedSessionMessagesSpy.mockReturnValue(jsonResponse({
+      messages: [
+        {
+          id: 'artifact-1',
+          sessionId: 'claude-session-1',
+          provider: 'claude',
+          kind: 'task_notification',
+          status: 'completed',
+          summary: 'Selected session report completed',
+          timestamp: '2026-04-29T12:00:00.000Z',
+        },
+      ],
+    }));
+    render(<NolmeAppRoute />);
+
+    fireEvent.click(await screen.findByRole('button', { name: /Open session cool!! what do you mean/i }));
+
+    expect(await screen.findByText('Selected session report completed')).toBeInTheDocument();
+    expect(screen.getByText('Completed task output')).toBeInTheDocument();
+  });
+
+  it('falls back to the final assistant report when no artifact notification exists', async () => {
+    unifiedSessionMessagesSpy.mockReturnValue(jsonResponse({
+      messages: [
+        {
+          id: 'final-report',
+          sessionId: 'claude-session-1',
+          provider: 'claude',
+          kind: 'text',
+          role: 'assistant',
+          content: [
+            'REPORT DELIVERED',
+            '',
+            '# ICP shortlist',
+            '',
+            'Final findings are ready.',
+          ].join('\n'),
+          timestamp: '2026-04-29T12:00:00.000Z',
+        },
+      ],
+    }));
+    render(<NolmeAppRoute />);
+
+    fireEvent.click(await screen.findByRole('button', { name: /Open session cool!! what do you mean/i }));
+
+    expect(await screen.findByText('ICP shortlist')).toBeInTheDocument();
+    expect(screen.getByText('Final assistant report')).toBeInTheDocument();
+  });
+
+  it('uses selected-session deliverables instead of stale local active-run artifacts', async () => {
+    localStorage.setItem('nolme-active-algorithm-run-id', 'alg_stale');
+    algorithmRunStateSpy.mockReturnValue(jsonResponse({
+      state: {
+        runId: 'alg_stale',
+        provider: 'claude',
+        status: 'completed',
+        sessionId: 'different-session',
+        deliverables: [
+          { id: 'stale', title: 'Stale run artifact', subtitle: 'Old run', tone: 'document' },
+        ],
+      },
+    }));
+    unifiedSessionMessagesSpy.mockReturnValue(jsonResponse({
+      messages: [
+        {
+          id: 'artifact-selected',
+          sessionId: 'claude-session-1',
+          provider: 'claude',
+          kind: 'task_notification',
+          status: 'completed',
+          summary: 'Selected session artifact',
+          timestamp: '2026-04-29T12:00:00.000Z',
+        },
+      ],
+    }));
+
+    render(<NolmeAppRoute />);
+
+    expect(await screen.findByText('Stale run artifact')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Chat' }));
+    fireEvent.click(await screen.findByRole('button', { name: /Open session cool!! what do you mean/i }));
+
+    expect(await screen.findByText('Selected session artifact')).toBeInTheDocument();
+    expect(screen.queryByText('Stale run artifact')).not.toBeInTheDocument();
   });
 
   it('deletes an existing provider-supported session from the projects browser', async () => {

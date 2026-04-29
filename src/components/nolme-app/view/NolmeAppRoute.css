@@ -244,6 +244,33 @@
   animation: nolme-spin 0.8s linear infinite;
 }
 
+.nolme-app__panel-loading {
+  display: grid;
+  min-height: 180px;
+  place-items: center;
+  gap: 8px;
+  padding: 28px;
+  color: var(--nolme-text-secondary);
+  text-align: center;
+}
+
+.nolme-app__panel-loading svg {
+  color: var(--nolme-primary);
+  animation: nolme-spin 0.8s linear infinite;
+}
+
+.nolme-app__panel-loading strong {
+  color: var(--nolme-text-primary);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 22px;
+}
+
+.nolme-app__panel-loading span {
+  font-size: 13px;
+  line-height: 20px;
+}
+
 .nolme-app__search-field {
   display: flex;
   min-height: 48px;
