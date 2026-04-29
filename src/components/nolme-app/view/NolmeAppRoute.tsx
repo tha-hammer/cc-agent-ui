@@ -23,6 +23,7 @@ import Settings from '../../settings/view/Settings';
 import { cn } from '../../../lib/utils';
 import { useWebSocket } from '../../../contexts/WebSocketContext';
 import { api, authenticatedFetch } from '../../../utils/api';
+import { CLAUDE_MODELS } from '../../../../shared/modelConstants';
 import './NolmeAppRoute.css';
 
 type NavPanelId = 'search' | 'chat' | 'tasks';
@@ -151,9 +152,25 @@ function selectedProjectPath(projects: Project[]) {
   return project?.fullPath || project?.path || '';
 }
 
-function projectLabel(projects: Project[]) {
-  const project = projects[0];
-  return project?.displayName || project?.name || 'No project selected';
+function readClaudeModel() {
+  if (typeof window === 'undefined') return CLAUDE_MODELS.DEFAULT;
+  try {
+    return localStorage.getItem('claude-model') || CLAUDE_MODELS.DEFAULT;
+  } catch {
+    return CLAUDE_MODELS.DEFAULT;
+  }
+}
+
+function claudeModelLabel(model: string) {
+  return CLAUDE_MODELS.OPTIONS.find((option) => option.value === model)?.label || model;
+}
+
+function writeClaudeModel(model: string) {
+  try {
+    localStorage.setItem('claude-model', model);
+  } catch {
+    // Ignore unavailable storage. The in-memory state still drives this route.
+  }
 }
 
 function formatTimestamp(value?: string | null) {
@@ -185,6 +202,7 @@ export default function NolmeAppRoute() {
   const [decisionError, setDecisionError] = useState<string | null>(null);
   const [chatSessionId, setChatSessionId] = useState<string | null>(null);
   const [chatMessages, setChatMessages] = useState<ChatTranscriptItem[]>([]);
+  const [selectedModel, setSelectedModel] = useState(readClaudeModel);
   const eventSourceRef = useRef<EventSource | null>(null);
   const searchSourceRef = useRef<EventSource | null>(null);
   const processedRealtimeIdsRef = useRef(new Set<string>());
@@ -212,6 +230,21 @@ export default function NolmeAppRoute() {
       .then((data) => setProjects(Array.isArray(data) ? data : []))
       .catch(() => setProjects([]));
   }, []);
+
+  useEffect(() => {
+    const refreshModel = () => setSelectedModel(readClaudeModel());
+    window.addEventListener('storage', refreshModel);
+    window.addEventListener('focus', refreshModel);
+    return () => {
+      window.removeEventListener('storage', refreshModel);
+      window.removeEventListener('focus', refreshModel);
+    };
+  }, []);
+
+  const handleModelChange = (model: string) => {
+    setSelectedModel(model);
+    writeClaudeModel(model);
+  };
 
   useEffect(() => {
     if (!activeRunId || typeof window === 'undefined') return;
@@ -451,7 +484,7 @@ export default function NolmeAppRoute() {
         cwd: projectPath,
         toolsSettings,
         permissionMode: 'default',
-        model: localStorage.getItem('claude-model') || undefined,
+        model: selectedModel,
         sessionSummary: selectedSkill?.name || trimmedPrompt.slice(0, 80),
         sessionId: chatSessionId,
         resume: Boolean(chatSessionId),
@@ -549,7 +582,9 @@ export default function NolmeAppRoute() {
           runError={runError}
           prompt={prompt}
           selectedSkill={selectedSkill}
-          projectLabel={projectLabel(projects)}
+          modelLabel={claudeModelLabel(selectedModel)}
+          modelValue={selectedModel}
+          onModelChange={handleModelChange}
           isStartingRun={isStartingRun}
           decisionError={decisionError}
           onPromptChange={setPrompt}
@@ -786,7 +821,9 @@ function ChatPanel({
   runError,
   prompt,
   selectedSkill,
-  projectLabel,
+  modelLabel,
+  modelValue,
+  onModelChange,
   isStartingRun,
   decisionError,
   onPromptChange,
@@ -801,7 +838,9 @@ function ChatPanel({
   runError: string | null;
   prompt: string;
   selectedSkill: Skill | null;
-  projectLabel: string;
+  modelLabel: string;
+  modelValue: string;
+  onModelChange: (model: string) => void;
   isStartingRun: boolean;
   decisionError: string | null;
   onPromptChange: (value: string) => void;
@@ -854,7 +893,9 @@ function ChatPanel({
         <Composer
           prompt={prompt}
           selectedSkill={selectedSkill}
-          projectLabel={projectLabel}
+          modelLabel={modelLabel}
+          modelValue={modelValue}
+          onModelChange={onModelChange}
           isWorking={isStartingRun || ['starting', 'running', 'stopping'].includes(runState?.status || '')}
           progress={runState?.eventCursor?.sequence ?? 0}
           onPromptChange={onPromptChange}
@@ -996,7 +1037,9 @@ function PermissionCard({ permission, onDecide }: { permission: AlgorithmPermiss
 function Composer({
   prompt,
   selectedSkill,
-  projectLabel,
+  modelLabel,
+  modelValue,
+  onModelChange,
   isWorking,
   progress,
   onPromptChange,
@@ -1006,7 +1049,9 @@ function Composer({
 }: {
   prompt: string;
   selectedSkill: Skill | null;
-  projectLabel: string;
+  modelLabel: string;
+  modelValue: string;
+  onModelChange: (model: string) => void;
   isWorking: boolean;
   progress: number;
   onPromptChange: (value: string) => void;
@@ -1014,6 +1059,10 @@ function Composer({
   onOpenSkills: () => void;
   onRefreshRun: () => void;
 }) {
+  const modelOptions = CLAUDE_MODELS.OPTIONS.some((option) => option.value === modelValue)
+    ? CLAUDE_MODELS.OPTIONS
+    : [{ value: modelValue, label: modelLabel }, ...CLAUDE_MODELS.OPTIONS];
+
   return (
     <section className="nolme-app__composer" aria-label="Message composer">
       <div className="nolme-app__composer-toolbar">
@@ -1059,10 +1108,22 @@ function Composer({
             <button type="button" className="nolme-app__icon-button" aria-label="Attach file" title="Attach file" disabled>
               <Plus aria-hidden="true" size={24} strokeWidth={1.8} />
             </button>
-            <button type="button" className="nolme-app__model-pill" aria-label={`Selected project ${projectLabel}`}>
-              {projectLabel}
+            <div className="nolme-app__model-picker">
+              <select
+                aria-label="Claude model"
+                className="nolme-app__model-select"
+                title={`Selected Claude model ${modelLabel}`}
+                value={modelValue}
+                onChange={(event) => onModelChange(event.target.value)}
+              >
+                {modelOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
               <ChevronDown aria-hidden="true" size={12} strokeWidth={2} />
-            </button>
+            </div>
           </div>
 
           <div className="nolme-app__input-right">

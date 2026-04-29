@@ -90,7 +90,7 @@ describe('NolmeAppRoute', () => {
     (window as any).EventSource = FakeEventSource;
 
     projectsSpy.mockReset().mockReturnValue(jsonResponse([
-      { name: 'demo-project', displayName: 'Demo Project', path: '/workspace/demo-project' },
+      { name: 'demo-project', displayName: 'maceo', path: '/workspace/demo-project' },
     ]));
     skillsSpy.mockReset().mockReturnValue(jsonResponse({
       skills: [
@@ -136,6 +136,8 @@ describe('NolmeAppRoute', () => {
     expect(screen.getByRole('main', { name: /nolme chat stream/i })).toBeInTheDocument();
     expect(screen.getByLabelText('Phases and deliverables')).toBeInTheDocument();
     expect(screen.getByText(/send a message to the LLM/i)).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: /Claude model/i })).toHaveDisplayValue('Sonnet');
+    expect(screen.queryByRole('button', { name: /maceo/i })).not.toBeInTheDocument();
     expect(screen.getByText('No phases yet')).toBeInTheDocument();
     expect(screen.getByText('No deliverables yet')).toBeInTheDocument();
     expect(screen.queryByText(/Audience spreadsheet/i)).not.toBeInTheDocument();
@@ -167,7 +169,7 @@ describe('NolmeAppRoute', () => {
   it('sends user messages to the LLM through the chat websocket', async () => {
     render(<NolmeAppRoute />);
 
-    await screen.findByRole('button', { name: /Selected project Demo Project/i });
+    await screen.findByRole('combobox', { name: /Claude model/i });
     fireEvent.change(screen.getByLabelText('Message prompt'), {
       target: { value: 'Wire /app to live data' },
     });
@@ -180,6 +182,7 @@ describe('NolmeAppRoute', () => {
       options: expect.objectContaining({
         projectPath: '/workspace/demo-project',
         cwd: '/workspace/demo-project',
+        model: 'sonnet',
         permissionMode: 'default',
       }),
     }));
@@ -190,7 +193,7 @@ describe('NolmeAppRoute', () => {
   it('submits the user message on Enter and keeps Shift+Enter available for newlines', async () => {
     render(<NolmeAppRoute />);
 
-    await screen.findByRole('button', { name: /Selected project Demo Project/i });
+    await screen.findByRole('combobox', { name: /Claude model/i });
     const textarea = screen.getByLabelText('Message prompt');
 
     fireEvent.change(textarea, { target: { value: 'Send on enter' } });
@@ -201,6 +204,27 @@ describe('NolmeAppRoute', () => {
     await waitFor(() => expect(sendWsMessageSpy).toHaveBeenCalledTimes(1));
     expect(sendWsMessageSpy).toHaveBeenCalledWith(expect.objectContaining({
       command: 'Send on enter',
+    }));
+  });
+
+  it('uses the selected Claude model in the composer selector and LLM request', async () => {
+    localStorage.setItem('claude-model', 'opus');
+    render(<NolmeAppRoute />);
+
+    const modelSelect = await screen.findByRole('combobox', { name: /Claude model/i });
+    expect(modelSelect).toHaveDisplayValue('Opus');
+    fireEvent.change(modelSelect, { target: { value: 'haiku' } });
+    expect(localStorage.getItem('claude-model')).toBe('haiku');
+    fireEvent.change(screen.getByLabelText('Message prompt'), {
+      target: { value: 'Use the selected model' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Send' }));
+
+    await waitFor(() => expect(sendWsMessageSpy).toHaveBeenCalledTimes(1));
+    expect(sendWsMessageSpy).toHaveBeenCalledWith(expect.objectContaining({
+      options: expect.objectContaining({
+        model: 'haiku',
+      }),
     }));
   });
 

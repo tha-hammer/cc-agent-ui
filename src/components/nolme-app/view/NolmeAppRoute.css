@@ -718,18 +718,37 @@
   color: var(--nolme-text-primary);
 }
 
-.nolme-app__model-pill {
+.nolme-app__model-picker {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+}
+
+.nolme-app__model-picker svg {
+  position: absolute;
+  right: 8px;
+  pointer-events: none;
+}
+
+.nolme-app__model-select {
+  appearance: none;
+  -webkit-appearance: none;
+  max-width: 160px;
   padding: 3px 8px;
+  padding-right: 24px;
   border: 0;
   border-radius: 999px;
   background: var(--nolme-primary);
   color: #ffffff;
+  cursor: pointer;
   font-size: 12px;
   font-weight: 500;
   line-height: 18px;
+}
+
+.nolme-app__model-select:focus-visible {
+  outline: 2px solid var(--nolme-primary-strong);
+  outline-offset: 2px;
 }
 
 .nolme-app__input-right > span {
