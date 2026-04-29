@@ -59,6 +59,49 @@ describe('Algorithm run store', () => {
     expect(metadata.sessionId).toBe('sess_123');
   });
 
+  it('projects live phases, deliverables, and final output into public state', async () => {
+    await appendAlgorithmEvent('alg_1', {
+      type: 'algorithm.phases.updated',
+      payload: {
+        phases: [
+          { id: 'research', label: 'P1', title: 'Research', status: 'complete' },
+          { id: 'implementation', label: 'P2', title: 'Implementation', status: 'active' },
+        ],
+        currentReviewLine: 'Reviewing implementation files',
+      },
+    });
+    await appendAlgorithmEvent('alg_1', {
+      type: 'algorithm.deliverables.updated',
+      payload: {
+        deliverables: [
+          { id: 'plan', title: 'Implementation plan', subtitle: 'Markdown', tone: 'document' },
+        ],
+      },
+    });
+    await appendAlgorithmEvent('alg_1', {
+      type: 'algorithm.output.updated',
+      payload: {
+        output: { title: 'Run complete', body: 'Implemented live app wiring.' },
+      },
+    });
+
+    const state = await readAlgorithmRunState('alg_1');
+
+    expect(state.currentPhaseIndex).toBe(1);
+    expect(state.phase).toBe('implementation');
+    expect(state.currentReviewLine).toBe('Reviewing implementation files');
+    expect(state.phases.map((phase: any) => phase.status)).toEqual(['complete', 'active']);
+    expect(state.deliverables[0]).toMatchObject({
+      title: 'Implementation plan',
+      subtitle: 'Markdown',
+      tone: 'document',
+    });
+    expect(state.finalOutput).toMatchObject({
+      title: 'Run complete',
+      body: 'Implemented live app wiring.',
+    });
+  });
+
   it('does not expose filesystem paths in public state', async () => {
     const state = await readAlgorithmRunState('alg_1');
     expect(JSON.stringify(state)).not.toContain('events.jsonl');

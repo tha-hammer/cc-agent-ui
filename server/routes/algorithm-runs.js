@@ -118,6 +118,8 @@ router.post('/', async (req, res) => {
       model: input.model,
       permissionMode: input.permissionMode,
       algorithmMode: input.algorithmMode,
+      prompt: input.prompt,
+      taskTitle: input.metadata?.taskTitle ?? null,
       status: 'starting',
       runnerRequestId: requestId,
     });

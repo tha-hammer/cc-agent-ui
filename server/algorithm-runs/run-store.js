@@ -79,9 +79,16 @@ function publicStateFromMetadata(metadata) {
     runId: metadata.runId,
     provider: metadata.provider,
     model: metadata.model ?? null,
+    prompt: metadata.prompt ?? null,
+    taskTitle: metadata.taskTitle ?? null,
     status: metadata.status,
     sessionId: metadata.sessionId ?? null,
     phase: null,
+    phases: [],
+    currentPhaseIndex: 0,
+    currentReviewLine: '',
+    deliverables: [],
+    finalOutput: null,
     eventCursor: { sequence: metadata.lastSequence ?? 0 },
     pendingQuestion: null,
     pendingPermission: null,
@@ -91,6 +98,98 @@ function publicStateFromMetadata(metadata) {
     startedAt: metadata.startedAt ?? null,
     endedAt: metadata.endedAt ?? null,
   };
+}
+
+function slugify(value, fallback = 'item') {
+  const slug = String(value ?? '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return slug || fallback;
+}
+
+function normalizePhase(raw, index) {
+  if (!raw || typeof raw !== 'object') return null;
+  const title = String(raw.title ?? raw.name ?? raw.phase ?? raw.id ?? `Phase ${index + 1}`).trim();
+  if (!title) return null;
+  const status = ['idle', 'active', 'complete'].includes(raw.status) ? raw.status : 'idle';
+  return {
+    id: String(raw.id ?? slugify(title, `phase-${index + 1}`)),
+    label: String(raw.label ?? `P${index + 1}`),
+    title,
+    status,
+  };
+}
+
+function normalizePhases(raw) {
+  if (!Array.isArray(raw)) return [];
+  return raw.map(normalizePhase).filter(Boolean);
+}
+
+function normalizeDeliverable(raw, index) {
+  if (!raw || typeof raw !== 'object') return null;
+  const title = String(raw.title ?? raw.name ?? raw.path ?? raw.url ?? `Deliverable ${index + 1}`).trim();
+  if (!title) return null;
+  const action = raw.action === 'download' ? 'download' : 'link';
+  return {
+    id: String(raw.id ?? slugify(title, `deliverable-${index + 1}`)),
+    badge: raw.badge === undefined || raw.badge === null ? '' : String(raw.badge),
+    title,
+    subtitle: String(raw.subtitle ?? raw.description ?? raw.kind ?? ''),
+    tone: ['emerald', 'iris', 'gold', 'document', 'sheet', 'link'].includes(raw.tone) ? raw.tone : 'link',
+    action,
+    url: typeof raw.url === 'string' ? raw.url : null,
+    createdAt: raw.createdAt ?? null,
+  };
+}
+
+function normalizeDeliverables(raw) {
+  if (!Array.isArray(raw)) return [];
+  return raw.map(normalizeDeliverable).filter(Boolean);
+}
+
+function normalizeOutput(raw) {
+  if (!raw) return null;
+  if (typeof raw === 'string') {
+    return { title: 'Algorithm output', body: raw, url: null };
+  }
+  if (typeof raw !== 'object') return null;
+  const body = raw.body ?? raw.summary ?? raw.content ?? raw.message ?? '';
+  const title = raw.title ?? raw.name ?? 'Algorithm output';
+  return {
+    title: String(title),
+    body: String(body),
+    url: typeof raw.url === 'string' ? raw.url : null,
+  };
+}
+
+function setActivePhaseFromString(state, phaseValue) {
+  const phase = phaseValue === undefined || phaseValue === null ? null : String(phaseValue);
+  state.phase = phase;
+  if (!phase) return;
+
+  const matchingIndex = state.phases.findIndex((item) => (
+    item.id === phase || item.title === phase || item.label === phase
+  ));
+  if (matchingIndex >= 0) {
+    state.currentPhaseIndex = matchingIndex;
+    state.phases = state.phases.map((item, index) => ({
+      ...item,
+      status: index < matchingIndex ? 'complete' : index === matchingIndex ? 'active' : item.status,
+    }));
+    return;
+  }
+
+  if (state.phases.length === 0) {
+    state.phases = [{
+      id: slugify(phase, 'phase-1'),
+      label: 'P1',
+      title: phase,
+      status: 'active',
+    }];
+    state.currentPhaseIndex = 0;
+  }
 }
 
 function normalizeQuestion(payload, event) {
@@ -153,7 +252,43 @@ function applyEventProjection(metadata, state, event) {
       }
       break;
     case 'algorithm.phase.changed':
-      state.phase = payload.phase === undefined || payload.phase === null ? null : String(payload.phase);
+      setActivePhaseFromString(state, payload.phase);
+      break;
+    case 'algorithm.phases.updated': {
+      const phases = normalizePhases(payload.phases);
+      if (phases.length > 0) {
+        state.phases = phases;
+      }
+      if (Number.isInteger(payload.currentPhaseIndex)) {
+        state.currentPhaseIndex = Math.max(0, Math.min(payload.currentPhaseIndex, Math.max(state.phases.length - 1, 0)));
+      } else {
+        const activeIndex = state.phases.findIndex((phase) => phase.status === 'active');
+        if (activeIndex >= 0) {
+          state.currentPhaseIndex = activeIndex;
+        }
+      }
+      if (payload.currentReviewLine !== undefined && payload.currentReviewLine !== null) {
+        state.currentReviewLine = String(payload.currentReviewLine);
+      }
+      const activePhase = state.phases[state.currentPhaseIndex];
+      if (activePhase) {
+        state.phase = activePhase.id;
+        state.phases = state.phases.map((item, index) => ({
+          ...item,
+          status: item.status === 'complete' || index < state.currentPhaseIndex
+            ? 'complete'
+            : index === state.currentPhaseIndex
+              ? 'active'
+              : item.status,
+        }));
+      }
+      break;
+    }
+    case 'algorithm.deliverables.updated':
+      state.deliverables = normalizeDeliverables(payload.deliverables ?? payload.resources ?? payload.artifacts);
+      break;
+    case 'algorithm.output.updated':
+      state.finalOutput = normalizeOutput(payload.output ?? payload);
       break;
     case 'algorithm.status.changed': {
       const status = payload.status;
@@ -324,6 +459,8 @@ export async function createRunMetadata(input) {
     runnerRequestId: input.runnerRequestId ?? null,
     runnerPid: input.runnerPid ?? null,
     externalRunHandle: input.externalRunHandle ?? null,
+    prompt: input.prompt ?? null,
+    taskTitle: input.taskTitle ?? null,
     createdAt,
     updatedAt: createdAt,
     startedAt: input.startedAt ?? null,
@@ -431,6 +568,30 @@ export async function persistRunnerFrame(runId, frame) {
         payload: { phase: state.phase },
       }));
     }
+    if (Array.isArray(state.phases) || state.currentPhaseIndex !== undefined || state.currentReviewLine !== undefined) {
+      written.push(await appendAlgorithmEvent(runId, {
+        type: 'algorithm.phases.updated',
+        payload: {
+          phases: state.phases ?? [],
+          currentPhaseIndex: state.currentPhaseIndex,
+          currentReviewLine: state.currentReviewLine,
+        },
+      }));
+    }
+    if (Array.isArray(state.deliverables) || Array.isArray(state.resources) || Array.isArray(state.artifacts)) {
+      written.push(await appendAlgorithmEvent(runId, {
+        type: 'algorithm.deliverables.updated',
+        payload: {
+          deliverables: state.deliverables ?? state.resources ?? state.artifacts ?? [],
+        },
+      }));
+    }
+    if (state.finalOutput !== undefined || state.output !== undefined || state.summary !== undefined) {
+      written.push(await appendAlgorithmEvent(runId, {
+        type: 'algorithm.output.updated',
+        payload: { output: state.finalOutput ?? state.output ?? state.summary },
+      }));
+    }
     if (state.status) {
       written.push(await appendAlgorithmEvent(runId, {
         type: 'algorithm.status.changed',
@@ -462,6 +623,12 @@ export async function persistRunnerFrame(runId, frame) {
     });
   }
   if (frame.kind === 'result' && frame.status) {
+    if (frame.output !== undefined || frame.summary !== undefined) {
+      await appendAlgorithmEvent(runId, {
+        type: 'algorithm.output.updated',
+        payload: { output: frame.output ?? frame.summary },
+      });
+    }
     const terminalType = frame.status === 'failed'
       ? 'algorithm.run.failed'
       : frame.status === 'cancelled'

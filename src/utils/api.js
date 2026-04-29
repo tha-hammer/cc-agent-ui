@@ -99,6 +99,19 @@ export const api = {
     if (token) params.set('token', token);
     return `/api/search/conversations?${params.toString()}`;
   },
+  algorithmRunEventsUrl: (runId, after = 0) => {
+    const token = localStorage.getItem('auth-token');
+    const params = new URLSearchParams({ after: String(after), stream: '1' });
+    if (token) params.set('token', token);
+    return `/api/algorithm-runs/${encodeURIComponent(runId)}/events?${params.toString()}`;
+  },
+  skills: () => authenticatedFetch('/api/skills'),
+  algorithmRunState: (runId) => authenticatedFetch(`/api/algorithm-runs/${encodeURIComponent(runId)}/state`),
+  startAlgorithmRun: (body) =>
+    authenticatedFetch('/api/algorithm-runs', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
   createProject: (path) =>
     authenticatedFetch('/api/projects/create', {
       method: 'POST',

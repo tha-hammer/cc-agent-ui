@@ -69,6 +69,7 @@ import pluginsRoutes from './routes/plugins.js';
 import messagesRoutes from './routes/messages.js';
 import nolmeStateRouter from './routes/nolme-state.js';
 import algorithmRunsRouter from './routes/algorithm-runs.js';
+import skillsRoutes from './routes/skills.js';
 import { mountCopilotKit } from './routes/copilotkit.js';
 import { mountNolmeStatic } from './routes/nolme-static.js';
 import { createNormalizedMessage } from './providers/types.js';
@@ -443,6 +444,9 @@ app.use('/api/mcp-utils', authenticateToken, mcpUtilsRoutes);
 
 // Commands API Routes (protected)
 app.use('/api/commands', authenticateToken, commandsRoutes);
+
+// Skills API Routes (protected)
+app.use('/api/skills', authenticateToken, skillsRoutes);
 
 // Settings API Routes (protected)
 app.use('/api/settings', authenticateToken, settingsRoutes);

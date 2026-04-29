@@ -24,7 +24,10 @@ export const EVENT_TYPES = Object.freeze([
   'algorithm.run.started',
   'algorithm.session.bound',
   'algorithm.phase.changed',
+  'algorithm.phases.updated',
   'algorithm.status.changed',
+  'algorithm.deliverables.updated',
+  'algorithm.output.updated',
   'algorithm.question.requested',
   'algorithm.question.answered',
   'algorithm.permission.requested',
@@ -250,4 +253,3 @@ export function validateCursor(value) {
 export function sendApiError(res, code, message) {
   return res.status(getHttpStatusForErrorCode(code)).json(makeApiError(code, message));
 }
-
