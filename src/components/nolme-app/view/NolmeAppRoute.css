@@ -458,6 +458,13 @@
   justify-content: flex-end;
 }
 
+.nolme-app__assistant-row {
+  display: flex;
+  width: 100%;
+  align-items: flex-start;
+  gap: 10px;
+}
+
 .nolme-app__chat-bubble {
   display: flex;
   width: min(100%, 530px);
@@ -490,6 +497,34 @@
   color: var(--nolme-text-tertiary);
   font-size: 12px;
   font-weight: 400;
+  line-height: 18px;
+}
+
+.nolme-app__assistant-bubble {
+  display: flex;
+  width: min(100%, 640px);
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nolme-app__assistant-bubble > p {
+  margin: 0;
+  overflow-wrap: anywhere;
+  padding: 12px 16px;
+  border: 1px solid var(--nolme-border-default);
+  border-radius: 4px 12px 12px;
+  background: var(--nolme-surface);
+  color: var(--nolme-text-primary);
+  font-size: 16px;
+  line-height: 26px;
+  white-space: pre-wrap;
+}
+
+.nolme-app__assistant-bubble footer {
+  padding-left: 8px;
+  color: var(--nolme-text-tertiary);
+  font-size: 12px;
   line-height: 18px;
 }
 

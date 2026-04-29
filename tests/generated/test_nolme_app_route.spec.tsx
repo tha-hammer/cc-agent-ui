@@ -10,6 +10,7 @@ const {
   searchConversationsUrlSpy,
   startAlgorithmRunSpy,
   authenticatedFetchSpy,
+  sendWsMessageSpy,
 } = vi.hoisted(() => ({
   projectsSpy: vi.fn(),
   skillsSpy: vi.fn(),
@@ -18,6 +19,7 @@ const {
   searchConversationsUrlSpy: vi.fn(),
   startAlgorithmRunSpy: vi.fn(),
   authenticatedFetchSpy: vi.fn(),
+  sendWsMessageSpy: vi.fn(),
 }));
 
 function jsonResponse(body: unknown, ok = true) {
@@ -67,6 +69,15 @@ vi.mock('../../src/utils/api', () => ({
   authenticatedFetch: authenticatedFetchSpy,
 }));
 
+vi.mock('../../src/contexts/WebSocketContext', () => ({
+  useWebSocket: () => ({
+    sendMessage: sendWsMessageSpy,
+    latestMessage: null,
+    isConnected: true,
+    ws: null,
+  }),
+}));
+
 vi.mock('../../src/components/settings/view/Settings', () => ({
   default: ({ isOpen }: { isOpen: boolean }) => (isOpen ? <div role="dialog">Settings panel</div> : null),
 }));
@@ -87,9 +98,9 @@ describe('NolmeAppRoute', () => {
           id: 'codex:research-codebase',
           name: 'research-codebase',
           description: 'Trace code paths and produce a grounded research document.',
-          path: '/home/maceo/.codex/skills/research-codebase/SKILL.md',
+          path: '/home/maceo/.claude/skills/research-codebase/SKILL.md',
           relativePath: 'research-codebase/SKILL.md',
-          source: 'codex',
+          source: 'claude',
         },
       ],
     }));
@@ -115,6 +126,7 @@ describe('NolmeAppRoute', () => {
       },
     }));
     authenticatedFetchSpy.mockReset();
+    sendWsMessageSpy.mockReset();
   });
 
   it('renders the /app shell without the old hard-coded Figma demo data', () => {
@@ -123,7 +135,7 @@ describe('NolmeAppRoute', () => {
     expect(screen.getByLabelText('Nolme app navigation')).toBeInTheDocument();
     expect(screen.getByRole('main', { name: /nolme chat stream/i })).toBeInTheDocument();
     expect(screen.getByLabelText('Phases and deliverables')).toBeInTheDocument();
-    expect(screen.getByText(/start an algorithm run to populate chat/i)).toBeInTheDocument();
+    expect(screen.getByText(/send a message to the LLM/i)).toBeInTheDocument();
     expect(screen.getByText('No phases yet')).toBeInTheDocument();
     expect(screen.getByText('No deliverables yet')).toBeInTheDocument();
     expect(screen.queryByText(/Audience spreadsheet/i)).not.toBeInTheDocument();
@@ -152,7 +164,47 @@ describe('NolmeAppRoute', () => {
     expect(screen.getByRole('dialog')).toHaveTextContent('Settings panel');
   });
 
-  it('starts an Algorithm run and renders live phases and deliverables from the response', async () => {
+  it('sends user messages to the LLM through the chat websocket', async () => {
+    render(<NolmeAppRoute />);
+
+    await screen.findByRole('button', { name: /Selected project Demo Project/i });
+    fireEvent.change(screen.getByLabelText('Message prompt'), {
+      target: { value: 'Wire /app to live data' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Send' }));
+
+    await waitFor(() => expect(sendWsMessageSpy).toHaveBeenCalledTimes(1));
+    expect(sendWsMessageSpy).toHaveBeenCalledWith(expect.objectContaining({
+      type: 'claude-command',
+      command: 'Wire /app to live data',
+      options: expect.objectContaining({
+        projectPath: '/workspace/demo-project',
+        cwd: '/workspace/demo-project',
+        permissionMode: 'default',
+      }),
+    }));
+    expect(startAlgorithmRunSpy).not.toHaveBeenCalled();
+    expect(screen.getByText('Wire /app to live data')).toBeInTheDocument();
+  });
+
+  it('submits the user message on Enter and keeps Shift+Enter available for newlines', async () => {
+    render(<NolmeAppRoute />);
+
+    await screen.findByRole('button', { name: /Selected project Demo Project/i });
+    const textarea = screen.getByLabelText('Message prompt');
+
+    fireEvent.change(textarea, { target: { value: 'Send on enter' } });
+    fireEvent.keyDown(textarea, { key: 'Enter', code: 'Enter', shiftKey: true });
+    expect(sendWsMessageSpy).not.toHaveBeenCalled();
+
+    fireEvent.keyDown(textarea, { key: 'Enter', code: 'Enter' });
+    await waitFor(() => expect(sendWsMessageSpy).toHaveBeenCalledTimes(1));
+    expect(sendWsMessageSpy).toHaveBeenCalledWith(expect.objectContaining({
+      command: 'Send on enter',
+    }));
+  });
+
+  it('renders live phases and deliverables from an active Algorithm run', async () => {
     const liveRunState = {
       runId: 'alg_1',
       provider: 'claude',
@@ -168,30 +220,11 @@ describe('NolmeAppRoute', () => {
         { id: 'summary', title: 'Run summary', subtitle: 'Markdown artifact', tone: 'document' },
       ],
     };
-    startAlgorithmRunSpy.mockReturnValueOnce(jsonResponse({
-      ok: true,
-      run: liveRunState,
-    }));
+    localStorage.setItem('nolme-active-algorithm-run-id', 'alg_1');
     algorithmRunStateSpy.mockReturnValue(jsonResponse({ state: liveRunState }));
 
     render(<NolmeAppRoute />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Tasks' }));
-    fireEvent.click(await screen.findByRole('button', { name: /research-codebase/i }));
-    fireEvent.change(screen.getByLabelText('Algorithm prompt'), {
-      target: { value: 'Wire /app to live data' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
-
-    await waitFor(() => expect(startAlgorithmRunSpy).toHaveBeenCalledTimes(1));
-    expect(startAlgorithmRunSpy).toHaveBeenCalledWith(expect.objectContaining({
-      provider: 'claude',
-      projectPath: '/workspace/demo-project',
-      prompt: 'Wire /app to live data',
-      metadata: expect.objectContaining({
-        taskTitle: 'research-codebase',
-      }),
-    }));
     expect(await screen.findAllByText(/Implement/)).toHaveLength(2);
     expect(screen.getByText('Run summary')).toBeInTheDocument();
     expect(screen.getByText('Wiring live data into /app.')).toBeInTheDocument();

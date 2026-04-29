@@ -17,13 +17,7 @@ function configuredSkillRoots() {
       .map((entry) => path.resolve(entry));
   }
 
-  const home = os.homedir();
-  return [
-    path.join(home, '.codex', 'skills'),
-    path.join(home, '.agents', 'skills'),
-    path.join(home, '.claude', 'skills'),
-    path.join(home, 'skills'),
-  ];
+  return [path.join(os.homedir(), '.claude', 'skills')];
 }
 
 async function pathExists(filePath) {

@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import Settings from '../../settings/view/Settings';
 import { cn } from '../../../lib/utils';
+import { useWebSocket } from '../../../contexts/WebSocketContext';
 import { api, authenticatedFetch } from '../../../utils/api';
 import './NolmeAppRoute.css';
 
@@ -118,6 +119,14 @@ type AlgorithmRunState = {
   eventCursor?: { sequence: number };
 };
 
+type ChatTranscriptItem = {
+  id: string;
+  role: 'user' | 'assistant';
+  body: string;
+  timestamp: string;
+  streaming?: boolean;
+};
+
 const NAV_ITEMS: Array<{ id: NavPanelId | 'audience' | 'settings'; label: string; icon: LucideIcon; disabled?: boolean }> = [
   { id: 'search', label: 'Search', icon: Search },
   { id: 'chat', label: 'Chat', icon: MessageCircle },
@@ -155,10 +164,11 @@ function formatTimestamp(value?: string | null) {
 }
 
 export default function NolmeAppRoute() {
+  const { sendMessage, latestMessage, isConnected } = useWebSocket();
   const [activePanel, setActivePanel] = useState<NavPanelId>('chat');
   const [showSettings, setShowSettings] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
-  const [activeRunId, setActiveRunId] = useState(readInitialRunId);
+  const [activeRunId] = useState(readInitialRunId);
   const [runState, setRunState] = useState<AlgorithmRunState | null>(null);
   const [runError, setRunError] = useState<string | null>(null);
   const [prompt, setPrompt] = useState('');
@@ -173,8 +183,11 @@ export default function NolmeAppRoute() {
   const [isSearching, setIsSearching] = useState(false);
   const [searchProgress, setSearchProgress] = useState<{ scannedProjects: number; totalProjects: number } | null>(null);
   const [decisionError, setDecisionError] = useState<string | null>(null);
+  const [chatSessionId, setChatSessionId] = useState<string | null>(null);
+  const [chatMessages, setChatMessages] = useState<ChatTranscriptItem[]>([]);
   const eventSourceRef = useRef<EventSource | null>(null);
   const searchSourceRef = useRef<EventSource | null>(null);
+  const processedRealtimeIdsRef = useRef(new Set<string>());
   const runEventSequence = runState?.eventCursor?.sequence ?? null;
 
   const loadRunState = async (runId: string) => {
@@ -265,6 +278,76 @@ export default function NolmeAppRoute() {
   }, [activePanel, skills.length, skillsLoading]);
 
   useEffect(() => {
+    const message = latestMessage;
+    if (!message || message.provider !== 'claude') return;
+    if (message.id && processedRealtimeIdsRef.current.has(message.id)) return;
+    if (message.id) {
+      processedRealtimeIdsRef.current.add(message.id);
+    }
+    if (chatSessionId && message.sessionId && message.sessionId !== chatSessionId) return;
+
+    if (message.kind === 'session_created' && message.newSessionId) {
+      setChatSessionId(String(message.newSessionId));
+      return;
+    }
+
+    if (message.kind === 'text' && message.role === 'assistant' && message.content) {
+      setChatMessages((items) => [
+        ...items,
+        {
+          id: message.id || `assistant-${Date.now()}`,
+          role: 'assistant',
+          body: String(message.content),
+          timestamp: message.timestamp || new Date().toISOString(),
+        },
+      ]);
+      return;
+    }
+
+    if (message.kind === 'stream_delta' && message.content) {
+      setChatMessages((items) => {
+        const last = items.at(-1);
+        if (last?.role === 'assistant' && last.streaming) {
+          return [
+            ...items.slice(0, -1),
+            { ...last, body: `${last.body}${message.content}` },
+          ];
+        }
+        return [
+          ...items,
+          {
+            id: message.id || `assistant-stream-${Date.now()}`,
+            role: 'assistant',
+            body: String(message.content),
+            timestamp: message.timestamp || new Date().toISOString(),
+            streaming: true,
+          },
+        ];
+      });
+      return;
+    }
+
+    if (message.kind === 'stream_end') {
+      setChatMessages((items) => {
+        const last = items.at(-1);
+        if (last?.role !== 'assistant' || !last.streaming) return items;
+        return [...items.slice(0, -1), { ...last, streaming: false }];
+      });
+      return;
+    }
+
+    if (message.kind === 'error') {
+      setRunError(String(message.content || 'LLM request failed'));
+      setIsStartingRun(false);
+      return;
+    }
+
+    if (message.kind === 'complete') {
+      setIsStartingRun(false);
+    }
+  }, [chatSessionId, latestMessage]);
+
+  useEffect(() => {
     if (searchSourceRef.current) {
       searchSourceRef.current.close();
       searchSourceRef.current = null;
@@ -324,52 +407,58 @@ export default function NolmeAppRoute() {
     };
   }, [activePanel, searchQuery]);
 
-  const handleStartRun = async () => {
+  const handleSendPrompt = () => {
     const trimmedPrompt = prompt.trim();
     const projectPath = selectedProjectPath(projects);
     if (!trimmedPrompt || isStartingRun) return;
+    if (!isConnected) {
+      setRunError('The LLM connection is not ready yet. Reconnect and try again.');
+      return;
+    }
     if (!projectPath) {
-      setRunError('Select or create a project before starting an Algorithm run.');
+      setRunError('Select or create a project before sending a message.');
       return;
     }
 
     setIsStartingRun(true);
     setRunError(null);
+    const timestamp = new Date().toISOString();
+    setChatMessages((items) => [
+      ...items,
+      {
+        id: `user-${timestamp}`,
+        role: 'user',
+        body: trimmedPrompt,
+        timestamp,
+      },
+    ]);
+
+    let toolsSettings = { allowedTools: [], disallowedTools: [], skipPermissions: false };
     try {
-      const response = await api.startAlgorithmRun({
-        schemaVersion: 1,
-        provider: 'claude',
-        projectPath,
-        prompt: trimmedPrompt,
-        metadata: {
-          taskTitle: selectedSkill ? selectedSkill.name : trimmedPrompt.slice(0, 80),
-          skill: selectedSkill ? {
-            name: selectedSkill.name,
-            path: selectedSkill.path,
-            source: selectedSkill.source,
-          } : null,
-          source: 'app-route',
-        },
-      });
-      const body = await response.json();
-      if (!response.ok || !body.ok) {
-        throw new Error(body?.error?.message || 'Failed to start Algorithm run');
+      const savedSettings = localStorage.getItem('claude-settings');
+      if (savedSettings) {
+        toolsSettings = { ...toolsSettings, ...JSON.parse(savedSettings) };
       }
-      setPrompt('');
-      setActiveRunId(body.run.runId);
-      setRunState({
-        ...body.run,
-        runId: body.run.runId,
-        provider: body.run.provider,
-        prompt: trimmedPrompt,
-        taskTitle: selectedSkill ? selectedSkill.name : trimmedPrompt.slice(0, 80),
-      });
-      setActivePanel('chat');
-    } catch (error) {
-      setRunError(error instanceof Error ? error.message : 'Failed to start Algorithm run');
-    } finally {
-      setIsStartingRun(false);
+    } catch {
+      // Keep default tool settings if local storage is unavailable or malformed.
     }
+
+    sendMessage({
+      type: 'claude-command',
+      command: trimmedPrompt,
+      options: {
+        projectPath,
+        cwd: projectPath,
+        toolsSettings,
+        permissionMode: 'default',
+        model: localStorage.getItem('claude-model') || undefined,
+        sessionSummary: selectedSkill?.name || trimmedPrompt.slice(0, 80),
+        sessionId: chatSessionId,
+        resume: Boolean(chatSessionId),
+      },
+    });
+    setPrompt('');
+    setActivePanel('chat');
   };
 
   const answerQuestion = async (answer: string) => {
@@ -456,6 +545,7 @@ export default function NolmeAppRoute() {
       ) : (
         <ChatPanel
           runState={runState}
+          chatMessages={chatMessages}
           runError={runError}
           prompt={prompt}
           selectedSkill={selectedSkill}
@@ -463,7 +553,7 @@ export default function NolmeAppRoute() {
           isStartingRun={isStartingRun}
           decisionError={decisionError}
           onPromptChange={setPrompt}
-          onStartRun={handleStartRun}
+          onStartRun={handleSendPrompt}
           onAnswerQuestion={answerQuestion}
           onDecidePermission={decidePermission}
           onOpenSkills={() => setActivePanel('tasks')}
@@ -692,6 +782,7 @@ function SkillsPanel({
 
 function ChatPanel({
   runState,
+  chatMessages,
   runError,
   prompt,
   selectedSkill,
@@ -706,6 +797,7 @@ function ChatPanel({
   onRefreshRun,
 }: {
   runState: AlgorithmRunState | null;
+  chatMessages: ChatTranscriptItem[];
   runError: string | null;
   prompt: string;
   selectedSkill: Skill | null;
@@ -721,11 +813,19 @@ function ChatPanel({
 }) {
   const thinkingLabel = runState
     ? `Algorithm run ${runState.runId} is ${runState.status}${runState.phase ? ` in ${runState.phase}` : ''}.`
-    : 'Start an Algorithm run to populate chat, questions, phases, and deliverables.';
+    : isStartingRun
+      ? 'Waiting for the LLM response.'
+      : 'Send a message to the LLM. Algorithm phase events will appear when a run is active.';
 
   return (
     <main className="nolme-app__chat-stream" aria-label="Nolme chat stream">
       <div className="nolme-app__messages">
+        {chatMessages.map((message) => (
+          message.role === 'user'
+            ? <ChatBubble key={message.id} body={message.body} timestamp={message.timestamp} />
+            : <AssistantBubble key={message.id} body={message.body} timestamp={message.timestamp} />
+        ))}
+
         {runState?.prompt && (
           <ChatBubble
             body={runState.prompt}
@@ -776,6 +876,18 @@ function ChatBubble({ body, timestamp }: { body: string; timestamp: string }) {
           <span>{timestamp}</span>
           <span>Queued</span>
         </footer>
+      </article>
+    </div>
+  );
+}
+
+function AssistantBubble({ body, timestamp }: { body: string; timestamp: string }) {
+  return (
+    <div className="nolme-app__assistant-row">
+      <AgentAvatar />
+      <article className="nolme-app__assistant-bubble">
+        <p>{body}</p>
+        <footer>{formatTimestamp(timestamp) || timestamp}</footer>
       </article>
     </div>
   );
@@ -930,10 +1042,16 @@ function Composer({
 
       <div className="nolme-app__input-field">
         <textarea
-          placeholder="Describe the Algorithm run to start..."
-          aria-label="Algorithm prompt"
+          placeholder="Message the LLM..."
+          aria-label="Message prompt"
           value={prompt}
           onChange={(event) => onPromptChange(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key !== 'Enter' || event.nativeEvent.isComposing) return;
+            if (event.shiftKey || event.ctrlKey || event.metaKey) return;
+            event.preventDefault();
+            onStartRun();
+          }}
         />
 
         <div className="nolme-app__input-status">
@@ -955,7 +1073,7 @@ function Composer({
               </button>
             )}
             <button type="button" className="nolme-app__send-button" disabled={isWorking || !prompt.trim()} onClick={onStartRun}>
-              {isWorking ? 'Working...' : 'Start'}
+              {isWorking ? 'Sending...' : 'Send'}
             </button>
           </div>
         </div>
