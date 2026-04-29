@@ -3,9 +3,12 @@ import {
   AlertCircle,
   Check,
   ChevronDown,
+  Clock,
   Copy,
   FileSpreadsheet,
   FileText,
+  Folder,
+  FolderOpen,
   Link2,
   ListChecks,
   Loader2,
@@ -15,25 +18,23 @@ import {
   Search,
   Settings as SettingsIcon,
   Square,
+  Trash2,
   Users,
   Workflow,
   type LucideIcon,
 } from 'lucide-react';
 import Settings from '../../settings/view/Settings';
+import SessionProviderLogo from '../../llm-logo-provider/SessionProviderLogo';
 import { cn } from '../../../lib/utils';
 import { useWebSocket } from '../../../contexts/WebSocketContext';
 import { api, authenticatedFetch } from '../../../utils/api';
+import { formatTimeAgo } from '../../../utils/dateUtils';
+import type { Project, ProjectSession, SessionProvider } from '../../../types/app';
 import { CLAUDE_MODELS } from '../../../../shared/modelConstants';
 import './NolmeAppRoute.css';
 
 type NavPanelId = 'search' | 'chat' | 'tasks';
-
-type Project = {
-  name: string;
-  displayName?: string;
-  path?: string;
-  fullPath?: string;
-};
+type ChatView = 'projects' | 'composer';
 
 type Skill = {
   id: string;
@@ -128,6 +129,22 @@ type ChatTranscriptItem = {
   streaming?: boolean;
 };
 
+type SessionWithProvider = ProjectSession & {
+  __provider: SessionProvider;
+};
+
+type LoadingSessionsByProject = Record<string, boolean>;
+
+type NormalizedMessage = {
+  id?: string;
+  sessionId?: string;
+  timestamp?: string;
+  provider?: SessionProvider;
+  kind?: string;
+  role?: 'user' | 'assistant';
+  content?: string;
+};
+
 const NAV_ITEMS: Array<{ id: NavPanelId | 'audience' | 'settings'; label: string; icon: LucideIcon; disabled?: boolean }> = [
   { id: 'search', label: 'Search', icon: Search },
   { id: 'chat', label: 'Chat', icon: MessageCircle },
@@ -147,9 +164,77 @@ function readInitialRunId() {
   }
 }
 
-function selectedProjectPath(projects: Project[]) {
-  const project = projects[0];
+function getProjectPath(project: Project | null | undefined) {
   return project?.fullPath || project?.path || '';
+}
+
+function getProjectLabel(project: Project) {
+  return project.displayName || project.name;
+}
+
+function getSessionProvider(session: ProjectSession): SessionProvider {
+  const provider = session.__provider;
+  if (provider === 'cursor' || provider === 'codex' || provider === 'gemini') return provider;
+  return 'claude';
+}
+
+function getProjectSessions(project: Project): SessionWithProvider[] {
+  const claudeSessions = (project.sessions || []).map((session) => ({ ...session, __provider: 'claude' as const }));
+  const cursorSessions = (project.cursorSessions || []).map((session) => ({ ...session, __provider: 'cursor' as const }));
+  const codexSessions = (project.codexSessions || []).map((session) => ({ ...session, __provider: 'codex' as const }));
+  const geminiSessions = (project.geminiSessions || []).map((session) => ({ ...session, __provider: 'gemini' as const }));
+
+  return [...claudeSessions, ...cursorSessions, ...codexSessions, ...geminiSessions].sort(
+    (a, b) => new Date(getSessionTime(b)).getTime() - new Date(getSessionTime(a)).getTime(),
+  );
+}
+
+function getSessionTitle(session: SessionWithProvider) {
+  const fallback = `${session.__provider[0].toUpperCase()}${session.__provider.slice(1)} Session`;
+  return String(session.summary || session.title || session.name || fallback);
+}
+
+function getSessionTime(session: SessionWithProvider) {
+  if (session.__provider === 'cursor') {
+    return String(session.createdAt || session.updated_at || '');
+  }
+  if (session.__provider === 'codex') {
+    return String(session.createdAt || session.lastActivity || session.updated_at || '');
+  }
+  return String(session.lastActivity || session.createdAt || session.updated_at || '');
+}
+
+function getSessionCount(session: SessionWithProvider) {
+  return Number(session.messageCount || 0);
+}
+
+function toTranscriptItem(message: NormalizedMessage): ChatTranscriptItem | null {
+  if (message.kind !== 'text' || !message.role || !message.content) return null;
+  return {
+    id: message.id || `${message.role}-${message.timestamp || Date.now()}`,
+    role: message.role,
+    body: String(message.content),
+    timestamp: message.timestamp || new Date().toISOString(),
+  };
+}
+
+function removeSessionFromProject(project: Project, session: SessionWithProvider): Project {
+  const remove = (sessions?: ProjectSession[]) => sessions?.filter((item) => item.id !== session.id) ?? [];
+  const nextMeta = session.__provider === 'claude'
+    ? {
+      ...project.sessionMeta,
+      total: Math.max(0, Number(project.sessionMeta?.total || 0) - 1),
+    }
+    : project.sessionMeta;
+
+  return {
+    ...project,
+    sessions: remove(project.sessions),
+    cursorSessions: remove(project.cursorSessions),
+    codexSessions: remove(project.codexSessions),
+    geminiSessions: remove(project.geminiSessions),
+    sessionMeta: nextMeta,
+  };
 }
 
 function readClaudeModel() {
@@ -186,6 +271,12 @@ export default function NolmeAppRoute() {
   const [showSettings, setShowSettings] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [activeRunId] = useState(readInitialRunId);
+  const [chatView, setChatView] = useState<ChatView>(activeRunId ? 'composer' : 'projects');
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [selectedSession, setSelectedSession] = useState<SessionWithProvider | null>(null);
+  const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
+  const [loadingSessionsByProject, setLoadingSessionsByProject] = useState<LoadingSessionsByProject>({});
+  const [loadingSessionId, setLoadingSessionId] = useState<string | null>(null);
   const [runState, setRunState] = useState<AlgorithmRunState | null>(null);
   const [runError, setRunError] = useState<string | null>(null);
   const [prompt, setPrompt] = useState('');
@@ -203,6 +294,7 @@ export default function NolmeAppRoute() {
   const [chatSessionId, setChatSessionId] = useState<string | null>(null);
   const [chatMessages, setChatMessages] = useState<ChatTranscriptItem[]>([]);
   const [selectedModel, setSelectedModel] = useState(readClaudeModel);
+  const [currentTime, setCurrentTime] = useState(new Date());
   const eventSourceRef = useRef<EventSource | null>(null);
   const searchSourceRef = useRef<EventSource | null>(null);
   const processedRealtimeIdsRef = useRef(new Set<string>());
@@ -227,8 +319,25 @@ export default function NolmeAppRoute() {
   useEffect(() => {
     api.projects()
       .then((response) => (response.ok ? response.json() : []))
-      .then((data) => setProjects(Array.isArray(data) ? data : []))
+      .then((data) => {
+        const nextProjects = Array.isArray(data) ? data : [];
+        setProjects(nextProjects);
+        setExpandedProjects((previous) => {
+          if (previous.size > 0) return previous;
+          const firstProject = nextProjects[0]?.name;
+          return firstProject ? new Set([firstProject]) : previous;
+        });
+        setSelectedProject((previous) => {
+          if (!previous) return previous;
+          return nextProjects.find((project) => project.name === previous.name) || previous;
+        });
+      })
       .catch(() => setProjects([]));
+  }, []);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setCurrentTime(new Date()), 60000);
+    return () => window.clearInterval(timer);
   }, []);
 
   useEffect(() => {
@@ -244,6 +353,136 @@ export default function NolmeAppRoute() {
   const handleModelChange = (model: string) => {
     setSelectedModel(model);
     writeClaudeModel(model);
+  };
+
+  const selectPanel = (panel: NavPanelId) => {
+    setActivePanel(panel);
+    if (panel === 'chat') {
+      setChatView('projects');
+    }
+  };
+
+  const openComposerForProject = (project: Project) => {
+    setSelectedProject(project);
+    setSelectedSession(null);
+    setChatSessionId(null);
+    setChatMessages([]);
+    setRunError(null);
+    setChatView('composer');
+    setActivePanel('chat');
+  };
+
+  const openSession = async (project: Project, session: SessionWithProvider) => {
+    const provider = getSessionProvider(session);
+    setSelectedProject(project);
+    setSelectedSession(session);
+    setChatSessionId(session.id);
+    setChatView('composer');
+    setActivePanel('chat');
+    setRunError(null);
+    setLoadingSessionId(session.id);
+    try {
+      localStorage.setItem('selected-provider', provider);
+    } catch {
+      // Ignore storage failures.
+    }
+
+    try {
+      const response = await api.unifiedSessionMessages(session.id, provider, {
+        projectName: project.name,
+        projectPath: getProjectPath(project),
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to load session ${session.id}`);
+      }
+      const body = await response.json();
+      const messages = Array.isArray(body.messages)
+        ? body.messages.map(toTranscriptItem).filter(Boolean) as ChatTranscriptItem[]
+        : [];
+      setChatMessages(messages);
+    } catch (error) {
+      setRunError(error instanceof Error ? error.message : 'Failed to load session');
+    } finally {
+      setLoadingSessionId(null);
+    }
+  };
+
+  const deleteSession = async (project: Project, session: SessionWithProvider) => {
+    const sessionTitle = getSessionTitle(session);
+    if (!window.confirm(`Delete "${sessionTitle}"? This cannot be undone.`)) {
+      return;
+    }
+
+    const provider = getSessionProvider(session);
+    if (provider === 'cursor') {
+      setRunError('Cursor session deletion is not supported yet.');
+      return;
+    }
+
+    try {
+      const response = provider === 'codex'
+        ? await api.deleteCodexSession(session.id)
+        : provider === 'gemini'
+          ? await api.deleteGeminiSession(session.id)
+          : await api.deleteSession(project.name, session.id);
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete session ${session.id}`);
+      }
+
+      setProjects((items) => items.map((item) => (
+        item.name === project.name ? removeSessionFromProject(item, session) : item
+      )));
+
+      if (selectedSession?.id === session.id) {
+        setSelectedSession(null);
+        setChatSessionId(null);
+        setChatMessages([]);
+        setChatView('projects');
+      }
+    } catch (error) {
+      setRunError(error instanceof Error ? error.message : 'Failed to delete session');
+    }
+  };
+
+  const loadMoreSessions = async (project: Project) => {
+    if (loadingSessionsByProject[project.name]) return;
+    setLoadingSessionsByProject((items) => ({ ...items, [project.name]: true }));
+    try {
+      const offset = project.sessions?.length ?? 0;
+      const response = await api.sessions(project.name, 5, offset);
+      if (!response.ok) return;
+      const body = await response.json();
+      const nextSessions = Array.isArray(body.sessions) ? body.sessions : [];
+      setProjects((items) => items.map((item) => (
+        item.name === project.name
+          ? {
+            ...item,
+            sessions: [...(item.sessions || []), ...nextSessions],
+            sessionMeta: {
+              ...item.sessionMeta,
+              hasMore: Boolean(body.hasMore),
+            },
+          }
+          : item
+      )));
+    } catch {
+      // Keep the browser stable if pagination fails.
+    } finally {
+      setLoadingSessionsByProject((items) => ({ ...items, [project.name]: false }));
+    }
+  };
+
+  const toggleProject = (projectName: string) => {
+    setExpandedProjects((previous) => {
+      const next = new Set(previous);
+      if (next.has(projectName)) {
+        next.delete(projectName);
+      } else {
+        next.add(projectName);
+      }
+      return next;
+    });
   };
 
   useEffect(() => {
@@ -442,7 +681,7 @@ export default function NolmeAppRoute() {
 
   const handleSendPrompt = () => {
     const trimmedPrompt = prompt.trim();
-    const projectPath = selectedProjectPath(projects);
+    const projectPath = getProjectPath(selectedProject);
     if (!trimmedPrompt || isStartingRun) return;
     if (!isConnected) {
       setRunError('The LLM connection is not ready yet. Reconnect and try again.');
@@ -492,6 +731,7 @@ export default function NolmeAppRoute() {
     });
     setPrompt('');
     setActivePanel('chat');
+    setChatView('composer');
   };
 
   const answerQuestion = async (answer: string) => {
@@ -541,7 +781,7 @@ export default function NolmeAppRoute() {
       <NavPanel
         activePanel={activePanel}
         skillsCount={skills.length}
-        onSelectPanel={setActivePanel}
+        onSelectPanel={selectPanel}
         onShowSettings={() => setShowSettings(true)}
       />
 
@@ -573,7 +813,22 @@ export default function NolmeAppRoute() {
           onSelectSkill={(skill) => {
             setSelectedSkill(skill);
             setActivePanel('chat');
+            setChatView('composer');
           }}
+        />
+      ) : chatView === 'projects' ? (
+        <ProjectsPanel
+          projects={projects}
+          expandedProjects={expandedProjects}
+          selectedSession={selectedSession}
+          loadingSessionsByProject={loadingSessionsByProject}
+          loadingSessionId={loadingSessionId}
+          currentTime={currentTime}
+          onToggleProject={toggleProject}
+          onNewSession={openComposerForProject}
+          onOpenSession={openSession}
+          onDeleteSession={deleteSession}
+          onLoadMoreSessions={loadMoreSessions}
         />
       ) : (
         <ChatPanel
@@ -582,6 +837,7 @@ export default function NolmeAppRoute() {
           runError={runError}
           prompt={prompt}
           selectedSkill={selectedSkill}
+          selectedProject={selectedProject}
           modelLabel={claudeModelLabel(selectedModel)}
           modelValue={selectedModel}
           onModelChange={handleModelChange}
@@ -755,6 +1011,222 @@ function SearchPanel({
   );
 }
 
+function ProjectsPanel({
+  projects,
+  expandedProjects,
+  selectedSession,
+  loadingSessionsByProject,
+  loadingSessionId,
+  currentTime,
+  onToggleProject,
+  onNewSession,
+  onOpenSession,
+  onDeleteSession,
+  onLoadMoreSessions,
+}: {
+  projects: Project[];
+  expandedProjects: Set<string>;
+  selectedSession: SessionWithProvider | null;
+  loadingSessionsByProject: LoadingSessionsByProject;
+  loadingSessionId: string | null;
+  currentTime: Date;
+  onToggleProject: (projectName: string) => void;
+  onNewSession: (project: Project) => void;
+  onOpenSession: (project: Project, session: SessionWithProvider) => void;
+  onDeleteSession: (project: Project, session: SessionWithProvider) => void;
+  onLoadMoreSessions: (project: Project) => void;
+}) {
+  return (
+    <main className="nolme-app__chat-stream nolme-app__workspace-panel" aria-label="Projects and sessions">
+      <section className="nolme-app__panel-card nolme-app__projects-panel">
+        <header className="nolme-app__panel-header">
+          <div>
+            <Folder aria-hidden="true" size={22} />
+            <h1>Projects</h1>
+          </div>
+        </header>
+
+        {projects.length === 0 ? (
+          <EmptyPanel icon={Folder} title="No projects found" body="Saved projects and sessions will appear here once they are available." />
+        ) : (
+          <div className="nolme-app__project-list">
+            {projects.map((project) => (
+              <ProjectSessionGroup
+                key={project.name}
+                project={project}
+                isExpanded={expandedProjects.has(project.name)}
+                selectedSession={selectedSession}
+                isLoadingMore={Boolean(loadingSessionsByProject[project.name])}
+                loadingSessionId={loadingSessionId}
+                currentTime={currentTime}
+                onToggleProject={onToggleProject}
+                onNewSession={onNewSession}
+                onOpenSession={onOpenSession}
+                onDeleteSession={onDeleteSession}
+                onLoadMoreSessions={onLoadMoreSessions}
+              />
+            ))}
+          </div>
+        )}
+      </section>
+    </main>
+  );
+}
+
+function ProjectSessionGroup({
+  project,
+  isExpanded,
+  selectedSession,
+  isLoadingMore,
+  loadingSessionId,
+  currentTime,
+  onToggleProject,
+  onNewSession,
+  onOpenSession,
+  onDeleteSession,
+  onLoadMoreSessions,
+}: {
+  project: Project;
+  isExpanded: boolean;
+  selectedSession: SessionWithProvider | null;
+  isLoadingMore: boolean;
+  loadingSessionId: string | null;
+  currentTime: Date;
+  onToggleProject: (projectName: string) => void;
+  onNewSession: (project: Project) => void;
+  onOpenSession: (project: Project, session: SessionWithProvider) => void;
+  onDeleteSession: (project: Project, session: SessionWithProvider) => void;
+  onLoadMoreSessions: (project: Project) => void;
+}) {
+  const sessions = getProjectSessions(project);
+  const projectLabel = getProjectLabel(project);
+  const projectPath = getProjectPath(project);
+  const sessionCount = project.sessionMeta?.hasMore ? `${sessions.length}+` : String(sessions.length);
+
+  return (
+    <article className="nolme-app__project-group">
+      <button
+        type="button"
+        className="nolme-app__project-row"
+        aria-expanded={isExpanded}
+        onClick={() => onToggleProject(project.name)}
+      >
+        {isExpanded ? <FolderOpen aria-hidden="true" size={18} /> : <Folder aria-hidden="true" size={18} />}
+        <span>
+          <strong>{projectLabel}</strong>
+          <small>{sessionCount} sessions - {projectPath || project.name}</small>
+        </span>
+        <ChevronDown aria-hidden="true" size={16} className={cn(isExpanded && 'nolme-app__chevron--open')} />
+      </button>
+
+      {isExpanded && (
+        <div className="nolme-app__project-sessions">
+          <button
+            type="button"
+            className="nolme-app__new-session-button"
+            aria-label={`New session for ${projectLabel}`}
+            onClick={() => onNewSession(project)}
+          >
+            <Plus aria-hidden="true" size={16} />
+            New Session
+          </button>
+
+          {sessions.length === 0 ? (
+            <p className="nolme-app__panel-muted">No sessions yet.</p>
+          ) : (
+            sessions.map((session) => (
+              <ProjectSessionRow
+                key={`${session.__provider}-${session.id}`}
+                project={project}
+                session={session}
+                isSelected={selectedSession?.id === session.id}
+                isLoading={loadingSessionId === session.id}
+                currentTime={currentTime}
+                onOpenSession={onOpenSession}
+                onDeleteSession={onDeleteSession}
+              />
+            ))
+          )}
+
+          {project.sessionMeta?.hasMore && (
+            <button
+              type="button"
+              className="nolme-app__show-more-sessions"
+              aria-label={`Show more sessions for ${projectLabel}`}
+              disabled={isLoadingMore}
+              onClick={() => onLoadMoreSessions(project)}
+            >
+              {isLoadingMore ? <Loader2 aria-hidden="true" size={14} /> : <ChevronDown aria-hidden="true" size={14} />}
+              {isLoadingMore ? 'Loading sessions' : 'Show more sessions'}
+            </button>
+          )}
+        </div>
+      )}
+    </article>
+  );
+}
+
+function ProjectSessionRow({
+  project,
+  session,
+  isSelected,
+  isLoading,
+  currentTime,
+  onOpenSession,
+  onDeleteSession,
+}: {
+  project: Project;
+  session: SessionWithProvider;
+  isSelected: boolean;
+  isLoading: boolean;
+  currentTime: Date;
+  onOpenSession: (project: Project, session: SessionWithProvider) => void;
+  onDeleteSession: (project: Project, session: SessionWithProvider) => void;
+}) {
+  const sessionTitle = getSessionTitle(session);
+  const sessionTime = getSessionTime(session);
+  const relativeTime = sessionTime
+    ? formatTimeAgo(sessionTime, currentTime, undefined as unknown as Parameters<typeof formatTimeAgo>[2])
+    : 'Unknown';
+  const messageCount = getSessionCount(session);
+  const canDelete = session.__provider !== 'cursor';
+
+  return (
+    <div className={cn('nolme-app__session-row', isSelected && 'nolme-app__session-row--selected')}>
+      <button
+        type="button"
+        className="nolme-app__session-open"
+        aria-label={`Open session ${sessionTitle}`}
+        onClick={() => onOpenSession(project, session)}
+      >
+        <span className="nolme-app__session-provider" aria-label={`${session.__provider} session`}>
+          <SessionProviderLogo provider={session.__provider} className="nolme-app__session-logo" />
+        </span>
+        <span className="nolme-app__session-copy">
+          <strong>{sessionTitle}</strong>
+          <small>
+            <Clock aria-hidden="true" size={12} />
+            {relativeTime}
+          </small>
+        </span>
+        {messageCount > 0 && <em>{messageCount}</em>}
+        {isLoading && <Loader2 aria-hidden="true" size={14} />}
+      </button>
+
+      {canDelete && (
+        <button
+          type="button"
+          className="nolme-app__session-delete"
+          aria-label={`Delete session ${sessionTitle}`}
+          onClick={() => onDeleteSession(project, session)}
+        >
+          <Trash2 aria-hidden="true" size={14} />
+        </button>
+      )}
+    </div>
+  );
+}
+
 function SkillsPanel({
   skills,
   selectedSkill,
@@ -821,6 +1293,7 @@ function ChatPanel({
   runError,
   prompt,
   selectedSkill,
+  selectedProject,
   modelLabel,
   modelValue,
   onModelChange,
@@ -838,6 +1311,7 @@ function ChatPanel({
   runError: string | null;
   prompt: string;
   selectedSkill: Skill | null;
+  selectedProject: Project | null;
   modelLabel: string;
   modelValue: string;
   onModelChange: (model: string) => void;
@@ -893,6 +1367,7 @@ function ChatPanel({
         <Composer
           prompt={prompt}
           selectedSkill={selectedSkill}
+          selectedProject={selectedProject}
           modelLabel={modelLabel}
           modelValue={modelValue}
           onModelChange={onModelChange}
@@ -1037,6 +1512,7 @@ function PermissionCard({ permission, onDecide }: { permission: AlgorithmPermiss
 function Composer({
   prompt,
   selectedSkill,
+  selectedProject,
   modelLabel,
   modelValue,
   onModelChange,
@@ -1049,6 +1525,7 @@ function Composer({
 }: {
   prompt: string;
   selectedSkill: Skill | null;
+  selectedProject: Project | null;
   modelLabel: string;
   modelValue: string;
   onModelChange: (model: string) => void;
@@ -1062,6 +1539,7 @@ function Composer({
   const modelOptions = CLAUDE_MODELS.OPTIONS.some((option) => option.value === modelValue)
     ? CLAUDE_MODELS.OPTIONS
     : [{ value: modelValue, label: modelLabel }, ...CLAUDE_MODELS.OPTIONS];
+  const selectedProjectPath = getProjectPath(selectedProject);
 
   return (
     <section className="nolme-app__composer" aria-label="Message composer">
@@ -1069,7 +1547,7 @@ function Composer({
         <div className="nolme-app__agent-details">
           <div className="nolme-app__agent-profile">
             <AgentAvatar />
-            <span>{selectedSkill ? selectedSkill.name : 'Algorithm runner'}</span>
+            <span>{selectedSkill ? selectedSkill.name : selectedProject ? getProjectLabel(selectedProject) : 'Select a project'}</span>
           </div>
           <div className="nolme-app__progress-row">
             <div className="nolme-app__progress-track" aria-label={`${progress} events received`}>
@@ -1133,7 +1611,7 @@ function Composer({
                 <Square aria-hidden="true" size={12} fill="currentColor" strokeWidth={0} />
               </button>
             )}
-            <button type="button" className="nolme-app__send-button" disabled={isWorking || !prompt.trim()} onClick={onStartRun}>
+            <button type="button" className="nolme-app__send-button" disabled={isWorking || !prompt.trim() || !selectedProjectPath} onClick={onStartRun}>
               {isWorking ? 'Sending...' : 'Send'}
             </button>
           </div>

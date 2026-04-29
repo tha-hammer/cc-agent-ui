@@ -9,6 +9,11 @@ const {
   algorithmRunEventsUrlSpy,
   searchConversationsUrlSpy,
   startAlgorithmRunSpy,
+  sessionsSpy,
+  unifiedSessionMessagesSpy,
+  deleteSessionSpy,
+  deleteCodexSessionSpy,
+  deleteGeminiSessionSpy,
   authenticatedFetchSpy,
   sendWsMessageSpy,
 } = vi.hoisted(() => ({
@@ -18,6 +23,11 @@ const {
   algorithmRunEventsUrlSpy: vi.fn(),
   searchConversationsUrlSpy: vi.fn(),
   startAlgorithmRunSpy: vi.fn(),
+  sessionsSpy: vi.fn(),
+  unifiedSessionMessagesSpy: vi.fn(),
+  deleteSessionSpy: vi.fn(),
+  deleteCodexSessionSpy: vi.fn(),
+  deleteGeminiSessionSpy: vi.fn(),
   authenticatedFetchSpy: vi.fn(),
   sendWsMessageSpy: vi.fn(),
 }));
@@ -65,6 +75,11 @@ vi.mock('../../src/utils/api', () => ({
     algorithmRunEventsUrl: algorithmRunEventsUrlSpy,
     searchConversationsUrl: searchConversationsUrlSpy,
     startAlgorithmRun: startAlgorithmRunSpy,
+    sessions: sessionsSpy,
+    unifiedSessionMessages: unifiedSessionMessagesSpy,
+    deleteSession: deleteSessionSpy,
+    deleteCodexSession: deleteCodexSessionSpy,
+    deleteGeminiSession: deleteGeminiSessionSpy,
   },
   authenticatedFetch: authenticatedFetchSpy,
 }));
@@ -82,6 +97,12 @@ vi.mock('../../src/components/settings/view/Settings', () => ({
   default: ({ isOpen }: { isOpen: boolean }) => (isOpen ? <div role="dialog">Settings panel</div> : null),
 }));
 
+vi.mock('../../src/components/llm-logo-provider/SessionProviderLogo', () => ({
+  default: ({ provider = 'claude', className }: { provider?: string; className?: string }) => (
+    <span className={className}>{provider}</span>
+  ),
+}));
+
 describe('NolmeAppRoute', () => {
   beforeEach(() => {
     localStorage.clear();
@@ -90,7 +111,31 @@ describe('NolmeAppRoute', () => {
     (window as any).EventSource = FakeEventSource;
 
     projectsSpy.mockReset().mockReturnValue(jsonResponse([
-      { name: 'demo-project', displayName: 'maceo', path: '/workspace/demo-project' },
+      {
+        name: 'demo-project',
+        displayName: 'maceo',
+        path: '/workspace/demo-project',
+        fullPath: '/workspace/demo-project',
+        sessionMeta: { hasMore: true, total: 2 },
+        sessions: [
+          {
+            id: 'claude-session-1',
+            summary: 'cool!! what do you mean by zero-knowledge',
+            lastActivity: '2026-04-28T12:00:00.000Z',
+            messageCount: 99,
+          },
+        ],
+        codexSessions: [
+          {
+            id: 'codex-session-1',
+            summary: 'KC Baker',
+            createdAt: '2026-04-27T12:00:00.000Z',
+            messageCount: 40,
+          },
+        ],
+        geminiSessions: [],
+        cursorSessions: [],
+      },
     ]));
     skillsSpy.mockReset().mockReturnValue(jsonResponse({
       skills: [
@@ -107,6 +152,42 @@ describe('NolmeAppRoute', () => {
     algorithmRunStateSpy.mockReset().mockReturnValue(jsonResponse({ state: null }));
     algorithmRunEventsUrlSpy.mockReset().mockReturnValue('/api/algorithm-runs/alg_1/events?after=0&stream=1');
     searchConversationsUrlSpy.mockReset().mockImplementation((query: string) => `/api/search/conversations?q=${encodeURIComponent(query)}`);
+    sessionsSpy.mockReset().mockReturnValue(jsonResponse({
+      sessions: [
+        {
+          id: 'claude-session-2',
+          summary: 'Loaded follow-up session',
+          lastActivity: '2026-04-26T12:00:00.000Z',
+          messageCount: 12,
+        },
+      ],
+      hasMore: false,
+    }));
+    unifiedSessionMessagesSpy.mockReset().mockReturnValue(jsonResponse({
+      messages: [
+        {
+          id: 'm1',
+          sessionId: 'claude-session-1',
+          provider: 'claude',
+          kind: 'text',
+          role: 'user',
+          content: 'Existing question',
+          timestamp: '2026-04-28T12:00:00.000Z',
+        },
+        {
+          id: 'm2',
+          sessionId: 'claude-session-1',
+          provider: 'claude',
+          kind: 'text',
+          role: 'assistant',
+          content: 'Existing answer',
+          timestamp: '2026-04-28T12:01:00.000Z',
+        },
+      ],
+    }));
+    deleteSessionSpy.mockReset().mockReturnValue(jsonResponse({ success: true }));
+    deleteCodexSessionSpy.mockReset().mockReturnValue(jsonResponse({ success: true }));
+    deleteGeminiSessionSpy.mockReset().mockReturnValue(jsonResponse({ success: true }));
     startAlgorithmRunSpy.mockReset().mockReturnValue(jsonResponse({
       ok: true,
       run: {
@@ -129,15 +210,15 @@ describe('NolmeAppRoute', () => {
     sendWsMessageSpy.mockReset();
   });
 
-  it('renders the /app shell without the old hard-coded Figma demo data', () => {
+  it('renders the /app shell without the old hard-coded Figma demo data', async () => {
     render(<NolmeAppRoute />);
 
     expect(screen.getByLabelText('Nolme app navigation')).toBeInTheDocument();
-    expect(screen.getByRole('main', { name: /nolme chat stream/i })).toBeInTheDocument();
+    expect(screen.getByRole('main', { name: /Projects and sessions/i })).toBeInTheDocument();
     expect(screen.getByLabelText('Phases and deliverables')).toBeInTheDocument();
-    expect(screen.getByText(/send a message to the LLM/i)).toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: /Claude model/i })).toHaveDisplayValue('Sonnet');
-    expect(screen.queryByRole('button', { name: /maceo/i })).not.toBeInTheDocument();
+    expect(screen.getByText('Projects')).toBeInTheDocument();
+    expect(await screen.findByText('maceo')).toBeInTheDocument();
+    expect(screen.queryByRole('combobox', { name: /Claude model/i })).not.toBeInTheDocument();
     expect(screen.getByText('No phases yet')).toBeInTheDocument();
     expect(screen.getByText('No deliverables yet')).toBeInTheDocument();
     expect(screen.queryByText(/Audience spreadsheet/i)).not.toBeInTheDocument();
@@ -158,6 +239,19 @@ describe('NolmeAppRoute', () => {
     expect(screen.getByText('research-codebase')).toBeInTheDocument();
   });
 
+  it('shows projects and sessions when the chat nav item is selected', async () => {
+    render(<NolmeAppRoute />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Chat' }));
+
+    expect(await screen.findByRole('main', { name: /Projects and sessions/i })).toBeInTheDocument();
+    expect(screen.getByText('cool!! what do you mean by zero-knowledge')).toBeInTheDocument();
+    expect(screen.getByText('KC Baker')).toBeInTheDocument();
+    expect(screen.getByText('99')).toBeInTheDocument();
+    expect(screen.getByLabelText('claude session')).toBeInTheDocument();
+    expect(screen.getByLabelText('codex session')).toBeInTheDocument();
+  });
+
   it('opens the existing settings surface from the nav panel', () => {
     render(<NolmeAppRoute />);
 
@@ -169,6 +263,7 @@ describe('NolmeAppRoute', () => {
   it('sends user messages to the LLM through the chat websocket', async () => {
     render(<NolmeAppRoute />);
 
+    fireEvent.click(await screen.findByRole('button', { name: /New session for maceo/i }));
     await screen.findByRole('combobox', { name: /Claude model/i });
     fireEvent.change(screen.getByLabelText('Message prompt'), {
       target: { value: 'Wire /app to live data' },
@@ -183,6 +278,7 @@ describe('NolmeAppRoute', () => {
         projectPath: '/workspace/demo-project',
         cwd: '/workspace/demo-project',
         model: 'sonnet',
+        resume: false,
         permissionMode: 'default',
       }),
     }));
@@ -193,6 +289,7 @@ describe('NolmeAppRoute', () => {
   it('submits the user message on Enter and keeps Shift+Enter available for newlines', async () => {
     render(<NolmeAppRoute />);
 
+    fireEvent.click(await screen.findByRole('button', { name: /New session for maceo/i }));
     await screen.findByRole('combobox', { name: /Claude model/i });
     const textarea = screen.getByLabelText('Message prompt');
 
@@ -211,6 +308,7 @@ describe('NolmeAppRoute', () => {
     localStorage.setItem('claude-model', 'opus');
     render(<NolmeAppRoute />);
 
+    fireEvent.click(await screen.findByRole('button', { name: /New session for maceo/i }));
     const modelSelect = await screen.findByRole('combobox', { name: /Claude model/i });
     expect(modelSelect).toHaveDisplayValue('Opus');
     fireEvent.change(modelSelect, { target: { value: 'haiku' } });
@@ -226,6 +324,57 @@ describe('NolmeAppRoute', () => {
         model: 'haiku',
       }),
     }));
+  });
+
+  it('loads an existing session inside /app and resumes it on the next send', async () => {
+    render(<NolmeAppRoute />);
+
+    fireEvent.click(await screen.findByRole('button', { name: /Open session cool!! what do you mean/i }));
+
+    await waitFor(() => expect(unifiedSessionMessagesSpy).toHaveBeenCalledWith(
+      'claude-session-1',
+      'claude',
+      expect.objectContaining({
+        projectName: 'demo-project',
+        projectPath: '/workspace/demo-project',
+      }),
+    ));
+    expect(await screen.findByText('Existing question')).toBeInTheDocument();
+    expect(screen.getByText('Existing answer')).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText('Message prompt'), {
+      target: { value: 'Continue this session' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Send' }));
+
+    await waitFor(() => expect(sendWsMessageSpy).toHaveBeenCalledTimes(1));
+    expect(sendWsMessageSpy).toHaveBeenCalledWith(expect.objectContaining({
+      command: 'Continue this session',
+      options: expect.objectContaining({
+        sessionId: 'claude-session-1',
+        resume: true,
+      }),
+    }));
+  });
+
+  it('deletes an existing provider-supported session from the projects browser', async () => {
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    render(<NolmeAppRoute />);
+
+    fireEvent.click(await screen.findByRole('button', { name: /Delete session cool!! what do you mean/i }));
+
+    await waitFor(() => expect(deleteSessionSpy).toHaveBeenCalledWith('demo-project', 'claude-session-1'));
+    expect(screen.queryByText('cool!! what do you mean by zero-knowledge')).not.toBeInTheDocument();
+    confirmSpy.mockRestore();
+  });
+
+  it('loads more Claude sessions for a project', async () => {
+    render(<NolmeAppRoute />);
+
+    fireEvent.click(await screen.findByRole('button', { name: /Show more sessions for maceo/i }));
+
+    await waitFor(() => expect(sessionsSpy).toHaveBeenCalledWith('demo-project', 5, 1));
+    expect(await screen.findByText('Loaded follow-up session')).toBeInTheDocument();
   });
 
   it('renders live phases and deliverables from an active Algorithm run', async () => {

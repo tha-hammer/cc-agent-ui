@@ -378,6 +378,198 @@
   line-height: 18px;
 }
 
+.nolme-app__project-list,
+.nolme-app__project-group,
+.nolme-app__project-sessions {
+  display: flex;
+  flex-direction: column;
+}
+
+.nolme-app__project-list {
+  gap: 10px;
+}
+
+.nolme-app__project-group {
+  overflow: hidden;
+  border: 1px solid var(--nolme-border-default);
+  border-radius: 8px;
+  background: var(--nolme-background-subtle);
+}
+
+.nolme-app__project-row {
+  display: grid;
+  width: 100%;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.nolme-app__project-row:hover,
+.nolme-app__project-row:focus-visible {
+  background: var(--nolme-primary-subtle);
+}
+
+.nolme-app__project-row > svg:first-child {
+  color: var(--nolme-primary);
+}
+
+.nolme-app__project-row > span,
+.nolme-app__session-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.nolme-app__project-row strong,
+.nolme-app__session-copy strong {
+  overflow: hidden;
+  color: var(--nolme-text-primary);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nolme-app__project-row small,
+.nolme-app__session-copy small {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+  overflow: hidden;
+  color: var(--nolme-text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nolme-app__chevron--open {
+  transform: rotate(180deg);
+}
+
+.nolme-app__project-sessions {
+  gap: 8px;
+  padding: 0 12px 12px 34px;
+}
+
+.nolme-app__new-session-button,
+.nolme-app__show-more-sessions {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 16px;
+}
+
+.nolme-app__new-session-button {
+  background: var(--nolme-primary);
+  color: #ffffff;
+}
+
+.nolme-app__show-more-sessions {
+  background: transparent;
+  color: var(--nolme-text-secondary);
+}
+
+.nolme-app__show-more-sessions:hover,
+.nolme-app__show-more-sessions:focus-visible {
+  background: var(--nolme-background-muted);
+}
+
+.nolme-app__session-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px;
+  align-items: center;
+}
+
+.nolme-app__session-open {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.nolme-app__session-open:hover,
+.nolme-app__session-open:focus-visible,
+.nolme-app__session-row--selected .nolme-app__session-open {
+  background: var(--nolme-primary-subtle);
+}
+
+.nolme-app__session-provider {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 6px;
+  background: var(--nolme-background-muted);
+}
+
+.nolme-app__session-logo {
+  width: 14px;
+  height: 14px;
+}
+
+.nolme-app__session-copy {
+  gap: 1px;
+}
+
+.nolme-app__session-copy small svg {
+  flex: 0 0 auto;
+  color: var(--nolme-text-tertiary);
+}
+
+.nolme-app__session-open em {
+  display: inline-flex;
+  min-width: 24px;
+  justify-content: center;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: #eef1f6;
+  color: var(--nolme-text-primary);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 14px;
+}
+
+.nolme-app__session-delete {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--nolme-text-tertiary);
+}
+
+.nolme-app__session-delete:hover,
+.nolme-app__session-delete:focus-visible {
+  background: #fdecea;
+  color: #b42318;
+}
+
 .nolme-app__skills-list {
   display: flex;
   flex-direction: column;
