@@ -45,11 +45,12 @@ interface ChatComposerProps {
   isLoading: boolean;
   onAbortSession: () => void;
   provider: Provider | string;
+  model?: string;
   permissionMode: PermissionMode | string;
   onModeSwitch: () => void;
   thinkingMode: string;
   setThinkingMode: Dispatch<SetStateAction<string>>;
-  tokenBudget: { used?: number; total?: number } | null;
+  tokenBudget: Record<string, unknown> | null;
   slashCommandsCount: number;
   onToggleCommandMenu: () => void;
   hasInput: boolean;
@@ -102,6 +103,7 @@ export default function ChatComposer({
   isLoading,
   onAbortSession,
   provider,
+  model,
   permissionMode,
   onModeSwitch,
   thinkingMode,
@@ -192,6 +194,7 @@ export default function ChatComposer({
           permissionMode={permissionMode}
           onModeSwitch={onModeSwitch}
           provider={provider}
+          model={model}
           thinkingMode={thinkingMode}
           setThinkingMode={setThinkingMode}
           tokenBudget={tokenBudget}

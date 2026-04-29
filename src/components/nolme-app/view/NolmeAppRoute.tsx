@@ -31,7 +31,7 @@ import { api, authenticatedFetch } from '../../../utils/api';
 import { formatTimeAgo } from '../../../utils/dateUtils';
 import type { Project, ProjectSession, ProjectsUpdatedMessage, SessionProvider } from '../../../types/app';
 import type { NormalizedMessage } from '../../../stores/useSessionStore';
-import { CLAUDE_MODELS } from '../../../../shared/modelConstants';
+import { CLAUDE_MODELS, getModelContextWindow } from '../../../../shared/modelConstants';
 import './NolmeAppRoute.css';
 
 type NavPanelId = 'search' | 'chat' | 'tasks';
@@ -123,6 +123,15 @@ type AlgorithmRunState = {
   eventCursor?: { sequence: number };
 };
 
+type ContextBudget = {
+  supported?: boolean;
+  used?: number | null;
+  total?: number | null;
+  usedPercent?: number | null;
+  model?: string | null;
+  message?: string;
+};
+
 type ChatTranscriptItem = {
   id: string;
   role: 'user' | 'assistant';
@@ -141,6 +150,7 @@ type SessionMessage = Partial<NormalizedMessage> & Record<string, unknown>;
 
 type UnifiedSessionMessagesBody = {
   messages?: SessionMessage[];
+  tokenUsage?: ContextBudget | null;
   error?: string | { message?: string };
   message?: string;
 };
@@ -257,6 +267,19 @@ function normalizeProjectsPayload(data: unknown): Project[] {
 
 function asString(value: unknown) {
   return typeof value === 'string' ? value.trim() : '';
+}
+
+function asFiniteNumber(value: unknown) {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+function clampPercent(value: number) {
+  return Math.max(0, Math.min(100, value));
+}
+
+function formatContextPercent(value: number) {
+  if (value > 0 && value < 1) return '<1%';
+  return `${Math.round(value)}%`;
 }
 
 function isCompletedStatus(value: unknown) {
@@ -725,6 +748,7 @@ export default function NolmeAppRoute() {
   const [runState, setRunState] = useState<AlgorithmRunState | null>(null);
   const [derivedRunState, setDerivedRunState] = useState<AlgorithmRunState | null>(null);
   const [sessionDeliverables, setSessionDeliverables] = useState<AlgorithmDeliverable[]>([]);
+  const [contextBudget, setContextBudget] = useState<ContextBudget | null>(null);
   const [runError, setRunError] = useState<string | null>(null);
   const [prompt, setPrompt] = useState('');
   const [isStartingRun, setIsStartingRun] = useState(false);
@@ -878,6 +902,7 @@ export default function NolmeAppRoute() {
     chatSessionIdRef.current = null;
     setChatMessages([]);
     setSessionDeliverables([]);
+    setContextBudget(null);
     algorithmOutputTextRef.current = '';
     setDerivedRunState(null);
     setRunError(null);
@@ -924,6 +949,7 @@ export default function NolmeAppRoute() {
       algorithmOutputTextRef.current = algorithmOutput;
       setDerivedRunState(deriveAlgorithmRunStateFromText(algorithmOutput));
       setSessionDeliverables(deriveSessionDeliverables(rawMessages));
+      setContextBudget(body.tokenUsage || null);
       setRunError(null);
     } catch (error) {
       const isLatestRequest = sessionRefreshRequestIdRef.current === requestId;
@@ -951,6 +977,7 @@ export default function NolmeAppRoute() {
     setRunError(null);
     setChatMessages([]);
     setSessionDeliverables([]);
+    setContextBudget(null);
     algorithmOutputTextRef.current = '';
     setDerivedRunState(null);
     try {
@@ -997,6 +1024,7 @@ export default function NolmeAppRoute() {
         chatSessionIdRef.current = null;
         setChatMessages([]);
         setSessionDeliverables([]);
+        setContextBudget(null);
         setChatView('projects');
       }
     } catch (error) {
@@ -1139,6 +1167,11 @@ export default function NolmeAppRoute() {
 
     if (message.kind === 'session_created' && message.newSessionId) {
       setChatSessionId(String(message.newSessionId));
+      return;
+    }
+
+    if (message.kind === 'status' && message.text === 'token_budget' && isRecord(message.tokenBudget)) {
+      setContextBudget(message.tokenBudget as ContextBudget);
       return;
     }
 
@@ -1423,6 +1456,7 @@ export default function NolmeAppRoute() {
           selectedProject={selectedProject}
           modelLabel={claudeModelLabel(selectedModel)}
           modelValue={selectedModel}
+          contextBudget={contextBudget}
           onModelChange={handleModelChange}
           isStartingRun={isStartingRun}
           decisionError={decisionError}
@@ -1891,6 +1925,7 @@ function ChatPanel({
   selectedProject,
   modelLabel,
   modelValue,
+  contextBudget,
   onModelChange,
   isStartingRun,
   decisionError,
@@ -1909,6 +1944,7 @@ function ChatPanel({
   selectedProject: Project | null;
   modelLabel: string;
   modelValue: string;
+  contextBudget: ContextBudget | null;
   onModelChange: (model: string) => void;
   isStartingRun: boolean;
   decisionError: string | null;
@@ -1965,9 +2001,9 @@ function ChatPanel({
           selectedProject={selectedProject}
           modelLabel={modelLabel}
           modelValue={modelValue}
+          contextBudget={contextBudget}
           onModelChange={onModelChange}
           isWorking={isStartingRun || ['starting', 'running', 'stopping'].includes(runState?.status || '')}
-          progress={runState?.eventCursor?.sequence ?? 0}
           onPromptChange={onPromptChange}
           onStartRun={onStartRun}
           onOpenSkills={onOpenSkills}
@@ -2110,9 +2146,9 @@ function Composer({
   selectedProject,
   modelLabel,
   modelValue,
+  contextBudget,
   onModelChange,
   isWorking,
-  progress,
   onPromptChange,
   onStartRun,
   onOpenSkills,
@@ -2123,9 +2159,9 @@ function Composer({
   selectedProject: Project | null;
   modelLabel: string;
   modelValue: string;
+  contextBudget: ContextBudget | null;
   onModelChange: (model: string) => void;
   isWorking: boolean;
-  progress: number;
   onPromptChange: (value: string) => void;
   onStartRun: () => void;
   onOpenSkills: () => void;
@@ -2135,6 +2171,11 @@ function Composer({
     ? CLAUDE_MODELS.OPTIONS
     : [{ value: modelValue, label: modelLabel }, ...CLAUDE_MODELS.OPTIONS];
   const selectedProjectPath = getProjectPath(selectedProject);
+  const contextUsed = Math.max(0, asFiniteNumber(contextBudget?.used) ?? 0);
+  const contextTotal = Math.max(1, asFiniteNumber(contextBudget?.total) ?? getModelContextWindow('claude', modelValue));
+  const contextPercent = clampPercent(asFiniteNumber(contextBudget?.usedPercent) ?? ((contextUsed / contextTotal) * 100));
+  const contextLabel = formatContextPercent(contextPercent);
+  const contextTitle = `${contextUsed.toLocaleString()} / ${contextTotal.toLocaleString()} tokens`;
 
   return (
     <section className="nolme-app__composer" aria-label="Message composer">
@@ -2145,10 +2186,10 @@ function Composer({
             <span>{selectedSkill ? selectedSkill.name : selectedProject ? getProjectLabel(selectedProject) : 'Select a project'}</span>
           </div>
           <div className="nolme-app__progress-row">
-            <div className="nolme-app__progress-track" aria-label={`${progress} events received`}>
-              <span style={{ width: `${Math.min(progress * 10, 100)}%` }} />
+            <div className="nolme-app__progress-track" aria-label={`Context used ${contextLabel}`} title={contextTitle}>
+              <span style={{ width: `${contextPercent}%` }} />
             </div>
-            <strong>{progress} events</strong>
+            <strong>{contextLabel}</strong>
           </div>
         </div>
 

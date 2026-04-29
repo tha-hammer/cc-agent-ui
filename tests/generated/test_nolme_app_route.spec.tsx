@@ -778,6 +778,39 @@ describe('NolmeAppRoute', () => {
     expect(screen.queryByText('Stale run artifact')).not.toBeInTheDocument();
   });
 
+  it('renders selected-session context usage as percentage in the input progress bar', async () => {
+    unifiedSessionMessagesSpy.mockReturnValue(jsonResponse({
+      tokenUsage: {
+        provider: 'claude',
+        source: 'route',
+        supported: true,
+        used: 135000,
+        total: 200000,
+        usedPercent: 67.5,
+      },
+      messages: [
+        {
+          id: 'm1',
+          sessionId: 'claude-session-1',
+          provider: 'claude',
+          kind: 'text',
+          role: 'assistant',
+          content: 'Session answer',
+          timestamp: '2026-04-29T12:00:00.000Z',
+        },
+      ],
+    }));
+    render(<NolmeAppRoute />);
+
+    fireEvent.click(await screen.findByRole('button', { name: /Open session cool!! what do you mean/i }));
+
+    expect(await screen.findByLabelText('Context used 68%')).toHaveAttribute(
+      'title',
+      '135,000 / 200,000 tokens',
+    );
+    expect(screen.getByText('68%')).toBeInTheDocument();
+  });
+
   it('deletes an existing provider-supported session from the projects browser', async () => {
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
     render(<NolmeAppRoute />);

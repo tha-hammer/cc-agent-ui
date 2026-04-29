@@ -81,6 +81,7 @@ import { validateApiKey, authenticateToken, authenticateWebSocket } from './midd
 import { IS_PLATFORM } from './constants/config.js';
 import { getConnectableHost } from '../shared/networkHosts.js';
 import { normalizeAiWorkingTokenBudget } from '../shared/aiWorkingTokenBudget.js';
+import { getModelContextWindow } from '../shared/modelConstants.js';
 
 const VALID_PROVIDERS = ['claude', 'codex', 'cursor', 'gemini'];
 
@@ -2469,28 +2470,19 @@ app.get('/api/projects/:projectName/sessions/:sessionId/token-usage', authentica
         }
         const lines = fileContent.trim().split('\n');
 
-        const parsedContextWindow = parseInt(process.env.CONTEXT_WINDOW, 10);
-        const contextWindow = Number.isFinite(parsedContextWindow) ? parsedContextWindow : 160000;
-        let inputTokens = 0;
-        let outputTokens = 0;
-        let cacheCreationTokens = 0;
-        let cacheReadTokens = 0;
+        let latestUsage = null;
+        let latestModel = null;
 
-        // Sum assistant-message usage across the persisted session so route
-        // reads match the cumulative contract used by live token_budget
-        // frames.
-        for (let i = 0; i < lines.length; i++) {
+        for (let i = lines.length - 1; i >= 0; i--) {
             try {
                 const entry = JSON.parse(lines[i]);
 
-                // Only count assistant messages which have usage data
                 if (entry.type === 'assistant' && entry.message?.usage) {
-                    const usage = entry.message.usage;
-
-                    inputTokens += usage.input_tokens || 0;
-                    outputTokens += usage.output_tokens || 0;
-                    cacheCreationTokens += usage.cache_creation_input_tokens || 0;
-                    cacheReadTokens += usage.cache_read_input_tokens || 0;
+                    latestUsage = entry.message.usage;
+                    if (typeof entry.message.model === 'string' && entry.message.model) {
+                        latestModel = entry.message.model;
+                    }
+                    break;
                 }
             } catch (parseError) {
                 // Skip lines that can't be parsed
@@ -2498,11 +2490,17 @@ app.get('/api/projects/:projectName/sessions/:sessionId/token-usage', authentica
             }
         }
 
+        const inputTokens = latestUsage?.input_tokens || 0;
+        const outputTokens = latestUsage?.output_tokens || 0;
+        const cacheCreationTokens = latestUsage?.cache_creation_input_tokens || 0;
+        const cacheReadTokens = latestUsage?.cache_read_input_tokens || 0;
         const totalUsed = inputTokens + outputTokens + cacheCreationTokens + cacheReadTokens;
+        const contextWindow = getModelContextWindow('claude', latestModel);
 
         res.json(normalizeAiWorkingTokenBudget({
             used: totalUsed,
             total: contextWindow,
+            model: latestModel,
             breakdown: {
                 input: inputTokens,
                 output: outputTokens,

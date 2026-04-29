@@ -5,7 +5,7 @@
  * @module adapters/claude
  */
 
-import { getSessionMessages } from '../../projects.js';
+import { calculateClaudeTokenUsage, getSessionMessages } from '../../projects.js';
 import { createNormalizedMessage, generateMessageId } from '../types.js';
 import { isInternalContent } from '../utils.js';
 
@@ -228,6 +228,9 @@ export const claudeAdapter = {
     const rawMessages = Array.isArray(result) ? result : (result.messages || []);
     const total = Array.isArray(result) ? rawMessages.length : (result.total || 0);
     const hasMore = Array.isArray(result) ? false : Boolean(result.hasMore);
+    const tokenUsage = Array.isArray(result)
+      ? calculateClaudeTokenUsage(rawMessages)
+      : result.tokenUsage || null;
 
     // First pass: collect tool results for attachment to tool_use messages
     const toolResultMap = new Map();
@@ -278,6 +281,7 @@ export const claudeAdapter = {
       hasMore,
       offset,
       limit,
+      tokenUsage,
     };
   },
 };

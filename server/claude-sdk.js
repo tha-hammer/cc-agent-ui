@@ -17,7 +17,7 @@ import crypto from 'crypto';
 import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
-import { CLAUDE_MODELS } from '../shared/modelConstants.js';
+import { CLAUDE_MODELS, getModelContextWindow } from '../shared/modelConstants.js';
 import {
   createNotificationEvent,
   notifyRunFailed,
@@ -310,25 +310,22 @@ function extractTokenBudget(resultMessage) {
     return null;
   }
 
-  // Use cumulative tokens if available (tracks total for the session)
-  // Otherwise fall back to per-request tokens
-  const inputTokens = modelData.cumulativeInputTokens || modelData.inputTokens || 0;
-  const outputTokens = modelData.cumulativeOutputTokens || modelData.outputTokens || 0;
-  const cacheReadTokens = modelData.cumulativeCacheReadInputTokens || modelData.cacheReadInputTokens || 0;
-  const cacheCreationTokens = modelData.cumulativeCacheCreationInputTokens || modelData.cacheCreationInputTokens || 0;
+  const inputTokens = modelData.inputTokens || 0;
+  const outputTokens = modelData.outputTokens || 0;
+  const cacheReadTokens = modelData.cacheReadInputTokens || 0;
+  const cacheCreationTokens = modelData.cacheCreationInputTokens || 0;
 
   // Total used = input + output + cache tokens
   const totalUsed = inputTokens + outputTokens + cacheReadTokens + cacheCreationTokens;
 
-  // Use configured context window budget from environment (default 160000)
-  // This is the user's budget limit, not the model's context window
-  const contextWindow = parseInt(process.env.CONTEXT_WINDOW) || 160000;
+  const contextWindow = getModelContextWindow('claude', modelKey);
 
   // Token calc logged via token-budget WS event
 
   return {
     used: totalUsed,
-    total: contextWindow
+    total: contextWindow,
+    model: modelKey,
   };
 }
 

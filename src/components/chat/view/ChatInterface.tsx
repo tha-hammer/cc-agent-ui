@@ -425,6 +425,7 @@ function ChatInterface({
           isLoading={isLoading}
           onAbortSession={handleAbortSession}
           provider={provider}
+          model={activeModel}
           permissionMode={permissionMode}
           onModeSwitch={cyclePermissionMode}
           thinkingMode={thinkingMode}

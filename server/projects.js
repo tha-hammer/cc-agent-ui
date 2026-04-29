@@ -67,6 +67,8 @@ import { open } from 'sqlite';
 import os from 'os';
 import sessionManager from './sessionManager.js';
 import { applyCustomSessionNames } from './database/db.js';
+import { normalizeAiWorkingTokenBudget } from '../shared/aiWorkingTokenBudget.js';
+import { getModelContextWindow } from '../shared/modelConstants.js';
 
 // Import TaskMaster detection functions
 async function detectTaskMasterFolder(projectPath) {
@@ -1068,6 +1070,7 @@ async function getSessionMessages(projectName, sessionId, limit = null, offset =
     );
 
     const total = sortedMessages.length;
+    const tokenUsage = calculateClaudeTokenUsage(sortedMessages, 'route');
 
     // If no limit is specified, return all messages (backward compatibility)
     if (limit === null) {
@@ -1086,12 +1089,50 @@ async function getSessionMessages(projectName, sessionId, limit = null, offset =
       total,
       hasMore,
       offset,
-      limit
+      limit,
+      tokenUsage
     };
   } catch (error) {
     console.error(`Error reading messages for session ${sessionId}:`, error);
     return limit === null ? [] : { messages: [], total: 0, hasMore: false };
   }
+}
+
+export function calculateClaudeTokenUsage(messages, source = 'route') {
+  let latestUsage = null;
+  let latestModel = null;
+
+  for (const entry of messages) {
+    if (entry?.type !== 'assistant' || !entry.message?.usage) continue;
+    latestUsage = entry.message.usage;
+    if (typeof entry.message.model === 'string' && entry.message.model) {
+      latestModel = entry.message.model;
+    }
+  }
+
+  if (!latestUsage) return null;
+
+  const inputTokens = latestUsage.input_tokens || 0;
+  const outputTokens = latestUsage.output_tokens || 0;
+  const cacheCreationTokens = latestUsage.cache_creation_input_tokens || 0;
+  const cacheReadTokens = latestUsage.cache_read_input_tokens || 0;
+  const used = inputTokens + outputTokens + cacheCreationTokens + cacheReadTokens;
+  if (used <= 0) return null;
+
+  return normalizeAiWorkingTokenBudget({
+    used,
+    total: getModelContextWindow('claude', latestModel),
+    model: latestModel,
+    breakdown: {
+      input: inputTokens,
+      output: outputTokens,
+      cacheCreation: cacheCreationTokens,
+      cacheRead: cacheReadTokens,
+    },
+  }, {
+    provider: 'claude',
+    source,
+  });
 }
 
 // Rename a project's display name
@@ -1783,7 +1824,7 @@ async function getCodexSessionMessages(sessionId, limit = null, offset = 0) {
             if (info.total_token_usage) {
               tokenUsage = {
                 used: info.total_token_usage.total_tokens || 0,
-                total: info.model_context_window || 200000
+                total: info.model_context_window || getModelContextWindow('codex')
               };
             }
           }

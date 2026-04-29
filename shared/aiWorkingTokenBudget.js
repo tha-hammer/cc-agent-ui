@@ -8,6 +8,8 @@
  * - nolme-ui/src/hooks/useAiWorkingTokenBudget.ts route + hydrated reconciliation
  */
 
+import { getModelContextWindow } from './modelConstants.js';
+
 const UNSUPPORTED_PROVIDERS = new Set(['cursor', 'gemini']);
 
 function asFiniteNumber(value) {
@@ -22,14 +24,17 @@ function clampPercent(value) {
   return Math.max(0, Math.min(100, value));
 }
 
-function normalizeSupportedBudget(raw, provider, source, updatedAt) {
+function normalizeSupportedBudget(raw, provider, source, updatedAt, model) {
   let used = asFiniteNumber(raw?.used);
   let total = asFiniteNumber(raw?.total);
+  const budgetModel = model ?? asOptionalString(raw?.model);
 
   if (provider === 'codex') {
     used ??= asFiniteNumber(raw?.total_token_usage?.total_tokens);
-    total ??= asFiniteNumber(raw?.model_context_window) ?? 200000;
+    total ??= asFiniteNumber(raw?.model_context_window);
   }
+
+  total ??= getModelContextWindow(provider, budgetModel);
 
   if (used === null || total === null || total <= 0) {
     return null;
@@ -49,6 +54,7 @@ function normalizeSupportedBudget(raw, provider, source, updatedAt) {
     remaining,
     usedPercent,
     remainingPercent: clampPercent(100 - usedPercent),
+    model: budgetModel,
     breakdown: raw?.breakdown && typeof raw.breakdown === 'object' ? raw.breakdown : undefined,
     message: asOptionalString(raw?.message),
     updatedAt,
@@ -73,8 +79,8 @@ function normalizeUnsupportedBudget(raw, provider, source, updatedAt) {
 
 /**
  * @param {unknown} raw
- * @param {{ provider?: string, source?: 'route'|'live'|'persisted', updatedAt?: number }} [options]
- * @returns {null|{provider: string, source: string, supported: boolean, used: number|null, total: number|null, remaining: number|null, usedPercent: number, remainingPercent: number, breakdown?: object, message?: string, updatedAt: number}}
+ * @param {{ provider?: string, model?: string, source?: 'route'|'live'|'persisted', updatedAt?: number }} [options]
+ * @returns {null|{provider: string, source: string, supported: boolean, used: number|null, total: number|null, remaining: number|null, usedPercent: number, remainingPercent: number, model?: string, breakdown?: object, message?: string, updatedAt: number}}
  */
 export function normalizeAiWorkingTokenBudget(raw, options = {}) {
   if (!raw || typeof raw !== 'object') {
@@ -98,5 +104,5 @@ export function normalizeAiWorkingTokenBudget(raw, options = {}) {
     return normalizeUnsupportedBudget(record, provider, source, updatedAt);
   }
 
-  return normalizeSupportedBudget(record, provider, source, updatedAt);
+  return normalizeSupportedBudget(record, provider, source, updatedAt, asOptionalString(options.model));
 }

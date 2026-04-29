@@ -17,6 +17,7 @@ import { Codex } from '@openai/codex-sdk';
 import { notifyRunFailed, notifyRunStopped } from './services/notification-orchestrator.js';
 import { codexAdapter } from './providers/codex/adapter.js';
 import { createNormalizedMessage } from './providers/types.js';
+import { getModelContextWindow } from '../shared/modelConstants.js';
 
 // Track active sessions
 const activeCodexSessions = new Map();
@@ -283,7 +284,8 @@ export async function queryCodex(command, options = {}, ws) {
       // Extract and send token usage if available (normalized to match Claude format)
       if (event.type === 'turn.completed' && event.usage) {
         const totalTokens = (event.usage.input_tokens || 0) + (event.usage.output_tokens || 0);
-        sendMessage(ws, createNormalizedMessage({ kind: 'status', text: 'token_budget', tokenBudget: { used: totalTokens, total: 200000 }, sessionId: currentSessionId, provider: 'codex' }));
+        const total = event.usage.model_context_window || getModelContextWindow('codex', model);
+        sendMessage(ws, createNormalizedMessage({ kind: 'status', text: 'token_budget', tokenBudget: { used: totalTokens, total, model }, sessionId: currentSessionId, provider: 'codex' }));
       }
     }
 

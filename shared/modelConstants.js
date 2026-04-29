@@ -23,6 +23,67 @@ export const CLAUDE_MODELS = {
   DEFAULT: "sonnet",
 };
 
+export const MODEL_CONTEXT_WINDOWS = {
+  claude: {
+    DEFAULT: 200000,
+    sonnet: 200000,
+    opus: 200000,
+    haiku: 200000,
+    opusplan: 200000,
+    "sonnet[1m]": 1000000,
+  },
+  cursor: {
+    DEFAULT: 200000,
+  },
+  codex: {
+    DEFAULT: 200000,
+  },
+  gemini: {
+    DEFAULT: 1000000,
+  },
+};
+
+function normalizeProvider(provider) {
+  return typeof provider === "string" && provider.trim()
+    ? provider.trim().toLowerCase()
+    : "claude";
+}
+
+function normalizeModel(model) {
+  return typeof model === "string" ? model.trim() : "";
+}
+
+/**
+ * Returns the known context window for a provider/model pair. Raw provider
+ * model names are accepted so JSONL history can use `message.model` directly.
+ */
+export function getModelContextWindow(provider = "claude", model = "") {
+  const normalizedProvider = normalizeProvider(provider);
+  const normalizedModel = normalizeModel(model);
+  const catalog = MODEL_CONTEXT_WINDOWS[normalizedProvider] || MODEL_CONTEXT_WINDOWS.claude;
+
+  if (normalizedModel && catalog[normalizedModel]) {
+    return catalog[normalizedModel];
+  }
+
+  const lowerModel = normalizedModel.toLowerCase();
+  if (normalizedProvider === "claude") {
+    if (lowerModel.includes("1m") || lowerModel.includes("1000000")) {
+      return MODEL_CONTEXT_WINDOWS.claude["sonnet[1m]"];
+    }
+    if (
+      lowerModel.includes("claude") ||
+      lowerModel.includes("sonnet") ||
+      lowerModel.includes("opus") ||
+      lowerModel.includes("haiku")
+    ) {
+      return MODEL_CONTEXT_WINDOWS.claude.DEFAULT;
+    }
+  }
+
+  return catalog.DEFAULT || MODEL_CONTEXT_WINDOWS.claude.DEFAULT;
+}
+
 /**
  * Cursor Models
  */
