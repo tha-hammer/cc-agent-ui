@@ -654,7 +654,61 @@ describe('NolmeAppRoute', () => {
     expect(screen.getByText('Completed task output')).toBeInTheDocument();
   });
 
+  it('links selected-session deliverables to their local async output files', async () => {
+    localStorage.setItem('auth-token', 'test-token');
+    unifiedSessionMessagesSpy.mockReturnValue(jsonResponse({
+      messages: [
+        {
+          id: 'launch-result',
+          sessionId: 'claude-session-1',
+          provider: 'claude',
+          kind: 'tool_result',
+          toolId: 'toolu_0177kN7BV3HhND6nRhjpfKnz',
+          content: 'Async agent launched successfully.\nagentId: a0aeebb180e087ed4\noutput_file: /tmp/claude-1000/-home-maceo/tasks/a0aeebb180e087ed4.output',
+          timestamp: '2026-04-29T12:00:00.000Z',
+          toolResult: {
+            content: '',
+            isError: false,
+            toolUseResult: {
+              status: 'async_launched',
+              agentId: 'a0aeebb180e087ed4',
+              outputFile: '/tmp/claude-1000/-home-maceo/tasks/a0aeebb180e087ed4.output',
+            },
+          },
+        },
+        {
+          id: 'artifact-xml',
+          sessionId: 'claude-session-1',
+          provider: 'claude',
+          kind: 'text',
+          role: 'user',
+          content: [
+            '<task-notification>',
+            '<task-id>a0aeebb180e087ed4</task-id>',
+            '<tool-use-id>toolu_0177kN7BV3HhND6nRhjpfKnz</tool-use-id>',
+            '<status>completed</status>',
+            '<summary>Agent "Competitive landscape and major players research" completed</summary>',
+            '<result># Recruiting & Staffing Industry</result>',
+            '</task-notification>',
+          ].join('\n'),
+          timestamp: '2026-04-29T12:01:00.000Z',
+        },
+      ],
+    }));
+    render(<NolmeAppRoute />);
+
+    fireEvent.click(await screen.findByRole('button', { name: /Open session cool!! what do you mean/i }));
+
+    const title = await screen.findByText('Agent "Competitive landscape and major players research" completed');
+    const link = title.closest('a');
+    expect(link).not.toBeNull();
+    expect(link?.getAttribute('href')).toBe(
+      '/api/projects/demo-project/files/content?path=%2Ftmp%2Fclaude-1000%2F-home-maceo%2Ftasks%2Fa0aeebb180e087ed4.output&token=test-token',
+    );
+  });
+
   it('falls back to the final assistant report when no artifact notification exists', async () => {
+    localStorage.setItem('auth-token', 'test-token');
     unifiedSessionMessagesSpy.mockReturnValue(jsonResponse({
       messages: [
         {
@@ -664,7 +718,7 @@ describe('NolmeAppRoute', () => {
           kind: 'text',
           role: 'assistant',
           content: [
-            'REPORT DELIVERED',
+            'REPORT DELIVERED: `/home/maceo/.claude/MEMORY/WORK/20260429-163652_recruiting-agency-market-research/REPORT.md`',
             '',
             '# ICP shortlist',
             '',
@@ -678,7 +732,11 @@ describe('NolmeAppRoute', () => {
 
     fireEvent.click(await screen.findByRole('button', { name: /Open session cool!! what do you mean/i }));
 
-    expect(await screen.findByText('ICP shortlist')).toBeInTheDocument();
+    const title = await screen.findByText('ICP shortlist');
+    const link = title.closest('a');
+    expect(link?.getAttribute('href')).toBe(
+      '/api/projects/demo-project/files/content?path=%2Fhome%2Fmaceo%2F.claude%2FMEMORY%2FWORK%2F20260429-163652_recruiting-agency-market-research%2FREPORT.md&token=test-token',
+    );
     expect(screen.getByText('Final assistant report')).toBeInTheDocument();
   });
 

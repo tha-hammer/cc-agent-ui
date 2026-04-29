@@ -74,6 +74,7 @@ import { mountCopilotKit } from './routes/copilotkit.js';
 import { mountNolmeStatic } from './routes/nolme-static.js';
 import { createNormalizedMessage } from './providers/types.js';
 import { startEnabledPluginServers, stopAllPlugins, getPluginPort } from './utils/plugin-process-manager.js';
+import { isReadableProjectPath } from './utils/readable-paths.js';
 import { initializeDatabase, sessionNamesDb, applyCustomSessionNames } from './database/db.js';
 import { configureWebPush } from './services/vapid-keys.js';
 import { validateApiKey, authenticateToken, authenticateWebSocket } from './middleware/auth.js';
@@ -879,9 +880,7 @@ app.get('/api/projects/:projectName/file', authenticateToken, async (req, res) =
         const resolved = path.isAbsolute(filePath)
             ? path.resolve(filePath)
             : path.resolve(projectRoot, filePath);
-        const normalizedRoot = path.resolve(projectRoot) + path.sep;
-        const claudeDir = path.resolve(os.homedir(), '.claude') + path.sep;
-        if (!resolved.startsWith(normalizedRoot) && !resolved.startsWith(claudeDir)) {
+        if (!isReadableProjectPath(resolved, { projectRoot })) {
             return res.status(403).json({ error: 'Path must be under project root' });
         }
 
@@ -916,10 +915,10 @@ app.get('/api/projects/:projectName/files/content', authenticateToken, async (re
             return res.status(404).json({ error: 'Project not found' });
         }
 
-        const resolved = path.resolve(filePath);
-        const normalizedRoot = path.resolve(projectRoot) + path.sep;
-        const claudeDir = path.resolve(os.homedir(), '.claude') + path.sep;
-        if (!resolved.startsWith(normalizedRoot) && !resolved.startsWith(claudeDir)) {
+        const resolved = path.isAbsolute(filePath)
+            ? path.resolve(filePath)
+            : path.resolve(projectRoot, filePath);
+        if (!isReadableProjectPath(resolved, { projectRoot })) {
             return res.status(403).json({ error: 'Path must be under project root' });
         }
 

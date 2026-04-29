@@ -80,6 +80,7 @@ type AlgorithmDeliverable = {
   tone?: 'emerald' | 'iris' | 'gold' | 'document' | 'sheet' | 'link';
   action?: 'download' | 'link';
   url?: string | null;
+  filePath?: string | null;
 };
 
 type AlgorithmQuestion = {
@@ -153,6 +154,7 @@ type ArtifactCandidate = {
   title: string;
   subtitle: string;
   url?: string | null;
+  filePath?: string | null;
   tone?: AlgorithmDeliverable['tone'];
   action?: AlgorithmDeliverable['action'];
 };
@@ -285,6 +287,42 @@ function getRecordString(record: Record<string, unknown>, keys: string[]) {
   return '';
 }
 
+function contentToText(value: unknown): string {
+  if (typeof value === 'string') return value;
+  if (Array.isArray(value)) return value.map(contentToText).filter(Boolean).join('\n');
+  if (!isRecord(value)) return '';
+  return [value.text, value.content].map(contentToText).filter(Boolean).join('\n');
+}
+
+function getOutputFilePath(record: Record<string, unknown>) {
+  return getRecordString(record, ['outputFile', 'output_file', 'output-file', 'filePath', 'file_path', 'path', 'file', 'filename']);
+}
+
+function collectTaskOutputFiles(messages: SessionMessage[]) {
+  const outputFiles = new Map<string, string>();
+
+  for (const message of messages) {
+    const toolUseResult = isRecord(message.toolResult) && isRecord(message.toolResult.toolUseResult)
+      ? message.toolResult.toolUseResult
+      : null;
+    const outputFile = toolUseResult ? getOutputFilePath(toolUseResult) : '';
+    const agentId = toolUseResult ? getRecordString(toolUseResult, ['agentId', 'taskId', 'task-id']) : '';
+
+    if (outputFile) {
+      if (agentId) outputFiles.set(agentId, outputFile);
+      if (message.toolId) outputFiles.set(String(message.toolId), outputFile);
+    }
+
+    const content = contentToText(message.content);
+    const contentAgentId = content.match(/\bagentId:\s*([^\s]+)/i)?.[1] || '';
+    const contentOutputFile = content.match(/\boutput_file:\s*([^\s]+)/i)?.[1] || '';
+    if (contentAgentId && contentOutputFile) outputFiles.set(contentAgentId, contentOutputFile);
+    if (message.toolId && contentOutputFile) outputFiles.set(String(message.toolId), contentOutputFile);
+  }
+
+  return outputFiles;
+}
+
 function createArtifactCandidate(
   source: Record<string, unknown>,
   id: string,
@@ -294,19 +332,20 @@ function createArtifactCandidate(
   if (!isCompletedStatus(source.status)) return null;
 
   const url = getRecordString(source, ['url', 'href', 'link']);
-  const path = getRecordString(source, ['path', 'filePath', 'file', 'filename']);
+  const filePath = getOutputFilePath(source);
   const summary = getRecordString(source, ['summary', 'title', 'name', 'label']);
-  const title = summary || (path ? basename(path) : '') || (url ? basename(url) : '') || fallbackTitle;
+  const title = summary || (filePath ? basename(filePath) : '') || (url ? basename(url) : '') || fallbackTitle;
   const subtitle = getRecordString(source, ['subtitle', 'description']) || fallbackSubtitle;
-  const toneSource = [title, subtitle, url, path].filter(Boolean).join(' ');
+  const toneSource = [title, subtitle, url, filePath].filter(Boolean).join(' ');
 
   return {
     id,
     title,
     subtitle,
     tone: inferDeliverableTone(toneSource),
-    action: url && isHttpUrl(url) ? 'link' : undefined,
+    action: url && isHttpUrl(url) ? 'link' : filePath ? 'link' : undefined,
     url: url && isHttpUrl(url) ? url : null,
+    filePath: filePath || null,
   };
 }
 
@@ -315,16 +354,27 @@ function extractXmlTag(text: string, tag: string) {
   return match?.[1]?.replace(/<[^>]+>/g, '').trim() || '';
 }
 
-function parseTaskNotificationXml(text: string, id: string): ArtifactCandidate | null {
+function parseTaskNotificationXml(text: string, id: string, outputFiles: Map<string, string>): ArtifactCandidate | null {
   if (!/<task-notification[\s>]/i.test(text)) return null;
   const status = extractXmlTag(text, 'status');
   if (!isCompletedStatus(status)) return null;
+  const taskId = extractXmlTag(text, 'task-id');
+  const toolUseId = extractXmlTag(text, 'tool-use-id');
   const summary = extractXmlTag(text, 'summary') || extractXmlTag(text, 'title');
   const url = extractXmlTag(text, 'url');
+  const outputFile =
+    extractXmlTag(text, 'output-file') ||
+    extractXmlTag(text, 'output_file') ||
+    extractXmlTag(text, 'file-path') ||
+    extractXmlTag(text, 'file_path') ||
+    outputFiles.get(taskId) ||
+    outputFiles.get(toolUseId) ||
+    '';
   const source = {
     status,
     summary,
     url,
+    outputFile,
   };
   return createArtifactCandidate(source, id, 'Completed task output');
 }
@@ -373,8 +423,17 @@ function extractFinalReportTitle(text: string) {
   return firstLine || 'Final assistant report';
 }
 
+function extractFinalReportFilePath(text: string) {
+  const markerLine = text.split(/\r?\n/).find((line) => /REPORT DELIVERED/i.test(line)) || '';
+  const backtickPath = markerLine.match(/`([^`]+)`/)?.[1]?.trim();
+  if (backtickPath?.startsWith('/')) return backtickPath;
+  const absolutePath = markerLine.match(/(\/[^\s)]+)/)?.[1]?.trim();
+  return absolutePath || '';
+}
+
 function deriveSessionDeliverables(messages: SessionMessage[]): AlgorithmDeliverable[] {
   const candidates: ArtifactCandidate[] = [];
+  const outputFiles = collectTaskOutputFiles(messages);
 
   messages.forEach((message, index) => {
     const id = String(message.id || `${message.kind || 'message'}-${index}`);
@@ -385,7 +444,7 @@ function deriveSessionDeliverables(messages: SessionMessage[]): AlgorithmDeliver
       if (direct) candidates.push(direct);
     }
 
-    const xmlCandidate = content ? parseTaskNotificationXml(content, `${id}-xml`) : null;
+    const xmlCandidate = content ? parseTaskNotificationXml(content, `${id}-xml`, outputFiles) : null;
     if (xmlCandidate) candidates.push(xmlCandidate);
 
     const jsonCandidate = content ? tryParseJson(content) : null;
@@ -418,6 +477,7 @@ function deriveSessionDeliverables(messages: SessionMessage[]): AlgorithmDeliver
       tone: candidate.tone || 'document',
       action: candidate.action,
       url: candidate.url ?? null,
+      filePath: candidate.filePath ?? null,
     }));
 
   if (deliverables.length > 0) return deliverables;
@@ -437,6 +497,7 @@ function deriveSessionDeliverables(messages: SessionMessage[]): AlgorithmDeliver
     subtitle: 'Final assistant report',
     tone: 'document',
     url: null,
+    filePath: extractFinalReportFilePath(finalReport.content) || null,
   }];
 }
 
@@ -531,6 +592,18 @@ function applyProjectsUpdatedMessage(
     selectedProject: nextSelectedProject,
     selectedSession: nextSelectedSession,
   };
+}
+
+function buildDeliverableFileHref(projectName: string | null | undefined, filePath: string | null | undefined) {
+  if (!projectName || !filePath) return '';
+  const params = new URLSearchParams({ path: filePath });
+  try {
+    const token = localStorage.getItem('auth-token');
+    if (token) params.set('token', token);
+  } catch {
+    // Link remains usable in platform/no-storage contexts that do not require a token.
+  }
+  return `/api/projects/${encodeURIComponent(projectName)}/files/content?${params.toString()}`;
 }
 
 function titleCaseAlgorithmPhase(rawPhase: string) {
@@ -1362,7 +1435,7 @@ export default function NolmeAppRoute() {
         />
       )}
 
-      <RightPanel runState={rightPanelRunState} />
+      <RightPanel runState={rightPanelRunState} projectName={selectedProject?.name ?? null} />
 
       {showSettings && (
         <Settings
@@ -2143,7 +2216,7 @@ function Composer({
   );
 }
 
-function RightPanel({ runState }: { runState: AlgorithmRunState | null }) {
+function RightPanel({ runState, projectName }: { runState: AlgorithmRunState | null; projectName: string | null }) {
   const phases = useMemo(() => {
     if (runState?.phases && runState.phases.length > 0) return runState.phases;
     if (runState?.phase) {
@@ -2210,7 +2283,7 @@ function RightPanel({ runState }: { runState: AlgorithmRunState | null }) {
               <p>Run artifacts</p>
               <Divider />
               {deliverables.map((deliverable) => (
-                <DeliverableRow key={deliverable.id} deliverable={deliverable} />
+                <DeliverableRow key={deliverable.id} deliverable={deliverable} projectName={projectName} />
               ))}
             </>
           )}
@@ -2220,8 +2293,10 @@ function RightPanel({ runState }: { runState: AlgorithmRunState | null }) {
   );
 }
 
-function DeliverableRow({ deliverable }: { deliverable: AlgorithmDeliverable }) {
-  const Icon = deliverable.action === 'download'
+function DeliverableRow({ deliverable, projectName }: { deliverable: AlgorithmDeliverable; projectName: string | null }) {
+  const fileHref = buildDeliverableFileHref(projectName, deliverable.filePath);
+  const href = deliverable.url || fileHref;
+  const Icon = deliverable.filePath || deliverable.action === 'download'
     ? FileText
     : deliverable.tone === 'sheet'
       ? FileSpreadsheet
@@ -2239,9 +2314,9 @@ function DeliverableRow({ deliverable }: { deliverable: AlgorithmDeliverable }) 
     </>
   );
 
-  if (deliverable.url) {
+  if (href) {
     return (
-      <a className="nolme-app__deliverable-row nolme-app__deliverable-link" href={deliverable.url} target="_blank" rel="noreferrer">
+      <a className="nolme-app__deliverable-row nolme-app__deliverable-link" href={href} target="_blank" rel="noreferrer">
         {content}
       </a>
     );
