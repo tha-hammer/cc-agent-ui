@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertCircle,
   Check,
@@ -145,6 +145,10 @@ type NormalizedMessage = {
   content?: string;
 };
 
+const ALGORITHM_PHASE_TITLES = ['Observe', 'Think', 'Plan', 'Build', 'Execute', 'Verify', 'Learn'] as const;
+const ALGORITHM_PHASE_PATTERN = /\b(OBSERVE|THINK|PLAN|BUILD|EXECUTE|VERIFY|LEARN)\b/i;
+const ALGORITHM_PROGRESS_PATTERN = /\b(\d+)\s*\/\s*(\d+)\b/;
+
 const NAV_ITEMS: Array<{ id: NavPanelId | 'audience' | 'settings'; label: string; icon: LucideIcon; disabled?: boolean }> = [
   { id: 'search', label: 'Search', icon: Search },
   { id: 'chat', label: 'Chat', icon: MessageCircle },
@@ -218,6 +222,60 @@ function toTranscriptItem(message: NormalizedMessage): ChatTranscriptItem | null
   };
 }
 
+function titleCaseAlgorithmPhase(rawPhase: string) {
+  const normalized = rawPhase.toLowerCase();
+  return `${normalized[0].toUpperCase()}${normalized.slice(1)}`;
+}
+
+function getLatestTaskLine(text: string) {
+  const lines = text.split(/\r?\n/).reverse();
+  const taskLine = lines.find((line) => /^\s*(?:TASK|Task)\s*:/.test(line));
+  return taskLine?.replace(/^\s*(?:TASK|Task)\s*:\s*/, '').trim() || '';
+}
+
+function deriveAlgorithmRunStateFromText(text: string): AlgorithmRunState | null {
+  const lines = text.split(/\r?\n/).reverse();
+  const progressLine = lines.find((line) => (
+    ALGORITHM_PHASE_PATTERN.test(line) && ALGORITHM_PROGRESS_PATTERN.test(line)
+  ));
+  if (!progressLine) return null;
+
+  const phaseMatch = progressLine.match(ALGORITHM_PHASE_PATTERN);
+  const progressMatch = progressLine.match(ALGORITHM_PROGRESS_PATTERN);
+  if (!phaseMatch || !progressMatch) return null;
+
+  const currentStep = Number(progressMatch[1]);
+  const totalSteps = Number(progressMatch[2]);
+  if (!Number.isFinite(currentStep) || !Number.isFinite(totalSteps) || currentStep < 1 || totalSteps < 1) {
+    return null;
+  }
+
+  const currentPhaseIndex = Math.min(totalSteps - 1, currentStep - 1);
+  const phaseTitle = titleCaseAlgorithmPhase(phaseMatch[1]);
+  const phases = Array.from({ length: totalSteps }, (_, index) => ({
+    id: ALGORITHM_PHASE_TITLES[index]?.toLowerCase() || `phase-${index + 1}`,
+    label: `P${index + 1}`,
+    title: index === currentPhaseIndex ? phaseTitle : ALGORITHM_PHASE_TITLES[index] || `Phase ${index + 1}`,
+    status: index < currentPhaseIndex
+      ? 'complete' as const
+      : index === currentPhaseIndex
+        ? 'active' as const
+        : 'idle' as const,
+  }));
+  const taskTitle = getLatestTaskLine(text);
+
+  return {
+    runId: 'chat-algorithm-output',
+    provider: 'claude',
+    status: 'running',
+    taskTitle: taskTitle || undefined,
+    phase: phaseTitle,
+    phases,
+    currentPhaseIndex,
+    currentReviewLine: taskTitle || `${phaseTitle} ${currentStep}/${totalSteps}`,
+  };
+}
+
 function removeSessionFromProject(project: Project, session: SessionWithProvider): Project {
   const remove = (sessions?: ProjectSession[]) => sessions?.filter((item) => item.id !== session.id) ?? [];
   const nextMeta = session.__provider === 'claude'
@@ -278,6 +336,7 @@ export default function NolmeAppRoute() {
   const [loadingSessionsByProject, setLoadingSessionsByProject] = useState<LoadingSessionsByProject>({});
   const [loadingSessionId, setLoadingSessionId] = useState<string | null>(null);
   const [runState, setRunState] = useState<AlgorithmRunState | null>(null);
+  const [derivedRunState, setDerivedRunState] = useState<AlgorithmRunState | null>(null);
   const [runError, setRunError] = useState<string | null>(null);
   const [prompt, setPrompt] = useState('');
   const [isStartingRun, setIsStartingRun] = useState(false);
@@ -298,7 +357,30 @@ export default function NolmeAppRoute() {
   const eventSourceRef = useRef<EventSource | null>(null);
   const searchSourceRef = useRef<EventSource | null>(null);
   const processedRealtimeIdsRef = useRef(new Set<string>());
+  const algorithmOutputTextRef = useRef('');
   const runEventSequence = runState?.eventCursor?.sequence ?? null;
+  const rightPanelRunState = useMemo(() => {
+    if (!derivedRunState) return runState;
+    if (!runState) return derivedRunState;
+    if (runState.phases && runState.phases.length > 0) return runState;
+    return {
+      ...derivedRunState,
+      ...runState,
+      phase: runState.phase || derivedRunState.phase,
+      phases: derivedRunState.phases,
+      currentPhaseIndex: derivedRunState.currentPhaseIndex,
+      currentReviewLine: runState.currentReviewLine || derivedRunState.currentReviewLine,
+      taskTitle: runState.taskTitle || derivedRunState.taskTitle,
+    };
+  }, [derivedRunState, runState]);
+
+  const captureAlgorithmOutput = useCallback((content: string) => {
+    algorithmOutputTextRef.current = `${algorithmOutputTextRef.current}${content}`;
+    const nextRunState = deriveAlgorithmRunStateFromText(algorithmOutputTextRef.current);
+    if (nextRunState) {
+      setDerivedRunState(nextRunState);
+    }
+  }, []);
 
   const loadRunState = async (runId: string) => {
     if (!runId) return;
@@ -367,6 +449,8 @@ export default function NolmeAppRoute() {
     setSelectedSession(null);
     setChatSessionId(null);
     setChatMessages([]);
+    algorithmOutputTextRef.current = '';
+    setDerivedRunState(null);
     setRunError(null);
     setChatView('composer');
     setActivePanel('chat');
@@ -400,6 +484,12 @@ export default function NolmeAppRoute() {
         ? body.messages.map(toTranscriptItem).filter(Boolean) as ChatTranscriptItem[]
         : [];
       setChatMessages(messages);
+      const algorithmOutput = messages
+        .filter((message) => message.role === 'assistant')
+        .map((message) => message.body)
+        .join('\n');
+      algorithmOutputTextRef.current = algorithmOutput;
+      setDerivedRunState(deriveAlgorithmRunStateFromText(algorithmOutput));
     } catch (error) {
       setRunError(error instanceof Error ? error.message : 'Failed to load session');
     } finally {
@@ -564,6 +654,7 @@ export default function NolmeAppRoute() {
     }
 
     if (message.kind === 'text' && message.role === 'assistant' && message.content) {
+      captureAlgorithmOutput(`\n${String(message.content)}`);
       setChatMessages((items) => [
         ...items,
         {
@@ -577,6 +668,7 @@ export default function NolmeAppRoute() {
     }
 
     if (message.kind === 'stream_delta' && message.content) {
+      captureAlgorithmOutput(String(message.content));
       setChatMessages((items) => {
         const last = items.at(-1);
         if (last?.role === 'assistant' && last.streaming) {
@@ -617,7 +709,7 @@ export default function NolmeAppRoute() {
     if (message.kind === 'complete') {
       setIsStartingRun(false);
     }
-  }, [chatSessionId, latestMessage]);
+  }, [captureAlgorithmOutput, chatSessionId, latestMessage]);
 
   useEffect(() => {
     if (searchSourceRef.current) {
@@ -852,7 +944,7 @@ export default function NolmeAppRoute() {
         />
       )}
 
-      <RightPanel runState={runState} />
+      <RightPanel runState={rightPanelRunState} />
 
       {showSettings && (
         <Settings

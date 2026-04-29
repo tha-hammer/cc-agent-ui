@@ -16,6 +16,7 @@ const {
   deleteGeminiSessionSpy,
   authenticatedFetchSpy,
   sendWsMessageSpy,
+  webSocketState,
 } = vi.hoisted(() => ({
   projectsSpy: vi.fn(),
   skillsSpy: vi.fn(),
@@ -30,6 +31,7 @@ const {
   deleteGeminiSessionSpy: vi.fn(),
   authenticatedFetchSpy: vi.fn(),
   sendWsMessageSpy: vi.fn(),
+  webSocketState: { latestMessage: null as unknown },
 }));
 
 function jsonResponse(body: unknown, ok = true) {
@@ -87,7 +89,7 @@ vi.mock('../../src/utils/api', () => ({
 vi.mock('../../src/contexts/WebSocketContext', () => ({
   useWebSocket: () => ({
     sendMessage: sendWsMessageSpy,
-    latestMessage: null,
+    latestMessage: webSocketState.latestMessage,
     isConnected: true,
     ws: null,
   }),
@@ -109,6 +111,7 @@ describe('NolmeAppRoute', () => {
     FakeEventSource.instances = [];
     (globalThis as any).EventSource = FakeEventSource;
     (window as any).EventSource = FakeEventSource;
+    webSocketState.latestMessage = null;
 
     projectsSpy.mockReset().mockReturnValue(jsonResponse([
       {
@@ -402,6 +405,30 @@ describe('NolmeAppRoute', () => {
     expect(await screen.findAllByText(/Implement/)).toHaveLength(2);
     expect(screen.getByText('Run summary')).toBeInTheDocument();
     expect(screen.getByText('Wiring live data into /app.')).toBeInTheDocument();
+  });
+
+  it('derives Algorithm phase progress from live chat output', async () => {
+    const { rerender } = render(<NolmeAppRoute />);
+
+    webSocketState.latestMessage = {
+      id: 'algorithm-progress-1',
+      provider: 'claude',
+      kind: 'text',
+      role: 'assistant',
+      content: [
+        'Entering the SAL ALGORITHM... (v3.8.1)',
+        'TASK: Research recruiting agency market for AI app ICP',
+        'OBSERVE 1/7',
+      ].join('\n'),
+      timestamp: '2026-04-29T12:36:00.000Z',
+    };
+    rerender(<NolmeAppRoute />);
+
+    expect(await screen.findByText('P1: Observe')).toBeInTheDocument();
+    expect(screen.getByText('P7: Learn')).toBeInTheDocument();
+    expect(screen.getByText('Task 1 of 7')).toBeInTheDocument();
+    expect(screen.getByText('Research recruiting agency market for AI app ICP')).toBeInTheDocument();
+    expect(screen.queryByText('No phases yet')).not.toBeInTheDocument();
   });
 
   it('streams project/session search results from the search API', async () => {
