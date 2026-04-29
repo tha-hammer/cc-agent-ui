@@ -1,0 +1,987 @@
+@import url("https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap");
+
+.nolme-app {
+  --nolme-background-muted: #f0f0f5;
+  --nolme-background-subtle: #f8f8fa;
+  --nolme-surface: #ffffff;
+  --nolme-text-primary: #13131a;
+  --nolme-text-secondary: #54546a;
+  --nolme-text-tertiary: #767690;
+  --nolme-border-default: #e2e2ea;
+  --nolme-border-strong: #c8c8d6;
+  --nolme-primary: #4f3ed6;
+  --nolme-primary-soft: #ddd8ff;
+  --nolme-primary-subtle: #f0eeff;
+  --nolme-primary-ring: #8470ff;
+  --nolme-primary-strong: #1e1663;
+  --nolme-link: #4f3ed6;
+  --nolme-warning-bg: #fffbeb;
+  --nolme-warning-text: #d97706;
+  --nolme-new-bg: #047857;
+  --nolme-new-text: #ecfdf5;
+  display: flex;
+  height: 100vh;
+  min-height: 640px;
+  overflow: hidden;
+  background: var(--nolme-background-muted);
+  color: var(--nolme-text-primary);
+  font-family: "Satoshi", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.nolme-app button,
+.nolme-app textarea,
+.nolme-app input {
+  font: inherit;
+}
+
+.nolme-app button {
+  cursor: pointer;
+}
+
+.nolme-app__nav-panel {
+  display: flex;
+  flex: 0 0 72px;
+  width: 72px;
+  height: 100%;
+  flex-direction: column;
+  align-items: stretch;
+  overflow: hidden;
+  border: 1px solid var(--nolme-border-default);
+  border-left: 0;
+  border-radius: 0 16px 16px 0;
+  background: var(--nolme-surface);
+}
+
+.nolme-app__logo-wrap {
+  display: flex;
+  width: 72px;
+  height: 64px;
+  flex: 0 0 64px;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid var(--nolme-border-strong);
+}
+
+.nolme-app__logo-mark {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--nolme-primary);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 18px;
+  letter-spacing: 0.14px;
+}
+
+.nolme-app__nav-content {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.nolme-app__nav-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  padding: 8px;
+}
+
+.nolme-app__nav-button {
+  display: grid;
+  width: 56px;
+  height: 44px;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--nolme-text-primary);
+}
+
+.nolme-app__nav-button:hover,
+.nolme-app__nav-button:focus-visible,
+.nolme-app__nav-button--active {
+  background: var(--nolme-primary-soft);
+  color: var(--nolme-primary-strong);
+}
+
+.nolme-app__nav-footer {
+  display: flex;
+  width: 72px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  border-top: 1px solid var(--nolme-border-strong);
+}
+
+.nolme-app__avatar,
+.nolme-app__agent-avatar {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 999px;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.nolme-app__avatar {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(145deg, #312a40, #d08a6e);
+  font-size: 11px;
+}
+
+.nolme-app__agent-avatar {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  border: 1px solid var(--nolme-primary-ring);
+  background: linear-gradient(145deg, #2b74cf, #f4b14d);
+  font-size: 10px;
+}
+
+.nolme-app__chat-stream {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+  background: var(--nolme-background-muted);
+}
+
+.nolme-app__messages {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 40px;
+  justify-content: flex-end;
+  overflow-y: auto;
+  padding: 40px clamp(24px, 7vw, 96px);
+}
+
+.nolme-app__bubble-row {
+  display: flex;
+  width: 100%;
+  justify-content: flex-end;
+}
+
+.nolme-app__chat-bubble {
+  display: flex;
+  width: min(100%, 530px);
+  min-width: 160px;
+  flex-direction: column;
+  gap: 4px;
+  align-items: stretch;
+}
+
+.nolme-app__chat-bubble > p {
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: 12px 4px 12px 12px;
+  background: var(--nolme-border-default);
+  color: var(--nolme-text-primary);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 26px;
+}
+
+.nolme-app__chat-bubble--compact > p {
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.nolme-app__chat-bubble footer {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 8px;
+  color: var(--nolme-text-tertiary);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+.nolme-app__thinking-row {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+  color: var(--nolme-text-secondary);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.nolme-app__input-zone {
+  display: flex;
+  width: 100%;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  padding: 0 clamp(20px, 6vw, 96px) 40px;
+}
+
+.nolme-app__composer {
+  display: flex;
+  width: min(100%, 816px);
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--nolme-surface);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.nolme-app__composer-toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.nolme-app__agent-details {
+  display: flex;
+  width: 198px;
+  flex: 0 0 198px;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nolme-app__agent-profile {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--nolme-text-tertiary);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.nolme-app__progress-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nolme-app__progress-track {
+  height: 8px;
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--nolme-background-muted);
+}
+
+.nolme-app__progress-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--nolme-primary);
+}
+
+.nolme-app__progress-row strong {
+  color: var(--nolme-text-tertiary);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 14px;
+  letter-spacing: 0.25px;
+  white-space: nowrap;
+}
+
+.nolme-app__quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.nolme-app__quick-actions button,
+.nolme-app__pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  background: var(--nolme-primary-soft);
+  color: var(--nolme-primary-strong);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.nolme-app__quick-actions button {
+  padding: 4px 10px;
+}
+
+.nolme-app__quick-actions button:hover,
+.nolme-app__quick-actions button:focus-visible {
+  background: #cfc6ff;
+}
+
+.nolme-app__input-field {
+  display: flex;
+  min-height: 100px;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 12px 16px 10px;
+  border: 1px solid var(--nolme-border-strong);
+  border-radius: 8px;
+  background: var(--nolme-background-subtle);
+}
+
+.nolme-app__input-field textarea {
+  width: 100%;
+  min-height: 44px;
+  resize: none;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--nolme-text-primary);
+  font-size: 16px;
+  line-height: 26px;
+}
+
+.nolme-app__input-field textarea::placeholder {
+  color: var(--nolme-text-tertiary);
+}
+
+.nolme-app__input-status,
+.nolme-app__input-left,
+.nolme-app__input-right {
+  display: flex;
+  align-items: center;
+}
+
+.nolme-app__input-status {
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.nolme-app__input-left,
+.nolme-app__input-right {
+  gap: 12px;
+}
+
+.nolme-app__icon-button,
+.nolme-app__stop-button {
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--nolme-text-primary);
+}
+
+.nolme-app__model-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--nolme-primary);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+.nolme-app__input-right > span {
+  color: var(--nolme-text-tertiary);
+  font-size: 12px;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.nolme-app__stop-button {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--nolme-primary-soft);
+  color: var(--nolme-primary);
+}
+
+.nolme-app__send-button {
+  padding: 5px 10px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--nolme-background-muted);
+  color: var(--nolme-text-tertiary);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.5px;
+}
+
+.nolme-app__question-card {
+  display: flex;
+  width: min(100%, 816px);
+  min-width: min(320px, 100%);
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  border: 1px solid var(--nolme-border-default);
+  border-radius: 12px;
+  background: var(--nolme-surface);
+}
+
+.nolme-app__question-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nolme-app__question-copy p,
+.nolme-app__question-copy h2 {
+  margin: 0;
+}
+
+.nolme-app__question-copy p {
+  color: var(--nolme-text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 22px;
+}
+
+.nolme-app__question-copy h2 {
+  color: var(--nolme-text-primary);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 26px;
+}
+
+.nolme-app__question-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nolme-app__option-row {
+  display: flex;
+  width: 100%;
+  height: 32px;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--nolme-text-primary);
+  text-align: left;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.nolme-app__checkbox {
+  display: grid;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  place-items: center;
+  border: 1.5px solid var(--nolme-border-default);
+  border-radius: 4px;
+  background: var(--nolme-surface);
+  color: #ffffff;
+}
+
+.nolme-app__checkbox--selected {
+  border-color: var(--nolme-primary);
+  background: var(--nolme-primary);
+}
+
+.nolme-app__field-label input {
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+  border: 1.5px solid #6550f0;
+  border-radius: 8px;
+  outline: 0;
+  background: var(--nolme-surface);
+  color: var(--nolme-text-primary);
+  font-size: 16px;
+  line-height: 26px;
+}
+
+.nolme-app__question-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.nolme-app__text-action {
+  border: 0;
+  background: transparent;
+  color: var(--nolme-text-secondary);
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.nolme-app__primary-button {
+  padding: 8px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--nolme-primary);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 18px;
+  letter-spacing: 1px;
+}
+
+.nolme-app__artifact-card {
+  display: flex;
+  width: min(100%, 816px);
+  align-self: center;
+  flex-direction: column;
+  gap: 8px;
+  padding: 24px;
+  border-radius: 16px;
+  background: var(--nolme-surface);
+}
+
+.nolme-app__artifact-card header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.nolme-app__artifact-card header > div {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+}
+
+.nolme-app__artifact-card svg {
+  color: #f59e0b;
+  flex: 0 0 auto;
+}
+
+.nolme-app__artifact-card h2 {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--nolme-text-primary);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 30px;
+  letter-spacing: -0.5px;
+}
+
+.nolme-app__artifact-card header button {
+  border: 0;
+  background: transparent;
+  color: var(--nolme-text-secondary);
+}
+
+.nolme-app__artifact-card p {
+  margin: 0;
+  color: var(--nolme-text-primary);
+  font-size: 16px;
+  line-height: 26px;
+}
+
+.nolme-app__preview-card {
+  display: flex;
+  width: min(100%, 440px);
+  gap: 16px;
+  align-items: flex-start;
+  overflow: hidden;
+  padding: 16px;
+  border-radius: 8px;
+  background: var(--nolme-primary-subtle);
+  color: inherit;
+  text-decoration: none;
+}
+
+.nolme-app__preview-card > span:first-child {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nolme-app__preview-card strong {
+  color: var(--nolme-text-primary);
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 26px;
+  letter-spacing: -0.5px;
+}
+
+.nolme-app__preview-card small {
+  color: var(--nolme-text-tertiary);
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.nolme-app__venue-thumb {
+  position: relative;
+  width: 107px;
+  height: 75px;
+  flex: 0 0 107px;
+  overflow: hidden;
+  border-radius: 8px;
+  background:
+    linear-gradient(140deg, rgba(19, 19, 26, 0.16), rgba(19, 19, 26, 0.55)),
+    linear-gradient(90deg, #d7b78f 0 20%, #482f25 20% 30%, #d7b78f 30% 50%, #27403a 50% 70%, #d7b78f 70% 100%);
+}
+
+.nolme-app__venue-thumb i,
+.nolme-app__venue-thumb b {
+  position: absolute;
+  display: block;
+  border-radius: 999px 999px 0 0;
+  background: rgba(255, 255, 255, 0.32);
+}
+
+.nolme-app__venue-thumb i {
+  right: 14px;
+  bottom: 0;
+  width: 30px;
+  height: 54px;
+}
+
+.nolme-app__venue-thumb b {
+  left: 12px;
+  bottom: 0;
+  width: 42px;
+  height: 48px;
+}
+
+.nolme-app__right-panel {
+  display: flex;
+  width: 360px;
+  flex: 0 0 360px;
+  flex-direction: column;
+  overflow-y: auto;
+  border: 1px solid var(--nolme-border-default);
+  border-right: 0;
+  border-radius: 16px 0 0 16px;
+  background: var(--nolme-surface);
+}
+
+.nolme-app__phase-section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px 24px 40px;
+  border-bottom: 1px solid var(--nolme-border-strong);
+}
+
+.nolme-app__deliverables-section {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+}
+
+.nolme-app__section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nolme-app__section-header h2 {
+  min-width: 0;
+  flex: 1;
+  margin: 0;
+  color: var(--nolme-text-secondary);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 30px;
+  letter-spacing: -0.5px;
+}
+
+.nolme-app__section-header svg {
+  color: var(--nolme-text-secondary);
+}
+
+.nolme-app__section-header button {
+  border: 0;
+  background: transparent;
+  color: var(--nolme-link);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.5px;
+}
+
+.nolme-app__phase-pills {
+  display: flex;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.nolme-app__pill {
+  padding: 4px 10px;
+  background: var(--nolme-background-muted);
+  color: var(--nolme-text-secondary);
+}
+
+.nolme-app__pill--active {
+  background: var(--nolme-primary-soft);
+  color: var(--nolme-primary-strong);
+}
+
+.nolme-app__phase-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border: 1.5px solid var(--nolme-primary-ring);
+  border-radius: 8px;
+  background: var(--nolme-primary-subtle);
+}
+
+.nolme-app__phase-card header,
+.nolme-app__phase-task {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.nolme-app__phase-card h3,
+.nolme-app__deliverable-row h3 {
+  margin: 0;
+  color: var(--nolme-text-primary);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+}
+
+.nolme-app__status-badge {
+  display: inline-flex;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--nolme-warning-bg);
+  color: var(--nolme-warning-text);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.5px;
+}
+
+.nolme-app__phase-task strong {
+  color: var(--nolme-text-primary);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.24px;
+}
+
+.nolme-app__phase-task p {
+  margin: 0;
+  overflow: hidden;
+  color: var(--nolme-text-secondary);
+  display: -webkit-box;
+  font-size: 12px;
+  line-height: 18px;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.nolme-app__phase-task button {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  background: transparent;
+  color: var(--nolme-link);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.5px;
+}
+
+.nolme-app__deliverables-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.nolme-app__deliverables-list > p {
+  margin: 0;
+  color: var(--nolme-text-primary);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.5px;
+}
+
+.nolme-app__divider {
+  display: block;
+  width: 100%;
+  height: 1px;
+  border-radius: 999px;
+  background: var(--nolme-border-default);
+}
+
+.nolme-app__deliverable-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nolme-app__deliverable-icon {
+  display: grid;
+  flex: 0 0 32px;
+  place-items: center;
+  color: #f59e0b;
+}
+
+.nolme-app__deliverable-icon--link {
+  color: #f59e0b;
+}
+
+.nolme-app__deliverable-row > div:nth-child(2) {
+  min-width: 0;
+  flex: 1;
+}
+
+.nolme-app__deliverable-row h3 {
+  overflow: hidden;
+  line-height: 20px;
+  letter-spacing: 1px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nolme-app__deliverable-row p {
+  margin: 0;
+  color: var(--nolme-text-tertiary);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 14px;
+  letter-spacing: 0.25px;
+}
+
+.nolme-app__new-badge {
+  flex: 0 0 auto;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: var(--nolme-new-bg);
+  color: var(--nolme-new-text);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+@media (max-width: 1120px) {
+  .nolme-app__messages {
+    padding-inline: 40px;
+  }
+
+  .nolme-app__input-zone {
+    padding-inline: 40px;
+  }
+
+  .nolme-app__right-panel {
+    width: 320px;
+    flex-basis: 320px;
+  }
+}
+
+@media (max-width: 900px) {
+  .nolme-app {
+    height: auto;
+    min-height: 100vh;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .nolme-app__nav-panel {
+    width: 100%;
+    height: 64px;
+    flex: 0 0 64px;
+    flex-direction: row;
+    border-right: 0;
+    border-bottom: 1px solid var(--nolme-border-default);
+    border-radius: 0;
+  }
+
+  .nolme-app__logo-wrap {
+    border-right: 1px solid var(--nolme-border-strong);
+    border-bottom: 0;
+  }
+
+  .nolme-app__nav-content {
+    min-width: 0;
+    flex-direction: row;
+  }
+
+  .nolme-app__nav-menu {
+    min-width: 0;
+    flex: 1;
+    flex-direction: row;
+    overflow-x: auto;
+  }
+
+  .nolme-app__nav-footer {
+    width: 64px;
+    border-top: 0;
+    border-left: 1px solid var(--nolme-border-strong);
+  }
+
+  .nolme-app__chat-stream {
+    min-height: 680px;
+    overflow: visible;
+  }
+
+  .nolme-app__messages {
+    padding: 32px 20px;
+  }
+
+  .nolme-app__input-zone {
+    padding: 0 20px 32px;
+  }
+
+  .nolme-app__composer-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .nolme-app__agent-details {
+    width: 100%;
+    flex-basis: auto;
+  }
+
+  .nolme-app__quick-actions {
+    justify-content: flex-start;
+  }
+
+  .nolme-app__input-status {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .nolme-app__input-right {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .nolme-app__right-panel {
+    width: 100%;
+    min-height: 520px;
+    flex: 0 0 auto;
+    border-right: 0;
+    border-left: 0;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .nolme-app__phase-pills {
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+}

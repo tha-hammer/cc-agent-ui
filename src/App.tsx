@@ -8,6 +8,7 @@ import { WebSocketProvider } from './contexts/WebSocketContext';
 import { PluginsProvider } from './contexts/PluginsContext';
 import AppContent from './components/app/AppContent';
 import NolmeDemo from './components/demo/view/NolmeDemo';
+import { NolmeAppRoute } from './components/nolme-app';
 import ErrorBoundary from './components/main-content/view/ErrorBoundary';
 import i18n from './i18n/config.js';
 
@@ -24,6 +25,14 @@ export default function App() {
                     <Router basename={window.__ROUTER_BASENAME__ || ''}>
                       <Routes>
                         <Route path="/demo/nolme" element={<NolmeDemo />} />
+                        <Route
+                          path="/app"
+                          element={
+                            <ProtectedRoute>
+                              <NolmeAppRoute />
+                            </ProtectedRoute>
+                          }
+                        />
                         <Route
                           path="/"
                           element={
