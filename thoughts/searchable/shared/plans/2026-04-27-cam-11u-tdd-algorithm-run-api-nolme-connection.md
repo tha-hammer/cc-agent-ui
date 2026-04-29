@@ -94,6 +94,189 @@ Given an Algorithm run id, `/nolme` can resolve a normal `NolmeSessionBinding` o
 - Not changing `/api/nolme/state/:sessionId` to the Algorithm `{ ok, schemaVersion }` envelope; that endpoint must keep returning raw Nolme state because `useHydratedState()` expects raw state.
 - Not allowing Algorithm sync to overwrite Nolme-owned sidecar fields such as `profile`, `quickActions`, `taskNotifications`, `tokenBudget`, or `activeSkill`.
 
+## System Diagrams
+
+These diagrams make the output boundary explicit. `cc-agent-ui` and provider histories can be verbose; Nolme UI should receive only normalized chat messages plus the allow-listed `NolmeAgentState` slices needed by its components.
+
+### Run API To Nolme State System
+
+```mermaid
+flowchart LR
+  subgraph AlgorithmApi["Algorithm Run API"]
+    Start["POST /api/algorithm-runs"]
+    State["GET /api/algorithm-runs/:runId/state"]
+    Events["GET /api/algorithm-runs/:runId/events"]
+    Launch["GET /api/algorithm-runs/:runId/nolme"]
+    RunStore["run-store durable metadata/state/events"]
+  end
+
+  subgraph Projection["Projection and sync boundary"]
+    Snapshot["readAlgorithmRunSnapshot<br/>metadata + state + events"]
+    AllowList["allow-list projector<br/>phases<br/>currentPhaseIndex<br/>currentReviewLine<br/>resources"]
+    Exclude["excluded output<br/>raw stderr<br/>debug logs<br/>full verbose runner frames<br/>unvalidated tool payloads"]
+    Patch["sidecar patch<br/>preserve Nolme-owned fields"]
+  end
+
+  subgraph NolmeServer["Nolme server surfaces"]
+    Sidecar["/api/nolme/state/:sessionId<br/>raw NolmeAgentState"]
+    Messages["/api/sessions/:sessionId/messages<br/>normalized provider history"]
+    CopilotConnect["/api/copilotkit connect<br/>x-ccu-* binding headers"]
+    HydrateConnect["hydrateNolmeConnect<br/>provider history + STATE_SNAPSHOT"]
+  end
+
+  subgraph NolmeUi["Nolme UI"]
+    LaunchHook["useAlgorithmRunLaunch<br/>status-bearing runId resolver"]
+    Hydration["useHydratedState<br/>messages + sidecar"]
+    ProjectionUi["projectAiWorkingProjection<br/>explicit state first, message fallback second"]
+    Chat["NolmeChat<br/>CopilotKit message view"]
+    PhaseBar["WorkflowPhaseBarBound.v2"]
+    TaskCard["selected task card"]
+    Deliverables["DeliverablesRailBound.v2"]
+  end
+
+  Start --> RunStore
+  State --> RunStore
+  Events --> RunStore
+  RunStore --> Snapshot
+  Snapshot --> AllowList
+  Snapshot -. "never pass through" .-> Exclude
+  AllowList --> Patch
+  Patch --> Sidecar
+  Launch --> RunStore
+  Launch --> LaunchHook
+  LaunchHook --> Hydration
+  Sidecar --> Hydration
+  Messages --> Hydration
+  LaunchHook --> CopilotConnect
+  CopilotConnect --> HydrateConnect
+  HydrateConnect --> Chat
+  Hydration --> ProjectionUi
+  ProjectionUi --> PhaseBar
+  ProjectionUi --> TaskCard
+  ProjectionUi --> Deliverables
+```
+
+### Server Sync Sequence
+
+```mermaid
+sequenceDiagram
+  participant Runner as Runner frame or route append
+  participant Store as run-store
+  participant Observer as append observer
+  participant Projector as Algorithm-to-Nolme projector
+  participant Sidecar as Nolme sidecar store
+  participant Launch as launch route
+  participant UI as /nolme UI
+
+  Runner->>Store: appendAlgorithmEvent(runId, event)
+  Store->>Store: persist event and rebuild public state
+  Store-->>Observer: notify after durable append
+  Observer->>Store: read metadata, public state, ordered events
+  Observer->>Projector: project allow-listed UI slices
+  Projector-->>Observer: phases, currentPhaseIndex, currentReviewLine, resources
+  Observer->>Sidecar: read existing provider session state
+  Sidecar-->>Observer: current NolmeAgentState plus extension fields
+  Observer->>Sidecar: write patched state, preserving non-Algorithm fields
+  UI->>Launch: GET /api/algorithm-runs/:runId/nolme
+  Launch->>Store: authorize and read run state
+  Launch->>Sidecar: read merged provider session state when bound
+  Launch-->>UI: ready status, binding, state, nolmeUrl
+```
+
+### Output Filtering Contract
+
+```mermaid
+flowchart TB
+  Raw["Verbose cc-agent-ui/provider output<br/>assistant text, tool events, logs, frames, state deltas"]
+  NormalizeMessages["normalize provider messages<br/>conversation-safe user/assistant/tool_result records"]
+  ProjectState["project Algorithm state/events<br/>validated NolmeAgentState slices"]
+  Reject["reject from Nolme UI state<br/>raw logs<br/>stderr<br/>stack traces<br/>large tool stdout<br/>unrecognized artifact payloads<br/>private owner-only metadata"]
+  ChatLane["chat lane<br/>CopilotKit/NolmeChat"]
+  StateLane["state lane<br/>phases/currentPhaseIndex/currentReviewLine/resources"]
+  FallbackLane["fallback lane<br/>derive phases/resources from normalized messages only when explicit state is empty"]
+
+  Raw --> NormalizeMessages
+  Raw --> ProjectState
+  Raw -. "deny by default" .-> Reject
+  NormalizeMessages --> ChatLane
+  NormalizeMessages --> FallbackLane
+  ProjectState --> StateLane
+  StateLane -- "explicit wins; fallback fills only empty slices" --> FallbackLane
+```
+
+## UI Flow Diagrams
+
+### `runId` Launch Resolution
+
+```mermaid
+flowchart TD
+  Url["/nolme URL params"]
+  Explicit["explicit provider/sessionId/projectName/projectPath present?"]
+  DirectReady["ready binding from URL"]
+  RunId["runId present?"]
+  Idle["idle: no selected session"]
+  FetchLaunch["fetch /api/algorithm-runs/:runId/nolme"]
+  Waiting["waiting-run<br/>show loading/waiting state<br/>poll without using stale storage"]
+  Ready["ready run binding<br/>write localStorage cache"]
+  Error["error<br/>show launch/hydration error"]
+  Hydrate["hydrate provider session"]
+
+  Url --> Explicit
+  Explicit -- "yes" --> DirectReady
+  Explicit -- "no" --> RunId
+  RunId -- "no" --> Idle
+  RunId -- "yes" --> FetchLaunch
+  FetchLaunch -- "ready:false" --> Waiting
+  Waiting --> FetchLaunch
+  FetchLaunch -- "ready:true" --> Ready
+  FetchLaunch -- "403/404/500" --> Error
+  DirectReady --> Hydrate
+  Ready --> Hydrate
+```
+
+### Hydration And Component Wiring
+
+```mermaid
+flowchart LR
+  Binding["NolmeSessionBinding<br/>provider + sessionId + projectName + projectPath"]
+  Messages["messages fetch<br/>/api/sessions/:sessionId/messages"]
+  State["state fetch<br/>/api/nolme/state/:sessionId"]
+  DefaultState["default Nolme state<br/>when sidecar missing or invalid"]
+  Projection["AiWorking projection<br/>explicit sidecar/live state wins<br/>message fallback fills empty slices"]
+  CopilotHeaders["CopilotKit headers<br/>authorization + x-ccu-* binding"]
+  ServerConnect["SafeInMemoryAgentRunner.connect"]
+  ProviderReplay["provider history replay<br/>AG-UI text events + STATE_SNAPSHOT"]
+  Chat["NolmeChat<br/>conversation messages"]
+  PhaseBar["WorkflowPhaseBarBound.v2<br/>phases + currentPhaseIndex"]
+  TaskCard["selected task card<br/>active phase title + currentReviewLine"]
+  Deliverables["DeliverablesRailBound.v2<br/>resources or message-derived deliverables"]
+
+  Binding --> Messages
+  Binding --> State
+  State -- "ok + valid JSON" --> Projection
+  State -- "missing/fails/invalid" --> DefaultState
+  DefaultState --> Projection
+  Messages --> Projection
+  Binding --> CopilotHeaders
+  CopilotHeaders --> ServerConnect
+  ServerConnect --> ProviderReplay
+  ProviderReplay --> Chat
+  Projection --> PhaseBar
+  Projection --> TaskCard
+  Projection --> Deliverables
+```
+
+### Component Source Map
+
+| UI surface | Primary source | Fields consumed | Allowed LLM/provider output | Must not display |
+| --- | --- | --- | --- | --- |
+| `NolmeChat` | CopilotKit connect replay and normalized `/api/sessions/:sessionId/messages` history | conversation messages for the provider `sessionId` | normalized user/assistant text and safe tool-result summaries already accepted by provider-history normalization | Algorithm raw logs, stderr, private run metadata, full runner frames, unbounded tool stdout |
+| `WorkflowPhaseBarBound.v2` | `projectAiWorkingProjection()` over sidecar/live `NolmeAgentState` with message fallback | `phases[*].id`, `label`, `title`, `status`, `currentPhaseIndex` | validated phase labels/statuses from Algorithm phase events or workflow message fallback | arbitrary assistant prose, malformed phase arrays, unknown verbose phase diagnostics |
+| Selected task card in `NolmeDashboard.v2` | same projected `NolmeAgentState` | `phases[currentPhaseIndex].title`, `currentReviewLine` | concise current task/review line from phase payloads or workflow projection fallback | full transcript excerpts, raw planning logs, stack traces, internal tool arguments |
+| `DeliverablesRailBound.v2` | projected `resources`; fallback from `projectDeliverables(messages)` only when explicit resources are empty | `resources[*].id`, `badge`, `title`, `subtitle`, `tone`, `action`, `url` | explicit validated artifacts, `addResource`, safe `tool_result.toolUseResult.filePath`, or latest `COMPLETED:` summary | every file path seen in logs, raw tool outputs, unvalidated URLs, private local paths unrelated to deliverables |
+| Launch/loading/no-session state | `CcuSessionResolution` from URL, launch route, storage, and broadcast precedence | `status`, `source`, `binding`, `runStatus`, `error` | ready/waiting/error status and owner-authorized binding from launch route | stale localStorage or BroadcastChannel binding while URL `runId` mode is active |
+| CopilotKit provider props | resolved `NolmeSessionBinding` plus auth context | `Authorization`, `x-ccu-provider`, `x-ccu-session-id`, `x-ccu-project-name`, `x-ccu-project-path`, optional model/permission/run id | encoded binding headers needed for server replay | binding values from arbitrary client paths or non-owner Algorithm runs |
+
 ## Resource Registry And Schema Binding
 
 `specs/schemas/resource_registry.json` is absent in this checkout, and no `schema/`, `schemas/`, or `specs/schemas/` directories are present. All UUIDs below are proposed placeholders that must be replaced if a canonical registry appears.
@@ -114,6 +297,8 @@ No verified TLA+ model exists for this connection path in the checkout. Schema r
 - Server integration tests: algorithm run route, run-store append observer sync, real Nolme sidecar write/read path, CopilotKit runner connect fallback.
 - UI hook tests: status-bearing `runId` launch resolution in `useCcuSession` or a new hook it composes.
 - UI component tests: existing hydration/projection dashboard tests extended with run-launch inputs.
+- UI source-map tests: for each surface in the Component Source Map, include one allowed value and at least one denied verbose-output sentinel, then assert the allowed value renders and the denied sentinel does not render.
+- Output-filtering tests: projector tests must prove malformed or unknown Algorithm payloads become empty validated slices, while UI fallback tests must prove only normalized provider messages can produce fallback phases/resources.
 - Regression tests: existing Algorithm API tests, Nolme hydration/projection tests, malformed sidecar fallback tests, and CopilotKit route auth tests.
 
 Run focused tests after each behavior, then:
