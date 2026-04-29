@@ -177,6 +177,7 @@
 .nolme-app__chat-stream {
   display: flex;
   min-width: 0;
+  min-height: 0;
   flex: 1 1 auto;
   flex-direction: column;
   justify-content: flex-end;
@@ -639,9 +640,15 @@
   flex: 1 1 auto;
   flex-direction: column;
   gap: 40px;
-  justify-content: flex-end;
+  justify-content: flex-start;
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 40px clamp(24px, 7vw, 96px);
+  scrollbar-gutter: stable;
+}
+
+.nolme-app__messages > :first-child {
+  margin-top: auto;
 }
 
 .nolme-app__bubble-row {

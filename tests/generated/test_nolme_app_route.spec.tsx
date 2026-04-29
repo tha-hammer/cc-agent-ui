@@ -339,6 +339,7 @@ describe('NolmeAppRoute', () => {
         projectPath: '/workspace/demo-project',
       }),
     ));
+    expect(screen.getByRole('log', { name: /Conversation history/i })).toHaveClass('nolme-app__messages');
     expect(await screen.findByText('Existing question')).toBeInTheDocument();
     expect(screen.getByText('Existing answer')).toBeInTheDocument();
 

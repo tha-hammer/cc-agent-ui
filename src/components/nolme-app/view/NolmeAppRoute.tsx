@@ -1332,7 +1332,7 @@ function ChatPanel({
 
   return (
     <main className="nolme-app__chat-stream" aria-label="Nolme chat stream">
-      <div className="nolme-app__messages">
+      <div className="nolme-app__messages" role="log" aria-label="Conversation history" aria-live="polite">
         {chatMessages.map((message) => (
           message.role === 'user'
             ? <ChatBubble key={message.id} body={message.body} timestamp={message.timestamp} />
