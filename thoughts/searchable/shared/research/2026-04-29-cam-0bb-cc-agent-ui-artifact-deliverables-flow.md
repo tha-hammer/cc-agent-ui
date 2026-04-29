@@ -9,7 +9,8 @@ tags: [research, codebase, cc-agent-ui, algorithm-runs, deliverables, nolme, ses
 status: complete
 last_updated: 2026-04-29
 last_updated_by: Codex
-related_beads: [cam-0bb]
+last_updated_note: "Added follow-up research for /app session update state after completed test session"
+related_beads: [cam-0bb, cam-cio]
 session_url: "http://localhost:3001/session/d75f31dc-0e96-4267-aa35-ff7c68f86cdd"
 ---
 
@@ -169,6 +170,89 @@ The `/app` route is currently Algorithm Run state-first. Its Deliverables pane u
 The normal `/session/:id` route is transcript-first. It renders normalized provider history and tool calls. In the inspected session, task output is present in this transcript layer as a queued task-notification string and assistant text report.
 
 The Nolme sidecar layer stores `resources`, which are artifact-like cards in the older Nolme/CopilotKit state model. The `/app` route in this checkout does not read that sidecar `resources` field for its Deliverables pane.
+
+## Follow-up Research 2026-04-29T13:39:53-04:00
+
+### Research Question
+
+The test session completed, but the loaded `/app` UI did not update with the final text or Deliverables. The screenshot showed `/app` at `http://localhost:5173/app` with phase progress derived through Build 4/7, an empty Deliverables pane, and the chat footer text `Send a message to the LLM. Algorithm phase events will appear when a run is active.`
+
+### Follow-up Summary
+
+The current `/app` route has two different update modes:
+
+1. **Selected provider session mode**: clicking a project/session row calls `openSession()`, which fetches `/api/sessions/:sessionId/messages` once and maps only normalized `text` messages into `chatMessages`.
+2. **Algorithm run mode**: when `activeRunId` exists from `?runId=` or `localStorage["nolme-active-algorithm-run-id"]`, `/app` fetches `/api/algorithm-runs/:runId/state` and opens an EventSource for `/api/algorithm-runs/:runId/events`.
+
+The screenshot state matches selected provider session mode without an active Algorithm run. In this mode, the right-panel phases can be derived from assistant text already fetched into the page, but the Deliverables pane still reads only `runState.deliverables`. No code path in `NolmeAppRoute.tsx` re-fetches the selected session after the initial `openSession()` call when the session JSONL changes on disk.
+
+### Live Test Session State
+
+The test session history file exists and was updated after the screenshot's visible 12:45-12:46 messages:
+
+| Runtime path | Observed state |
+| --- | --- |
+| `/home/maceo/.claude/projects/-home-maceo/d75f31dc-0e96-4267-aa35-ff7c68f86cdd.jsonl` | 946,035 bytes, mtime `2026-04-29 12:59:28 -0400`, 208 JSONL records. |
+| line 127 | `type: "user"` string content containing the completed `<task-notification>` payload, timestamp `2026-04-29T16:44:11.729Z`, 22,607 chars. |
+| line 208 | `type: "assistant"` text containing `REPORT DELIVERED`, timestamp `2026-04-29T16:59:28.418Z`, 13,648 chars. |
+| `/home/maceo/.claude/projects/-home-maceo/d75f31dc-0e96-4267-aa35-ff7c68f86cdd.nolme-state.json` | No file exists at this path. |
+
+The local Algorithm Run store has six `state.json` files under `/home/maceo/.cosmic-agent/algorithm-runs`, all from `2026-04-26`, all with `status: "running"`, `sessionId: null`, and no `finalOutput`. None references `d75f31dc-0e96-4267-aa35-ff7c68f86cdd`.
+
+### `/app` Session Loading Path
+
+`NolmeAppRoute` owns separate state for `runState`, `derivedRunState`, `chatSessionId`, and `chatMessages` ([`NolmeAppRoute.tsx:326`](https://github.com/tha-hammer/agent-memory/blob/ba8ff7ba12c8fe8746031302d9c6813bd4ee93d1/cc-agent-ui/src/components/nolme-app/view/NolmeAppRoute.tsx#L326)).
+
+When the user opens an existing session in `/app`, `openSession()`:
+
+- stores the selected project/session locally;
+- sets `chatSessionId` to the selected session id;
+- calls `api.unifiedSessionMessages(session.id, provider, { projectName, projectPath })`;
+- maps returned normalized messages through `toTranscriptItem()`;
+- builds `derivedRunState` from assistant text already returned by that fetch ([`NolmeAppRoute.tsx:459`](https://github.com/tha-hammer/agent-memory/blob/ba8ff7ba12c8fe8746031302d9c6813bd4ee93d1/cc-agent-ui/src/components/nolme-app/view/NolmeAppRoute.tsx#L459), [`NolmeAppRoute.tsx:475`](https://github.com/tha-hammer/agent-memory/blob/ba8ff7ba12c8fe8746031302d9c6813bd4ee93d1/cc-agent-ui/src/components/nolme-app/view/NolmeAppRoute.tsx#L475), [`NolmeAppRoute.tsx:487`](https://github.com/tha-hammer/agent-memory/blob/ba8ff7ba12c8fe8746031302d9c6813bd4ee93d1/cc-agent-ui/src/components/nolme-app/view/NolmeAppRoute.tsx#L487)).
+
+`toTranscriptItem()` only accepts normalized messages where `kind === "text"`, `role` is present, and `content` is present ([`NolmeAppRoute.tsx:215`](https://github.com/tha-hammer/agent-memory/blob/ba8ff7ba12c8fe8746031302d9c6813bd4ee93d1/cc-agent-ui/src/components/nolme-app/view/NolmeAppRoute.tsx#L215)). Normalized `tool_result`, `tool_use`, `task_notification`, and other event kinds are not converted into `/app` chat transcript rows by this function.
+
+`deriveAlgorithmRunStateFromText()` searches accumulated assistant text for Algorithm phase/progress markers and returns phase/task fields only: `runId`, `provider`, `status`, `taskTitle`, `phase`, `phases`, `currentPhaseIndex`, and `currentReviewLine` ([`NolmeAppRoute.tsx:236`](https://github.com/tha-hammer/agent-memory/blob/ba8ff7ba12c8fe8746031302d9c6813bd4ee93d1/cc-agent-ui/src/components/nolme-app/view/NolmeAppRoute.tsx#L236), [`NolmeAppRoute.tsx:267`](https://github.com/tha-hammer/agent-memory/blob/ba8ff7ba12c8fe8746031302d9c6813bd4ee93d1/cc-agent-ui/src/components/nolme-app/view/NolmeAppRoute.tsx#L267)). It does not return `deliverables` or `finalOutput`.
+
+`rightPanelRunState` can merge `derivedRunState` into `runState` when API state lacks phases, but that merge only carries phase/task fields. It does not project transcript content into deliverables ([`NolmeAppRoute.tsx:362`](https://github.com/tha-hammer/agent-memory/blob/ba8ff7ba12c8fe8746031302d9c6813bd4ee93d1/cc-agent-ui/src/components/nolme-app/view/NolmeAppRoute.tsx#L362)).
+
+### `/app` Live Update Path
+
+The `/app` route reads `activeRunId` once from `readInitialRunId()` into `useState(readInitialRunId)`. `readInitialRunId()` checks URL `?runId=` first, then `localStorage["nolme-active-algorithm-run-id"]` ([`NolmeAppRoute.tsx:160`](https://github.com/tha-hammer/agent-memory/blob/ba8ff7ba12c8fe8746031302d9c6813bd4ee93d1/cc-agent-ui/src/components/nolme-app/view/NolmeAppRoute.tsx#L160), [`NolmeAppRoute.tsx:331`](https://github.com/tha-hammer/agent-memory/blob/ba8ff7ba12c8fe8746031302d9c6813bd4ee93d1/cc-agent-ui/src/components/nolme-app/view/NolmeAppRoute.tsx#L331)).
+
+If `activeRunId` is present, `/app` writes it back into localStorage and adds it to the URL, then loads Algorithm state and opens an EventSource for Algorithm events ([`NolmeAppRoute.tsx:578`](https://github.com/tha-hammer/agent-memory/blob/ba8ff7ba12c8fe8746031302d9c6813bd4ee93d1/cc-agent-ui/src/components/nolme-app/view/NolmeAppRoute.tsx#L578), [`NolmeAppRoute.tsx:590`](https://github.com/tha-hammer/agent-memory/blob/ba8ff7ba12c8fe8746031302d9c6813bd4ee93d1/cc-agent-ui/src/components/nolme-app/view/NolmeAppRoute.tsx#L590), [`NolmeAppRoute.tsx:600`](https://github.com/tha-hammer/agent-memory/blob/ba8ff7ba12c8fe8746031302d9c6813bd4ee93d1/cc-agent-ui/src/components/nolme-app/view/NolmeAppRoute.tsx#L600)).
+
+If `activeRunId` is absent, the Algorithm state effect sets `runState` to `null` and no Algorithm EventSource is opened ([`NolmeAppRoute.tsx:590`](https://github.com/tha-hammer/agent-memory/blob/ba8ff7ba12c8fe8746031302d9c6813bd4ee93d1/cc-agent-ui/src/components/nolme-app/view/NolmeAppRoute.tsx#L590), [`NolmeAppRoute.tsx:600`](https://github.com/tha-hammer/agent-memory/blob/ba8ff7ba12c8fe8746031302d9c6813bd4ee93d1/cc-agent-ui/src/components/nolme-app/view/NolmeAppRoute.tsx#L600)).
+
+The screenshot URL was `/app`, not `/app?runId=...`, and the chat footer text was the no-run-state message from `ChatPanel`: `Send a message to the LLM. Algorithm phase events will appear when a run is active.` That text is selected when `runState` is null and `isStartingRun` is false ([`NolmeAppRoute.tsx:1419`](https://github.com/tha-hammer/agent-memory/blob/ba8ff7ba12c8fe8746031302d9c6813bd4ee93d1/cc-agent-ui/src/components/nolme-app/view/NolmeAppRoute.tsx#L1419)).
+
+The `/app` WebSocket `latestMessage` handler appends live Claude messages only for a small set of normalized message kinds: `session_created`, assistant `text`, `stream_delta`, `stream_end`, `error`, and `complete` ([`NolmeAppRoute.tsx:642`](https://github.com/tha-hammer/agent-memory/blob/ba8ff7ba12c8fe8746031302d9c6813bd4ee93d1/cc-agent-ui/src/components/nolme-app/view/NolmeAppRoute.tsx#L642)). It filters out messages with a mismatched `sessionId` when `chatSessionId` is set ([`NolmeAppRoute.tsx:649`](https://github.com/tha-hammer/agent-memory/blob/ba8ff7ba12c8fe8746031302d9c6813bd4ee93d1/cc-agent-ui/src/components/nolme-app/view/NolmeAppRoute.tsx#L649)). It does not handle `projects_updated`, `tool_result`, `tool_use`, `task_notification`, or queued task-notification user text.
+
+### Server Project Watcher and Normal Session Refresh Path
+
+The server watches provider project/session folders and broadcasts `projects_updated` WebSocket messages with the full updated projects list and a `changedFile` when files are added or changed ([`server/index.js:144`](https://github.com/tha-hammer/agent-memory/blob/ba8ff7ba12c8fe8746031302d9c6813bd4ee93d1/cc-agent-ui/server/index.js#L144), [`server/index.js:164`](https://github.com/tha-hammer/agent-memory/blob/ba8ff7ba12c8fe8746031302d9c6813bd4ee93d1/cc-agent-ui/server/index.js#L164)). The watcher uses polling with a 2-second interval for text files ([`server/index.js:206`](https://github.com/tha-hammer/agent-memory/blob/ba8ff7ba12c8fe8746031302d9c6813bd4ee93d1/cc-agent-ui/server/index.js#L206)).
+
+The normal `/session/:id` app path consumes those `projects_updated` messages through `useProjectsState()`. When the changed file matches the selected session and the session is not active, it increments `externalMessageUpdate` ([`src/hooks/useProjectsState.ts:206`](https://github.com/tha-hammer/agent-memory/blob/ba8ff7ba12c8fe8746031302d9c6813bd4ee93d1/cc-agent-ui/src/hooks/useProjectsState.ts#L206), [`src/hooks/useProjectsState.ts:235`](https://github.com/tha-hammer/agent-memory/blob/ba8ff7ba12c8fe8746031302d9c6813bd4ee93d1/cc-agent-ui/src/hooks/useProjectsState.ts#L235), [`src/hooks/useProjectsState.ts:243`](https://github.com/tha-hammer/agent-memory/blob/ba8ff7ba12c8fe8746031302d9c6813bd4ee93d1/cc-agent-ui/src/hooks/useProjectsState.ts#L243)).
+
+`AppContent` passes `externalMessageUpdate` into `ChatInterface` ([`src/components/app/AppContent.tsx:30`](https://github.com/tha-hammer/agent-memory/blob/ba8ff7ba12c8fe8746031302d9c6813bd4ee93d1/cc-agent-ui/src/components/app/AppContent.tsx#L30), [`src/components/app/AppContent.tsx:176`](https://github.com/tha-hammer/agent-memory/blob/ba8ff7ba12c8fe8746031302d9c6813bd4ee93d1/cc-agent-ui/src/components/app/AppContent.tsx#L176)). `useChatSessionState()` then refreshes the selected session from the server when `externalMessageUpdate` changes and the chat is not currently loading/streaming ([`src/components/chat/hooks/useChatSessionState.ts:402`](https://github.com/tha-hammer/agent-memory/blob/ba8ff7ba12c8fe8746031302d9c6813bd4ee93d1/cc-agent-ui/src/components/chat/hooks/useChatSessionState.ts#L402)).
+
+`NolmeAppRoute` does not use `useProjectsState()`, does not track `externalMessageUpdate`, and does not have a corresponding selected-session refresh effect. Its project/session list is fetched once on mount through `api.projects()` ([`NolmeAppRoute.tsx:401`](https://github.com/tha-hammer/agent-memory/blob/ba8ff7ba12c8fe8746031302d9c6813bd4ee93d1/cc-agent-ui/src/components/nolme-app/view/NolmeAppRoute.tsx#L401)).
+
+### Follow-up Code References
+
+| File | What it contains |
+| --- | --- |
+| `src/components/nolme-app/view/NolmeAppRoute.tsx:459` | One-time selected-session load in `/app`. |
+| `src/components/nolme-app/view/NolmeAppRoute.tsx:215` | `/app` session transcript conversion accepts only normalized text messages. |
+| `src/components/nolme-app/view/NolmeAppRoute.tsx:236` | Derived phase state parser for assistant text. |
+| `src/components/nolme-app/view/NolmeAppRoute.tsx:578` | `activeRunId` localStorage/URL sync. |
+| `src/components/nolme-app/view/NolmeAppRoute.tsx:600` | Algorithm EventSource opens only when an active run id and cursor exist. |
+| `src/components/nolme-app/view/NolmeAppRoute.tsx:642` | `/app` live WebSocket message handler and accepted message kinds. |
+| `src/components/nolme-app/view/NolmeAppRoute.tsx:1726` | Deliverables pane reads only `runState.deliverables`. |
+| `server/index.js:144` | Server project file watcher broadcasts changed project/session files. |
+| `src/hooks/useProjectsState.ts:235` | Normal app route converts `projects_updated` for selected sessions into `externalMessageUpdate`. |
+| `src/components/chat/hooks/useChatSessionState.ts:402` | Normal chat route refreshes selected session messages after external update. |
 
 ## Historical Context
 
