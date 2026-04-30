@@ -551,6 +551,21 @@
     color: rgb(75 85 99) !important; /* gray-600 - darker gray */
     opacity: 1 !important;
   }
+
+  .nolme-app .nolme-app__input-field textarea,
+  .dark .nolme-app .nolme-app__input-field textarea {
+    color: var(--nolme-text-primary) !important;
+    -webkit-text-fill-color: var(--nolme-text-primary) !important;
+    caret-color: var(--nolme-text-primary) !important;
+    color-scheme: light;
+  }
+
+  .nolme-app .nolme-app__input-field textarea::placeholder,
+  .dark .nolme-app .nolme-app__input-field textarea::placeholder {
+    color: var(--nolme-text-tertiary) !important;
+    -webkit-text-fill-color: var(--nolme-text-tertiary) !important;
+    opacity: 1 !important;
+  }
 }
 
 /* Mobile optimizations and components */
