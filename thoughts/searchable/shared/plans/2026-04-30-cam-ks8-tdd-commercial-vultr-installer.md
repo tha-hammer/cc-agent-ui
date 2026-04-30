@@ -44,6 +44,31 @@ Observable behaviors:
 - Given the service starts, when health checks run, then `/health`, `/`, `/app`, WebSocket readiness, service owner, and CLI availability are explicitly checked.
 - Given Vultr API returns `429`, when the provisioner calls the API, then it retries with bounded exponential backoff without logging the token.
 - Given required Vultr provisioning inputs are present, when the wrapper runs, then it creates or reuses SSH key/startup script/instance resources and records the instance IP without exposing secrets.
+- Given a code improvement is released, when the operator rolls it out to a fleet, then the rollout advances through explicit rings, verifies health at each ring, and stops automatically on failure thresholds.
+- Given a customer instance is already healthy on the prior release, when an upgrade fails, then the rollout tool can restore the prior ref and rerun health checks without requiring hand-edited SSH commands.
+
+## Deployment Rollout Model By Client Count
+
+The commercial installer starts as a per-instance VPS installer, but code improvements need a rollout layer once there is more than one customer. The rollout layer should be separate from `install-vps.sh`: the installer changes one host; the rollout controller decides which hosts receive the change, in what order, and when to stop.
+
+Scale bands:
+
+| Client count | Deployment shape | Rollout approach | Operational requirement |
+| --- | --- | --- | --- |
+| 10 | One VPS per client, mostly manual operations acceptable | Operator runs `provision-vultr.sh` or `rollout-vps.sh` against a checked inventory; update 1 canary, then remaining clients | A simple `deployments/clients.json` inventory and per-host health checks are enough |
+| 100 | One VPS per client, scripted fleet operations required | Ring rollout: internal/staging, 1-5 customer canaries, 20%, 50%, 100% | Central rollout ledger, retry policy, rollback command, and per-client version status |
+| 1,000 | VPS fleet, regional grouping starts to matter | Batched rollout by region/account shard with concurrency limits and automatic pause on failures | Inventory must be queryable; rollout jobs must be resumable and auditable |
+| 10,000 | Fleet orchestration becomes a product subsystem | Progressive delivery controller with health/error SLO gates and automated rollback by cohort | Central control plane, telemetry, release channels, and strong change windows |
+| 100,000 | Single-VPS-per-client operations become expensive | Move most customers to clustered/containerized hosting or managed tenant pools; keep dedicated VPS for enterprise isolation | Kubernetes/VKE or equivalent, centralized config/secrets, distributed observability |
+| 1,000,000 | Multi-region platform | Region-by-region progressive delivery, feature flags, canaries, and global rollback | Dedicated SRE/infra automation, platform control plane, multi-region failover |
+| 10,000,000 | Internet-scale platform | Continuous delivery with strict blast-radius controls, feature flags, cell-based architecture, and automated incident response | Cell architecture, global traffic management, load shedding, compliance-grade audit trails |
+
+Pragmatic interpretation:
+
+- From 10 to 1,000 clients, we can keep dedicated VPS deployments if the rollout tool is careful, resumable, and health-gated.
+- Around 10,000 clients, the installer is still useful for dedicated customer installs, but the default product architecture should start moving toward pooled infrastructure, release channels, and centralized telemetry.
+- At 100,000 clients and above, "install script per customer VPS" becomes an enterprise/dedicated path, not the main platform path. The mainstream path should be Kubernetes/cluster/cell-based deployment with feature flags and automated progressive delivery.
+- The TDD scope here should implement the first fleet-safe step: an inventory-driven VPS rollout wrapper that can update, verify, pause, and rollback code improvements across many existing VPS installs.
 
 ## What We Are Not Doing
 
@@ -52,6 +77,7 @@ Observable behaviors:
 - No managed database, object storage, or persistent-volume migration.
 - No customer billing, license enforcement, or marketplace packaging.
 - No automatic migration of existing customer data from root-owned installs beyond preserving the existing documented migration path.
+- No full global control plane implementation. This plan only introduces the rollout contracts and the first VPS-fleet rollout wrapper needed before a larger platform migration.
 
 ## Testing Strategy
 
@@ -69,12 +95,15 @@ Proposed new test files:
 - `tests/generated/test_install_vps_proxy_contract.spec.ts`
 - `tests/generated/test_install_vps_health_checks.spec.ts`
 - `tests/generated/test_provision_vultr_contract.spec.ts`
+- `tests/generated/test_rollout_vps_contract.spec.ts`
+- `tests/generated/test_deployment_inventory_contract.spec.ts`
 - `tests/generated/deployHarness.ts`
 
 Proposed implementation files:
 
 - `scripts/deploy/install-vps.sh`
 - `scripts/deploy/provision-vultr.sh`
+- `scripts/deploy/rollout-vps.sh`
 - `scripts/deploy/lib/deploy-common.sh`
 - `docs/DEPLOY.md`
 
@@ -722,6 +751,294 @@ Manual:
 
 - A fresh operator can follow the docs without reading script internals.
 
+## Behavior 10: Deployment Inventory Tracks Customer Hosts And Release State
+
+### Test Specification
+
+Given multiple commercial VPS installs exist, when the rollout tool reads inventory, then it can determine each customer's host, SSH target, current release, desired release, rollout ring, region, health status, and rollback ref.
+
+Edge cases:
+
+- Missing required inventory fields fail validation before any SSH command runs.
+- Duplicate customer ids fail validation.
+- Duplicate hostnames are allowed only when an explicit shared-host field is present.
+- Inventory can be filtered by ring, region, customer id, current ref, and release channel.
+
+### TDD Cycle
+
+#### Red: Write Failing Test
+
+File: `tests/generated/test_deployment_inventory_contract.spec.ts`
+
+```ts
+import { describe, expect, it } from 'vitest';
+import { validateDeploymentInventory, selectRolloutTargets } from '../../scripts/deploy/testable-rollout-inventory';
+
+describe('deployment inventory contract', () => {
+  it('validates required customer host rollout fields', () => {
+    const inventory = {
+      clients: [
+        {
+          id: 'acme',
+          host: 'acme.example.com',
+          sshTarget: 'root@acme.example.com',
+          currentRef: 'v1.28.0',
+          desiredRef: 'v1.29.0',
+          rollbackRef: 'v1.28.0',
+          ring: 'canary',
+          region: 'ewr',
+          channel: 'stable',
+        },
+      ],
+    };
+
+    expect(validateDeploymentInventory(inventory)).toEqual({ ok: true, errors: [] });
+  });
+
+  it('selects rollout targets by ring and region', () => {
+    const targets = selectRolloutTargets(sampleInventory, { ring: 'canary', region: 'ewr' });
+    expect(targets.every((target) => target.ring === 'canary' && target.region === 'ewr')).toBe(true);
+  });
+});
+```
+
+#### Green: Minimal Implementation
+
+Files:
+
+- `scripts/deploy/rollout-vps.sh`
+- `scripts/deploy/lib/deploy-common.sh`
+- Optional testable helper module if shell-only parsing becomes brittle.
+
+Implementation notes:
+
+- Start with JSON inventory: `deployments/clients.json` or an operator-supplied path via `--inventory`.
+- Validate inventory in dry-run mode before making changes.
+- Print a clear rollout plan: selected client count, rings, concurrency, target ref, rollback ref.
+
+#### Refactor
+
+Keep inventory validation separate from SSH execution so future storage can move from JSON to a database or control plane without changing rollout behavior.
+
+### Success Criteria
+
+Automated:
+
+- Inventory validation tests fail before helper exists.
+- Duplicate id and missing field tests pass.
+- Selection by ring/region/channel passes.
+
+Manual:
+
+- `scripts/deploy/rollout-vps.sh --inventory deployments/clients.json --dry-run --ring canary --ref vX.Y.Z` prints selected targets and exits without SSH.
+
+## Behavior 11: VPS Rollouts Advance Through Health-Gated Rings
+
+### Test Specification
+
+Given an inventory of client VPS installs and a target release ref, when `rollout-vps.sh` runs, then it updates only the selected ring, verifies health for each target, writes a rollout ledger entry, and stops before the next ring until explicitly resumed.
+
+Default rings:
+
+- `internal`
+- `canary`
+- `early`
+- `standard`
+- `enterprise`
+
+Default client-count policy:
+
+- 10 clients: update 1 canary, then all remaining customers after approval.
+- 100 clients: update internal, 1-5 canaries, 20%, 50%, 100%.
+- 1,000 clients: update by ring and region with fixed concurrency limits.
+- 10,000+ clients: require a platform rollout controller; the VPS script can still update dedicated installs but must not pretend to be the whole platform rollout system.
+
+Edge cases:
+
+- If any target fails install or health checks, the ring pauses.
+- If failure rate crosses `--max-failure-rate`, the ring pauses.
+- `--concurrency` limits simultaneous SSH sessions.
+- `--resume <rollout-id>` continues an interrupted rollout without re-updating already healthy targets.
+- `--approve-next-ring` is required before moving from canary to larger cohorts.
+
+### TDD Cycle
+
+#### Red: Write Failing Test
+
+File: `tests/generated/test_rollout_vps_contract.spec.ts`
+
+```ts
+import { describe, expect, it } from 'vitest';
+import { runRolloutWithFakeSsh } from './deployHarness';
+
+describe('health-gated VPS rollouts', () => {
+  it('updates only canary targets and records health-gated ledger results', async () => {
+    const result = await runRolloutWithFakeSsh([
+      '--inventory', 'fixtures/clients.json',
+      '--ring', 'canary',
+      '--ref', 'v1.29.0',
+      '--concurrency', '2',
+    ]);
+
+    expect(result.sshCommandsText).toContain('install-vps.sh --ref v1.29.0 --verify-only');
+    expect(result.updatedTargets.every((target) => target.ring === 'canary')).toBe(true);
+    expect(result.ledger).toContainEqual(expect.objectContaining({
+      targetRef: 'v1.29.0',
+      ring: 'canary',
+      status: 'healthy',
+    }));
+  });
+
+  it('pauses the ring when a health check fails', async () => {
+    const result = await runRolloutWithFakeSsh(['--inventory', 'fixtures/clients.json', '--ring', 'canary', '--ref', 'v1.29.0'], {
+      failHealthFor: ['acme'],
+    });
+
+    expect(result.exitCode).not.toBe(0);
+    expect(result.ledger).toContainEqual(expect.objectContaining({ clientId: 'acme', status: 'failed' }));
+    expect(result.stderr).toContain('paused');
+  });
+});
+```
+
+#### Green: Minimal Implementation
+
+File: `scripts/deploy/rollout-vps.sh`
+
+- Parse rollout options: `--inventory`, `--ref`, `--ring`, `--region`, `--channel`, `--concurrency`, `--max-failure-rate`, `--dry-run`, `--resume`, `--approve-next-ring`.
+- For each selected target, run remote install with pinned `--ref` and matching TLS options.
+- Run remote `--verify-only`.
+- Write a local JSONL ledger under `deployments/rollouts/<rollout-id>.jsonl`.
+- Stop on failures and print exact resume command.
+
+#### Refactor
+
+Extract target selection, command rendering, and ledger writing into testable helpers. Keep raw SSH execution thin.
+
+### Success Criteria
+
+Automated:
+
+- Fake SSH tests prove only selected ring targets update.
+- Health failure tests prove automatic pause.
+- Resume tests prove already healthy targets are skipped.
+
+Manual:
+
+- Run against two disposable VPS installs: one canary succeeds, one induced failure pauses rollout and prints rollback/resume instructions.
+
+## Behavior 12: Rollback Restores The Prior Ref And Re-Verifies Health
+
+### Test Specification
+
+Given a rollout has failed or an operator requests rollback, when `rollout-vps.sh --rollback <rollout-id>` runs, then it restores each affected target to its recorded `rollbackRef`, runs `--verify-only`, and records rollback status in the ledger.
+
+Edge cases:
+
+- Rollback refuses to run if no rollback ref is recorded.
+- Rollback targets only hosts touched by the rollout unless `--all-selected` is supplied.
+- Rollback failure leaves the ledger with `rollback_failed` status and prints manual SSH commands.
+
+### TDD Cycle
+
+#### Red: Write Failing Test
+
+File: `tests/generated/test_rollout_vps_contract.spec.ts`
+
+```ts
+it('rolls back touched targets to their recorded rollback refs', async () => {
+  const result = await runRolloutWithFakeSsh([
+    '--rollback', 'rollout-123',
+    '--ledger-dir', 'fixtures/rollouts',
+  ]);
+
+  expect(result.sshCommandsText).toContain('install-vps.sh --ref v1.28.0');
+  expect(result.sshCommandsText).toContain('install-vps.sh --verify-only --ref v1.28.0');
+  expect(result.ledger).toContainEqual(expect.objectContaining({ status: 'rollback_healthy' }));
+});
+```
+
+#### Green: Minimal Implementation
+
+File: `scripts/deploy/rollout-vps.sh`
+
+- Add `--rollback <rollout-id>`.
+- Read affected targets from ledger.
+- Execute installer with recorded rollback refs.
+- Re-run health checks.
+
+#### Refactor
+
+Make rollback use the same command renderer and health-check result parser as forward rollout.
+
+### Success Criteria
+
+Automated:
+
+- Rollback tests pass with fake ledger and fake SSH.
+- Missing rollback ref test fails safely before SSH.
+
+Manual:
+
+- Induce a canary deployment failure, run rollback, and verify service returns to previous ref.
+
+## Behavior 13: Scale Gates Tell Operators When VPS Rollouts Are No Longer Enough
+
+### Test Specification
+
+Given the operator asks for a rollout plan for a client count, when `rollout-vps.sh --plan-scale <count>` runs, then it prints the recommended deployment model and required controls for that scale band.
+
+Edge cases:
+
+- Counts below 1 fail validation.
+- 10, 100, 1,000, 10,000, 100,000, 1,000,000, and 10,000,000 map to explicit recommendations.
+- At 100,000 and above, the tool recommends Kubernetes/cluster/cell-based platform rollout rather than per-customer VPS automation as the primary path.
+
+### TDD Cycle
+
+#### Red: Write Failing Test
+
+File: `tests/generated/test_rollout_vps_contract.spec.ts`
+
+```ts
+import { recommendDeploymentModel } from '../../scripts/deploy/testable-rollout-scale';
+
+it.each([
+  [10, 'single-vps-fleet'],
+  [100, 'ringed-vps-fleet'],
+  [1000, 'regional-vps-fleet'],
+  [10000, 'progressive-delivery-controller'],
+  [100000, 'clustered-platform'],
+  [1000000, 'multi-region-platform'],
+  [10000000, 'cell-based-global-platform'],
+])('maps %i clients to %s', (clientCount, expectedModel) => {
+  expect(recommendDeploymentModel(clientCount).model).toBe(expectedModel);
+});
+```
+
+#### Green: Minimal Implementation
+
+File: `scripts/deploy/rollout-vps.sh`
+
+- Add `--plan-scale <count>`.
+- Print the same scale-band recommendations from this plan.
+- Exit without requiring inventory or network calls.
+
+#### Refactor
+
+Keep scale recommendations declarative so docs and CLI output can share the same table later.
+
+### Success Criteria
+
+Automated:
+
+- Scale recommendation tests pass.
+- Invalid count tests pass.
+
+Manual:
+
+- `scripts/deploy/rollout-vps.sh --plan-scale 100000` clearly says the default path should be a clustered/cell-based platform and the VPS rollout tool is for dedicated installs only.
+
 ## Integration and E2E Testing
 
 Integration tests:
@@ -732,6 +1049,8 @@ Integration tests:
 - `npm test -- tests/generated/test_install_vps_proxy_contract.spec.ts`
 - `npm test -- tests/generated/test_install_vps_health_checks.spec.ts`
 - `npm test -- tests/generated/test_provision_vultr_contract.spec.ts`
+- `npm test -- tests/generated/test_deployment_inventory_contract.spec.ts`
+- `npm test -- tests/generated/test_rollout_vps_contract.spec.ts`
 
 Full local quality gates:
 
@@ -763,6 +1082,16 @@ Manual Vultr provisioning acceptance:
 5. Confirm the output includes instance id, IP, and SSH command.
 6. SSH to the instance and run `sudo bash /home/cloudcli/Dev/cosmic-agent-memory/cc-agent-ui/scripts/deploy/install-vps.sh --verify-only --ref vX.Y.Z --no-tls`.
 
+Manual rollout acceptance:
+
+1. Create an inventory with three disposable VPS targets: one `internal`, one `canary`, and one `standard`.
+2. Run `scripts/deploy/rollout-vps.sh --inventory deployments/clients.json --dry-run --ring canary --ref vX.Y.Z`.
+3. Confirm only the canary target is selected.
+4. Run the canary rollout for real and confirm the ledger records `healthy`.
+5. Re-run the same rollout with `--resume <rollout-id>` and confirm the healthy canary is skipped.
+6. Induce one failing health check and confirm rollout pauses before larger rings.
+7. Run `scripts/deploy/rollout-vps.sh --rollback <rollout-id>` and confirm the touched target returns to its prior ref.
+
 ## Implementation Order
 
 1. Add deploy test harness and shell entry point testability.
@@ -772,9 +1101,13 @@ Manual Vultr provisioning acceptance:
 5. Add TLS proxy renderer tests and implementation.
 6. Add Vultr API wrapper tests and implementation.
 7. Add Vultr resource provisioning tests and implementation.
-8. Update docs and documentation contract tests.
-9. Run local quality gates.
-10. Run disposable VPS acceptance.
+8. Add deployment inventory validation tests and implementation.
+9. Add health-gated VPS rollout tests and implementation.
+10. Add rollback ledger tests and implementation.
+11. Add scale-band recommendation tests and implementation.
+12. Update docs and documentation contract tests.
+13. Run local quality gates.
+14. Run disposable VPS and rollout acceptance.
 
 ## Risk Notes
 
@@ -784,6 +1117,9 @@ Manual Vultr provisioning acceptance:
 - WebSocket readiness must distinguish "server/auth rejected me" from "proxy or Node route is unavailable."
 - TLS automation requires DNS to already point to the VPS. The installer should fail clearly if certificate issuance cannot succeed.
 - Existing deployments that rely on default `main` need a clear migration note because the commercial installer should prefer explicit pinned refs.
+- Per-VPS rollout automation scales operationally only while the fleet remains manageable. At 100,000+ clients, the script should guide operators toward clustered/cell-based platform rollout instead of encouraging massive SSH fanout.
+- Rollout ledgers become operational records. They must be append-only enough for audit, but easy to migrate to a central control plane later.
+- Feature flags are the safer mechanism for risky product behavior changes at high scale. The rollout tool handles binary/code deployment; it should not be the only blast-radius control.
 
 ## References
 
