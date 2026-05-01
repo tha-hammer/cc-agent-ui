@@ -7,6 +7,8 @@ describe('agent CLI installation contract', () => {
     const result = runInstall(['--dry-run', '--run-step', 'install_agent_clis', '--ref', 'v1.28.0', '--no-tls']);
 
     expect(result.status).toBe(0);
+    expect(result.stdout).toContain('install -d -m 755 -o cloudcli -g cloudcli /home/cloudcli/.local /home/cloudcli/.local/bin /home/cloudcli/.local/lib /home/cloudcli/.local/share');
+    expect(result.stdout).toContain('chown -R cloudcli:cloudcli /home/cloudcli/.local');
     expect(result.stdout).toContain('npm install -g --prefix /home/cloudcli/.local @anthropic-ai/claude-code @openai/codex @google/gemini-cli');
     expect(result.stdout).toContain('/home/cloudcli/.local/bin/claude --version');
     expect(result.stdout).toContain('/home/cloudcli/.local/bin/codex --version');
@@ -19,4 +21,3 @@ describe('agent CLI installation contract', () => {
     expect(unit).toContain('Environment=PATH=/home/cloudcli/.bun/bin:/home/cloudcli/.local/bin:/usr/local/bin:/usr/bin:/bin');
   });
 });
-

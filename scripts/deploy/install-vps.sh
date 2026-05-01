@@ -293,7 +293,8 @@ ensure_bun() {
 
 install_agent_clis() {
   log "Installing agent CLIs for ${SVC_USER}"
-  run_cmd install -d -m 755 -o "${SVC_USER}" -g "${SVC_USER}" "${SVC_HOME}/.local/bin"
+  run_cmd install -d -m 755 -o "${SVC_USER}" -g "${SVC_USER}" "${SVC_HOME}/.local" "${SVC_HOME}/.local/bin" "${SVC_HOME}/.local/lib" "${SVC_HOME}/.local/share"
+  run_cmd chown -R "${SVC_USER}:${SVC_USER}" "${SVC_HOME}/.local"
   run_cmd sudo -u "${SVC_USER}" -H npm install -g --prefix "${SVC_HOME}/.local" "${AGENT_CLI_PACKAGES[@]}"
 
   local cmd
@@ -455,16 +456,33 @@ check_http() {
     printf '%s\n' "curl -fsS ${url}"
     return 0
   fi
-  if ! curl -fsS "${url}" >/dev/null; then
-    journalctl -u cc-agent-ui -n 50 --no-pager || true
-    die "health check failed for ${url}"
-  fi
+
+  local i
+  for ((i = 1; i <= 60; i++)); do
+    curl -fsS "${url}" >/dev/null && return 0
+    sleep 1
+  done
+
+  journalctl -u cc-agent-ui -n 50 --no-pager || true
+  die "health check failed for ${url}"
 }
 
 check_websocket_readiness() {
   local script
   script='const net=require("node:net");const s=net.connect(3001,"127.0.0.1",()=>{s.write("GET /ws HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n")});s.setTimeout(5000);s.on("data",()=>{s.destroy();process.exit(0)});s.on("error",(e)=>{console.error(e.message);process.exit(1)});s.on("timeout",()=>{console.error("websocket readiness timeout");process.exit(1)});'
-  run_cmd node -e "${script}"
+  if [[ "${DRY_RUN}" == "true" ]]; then
+    run_cmd node -e "${script}"
+    return 0
+  fi
+
+  local i
+  for ((i = 1; i <= 60; i++)); do
+    node -e "${script}" && return 0
+    sleep 1
+  done
+
+  journalctl -u cc-agent-ui -n 50 --no-pager || true
+  die "websocket readiness check failed"
 }
 
 run_health_checks() {

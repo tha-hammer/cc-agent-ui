@@ -23,6 +23,7 @@ RENDER_STARTUP_SCRIPT="false"
 API_SMOKE_TEST="false"
 API_SMOKE_METHOD=""
 API_SMOKE_PATH=""
+PRINT_API_PAYLOAD=""
 
 die() { printf '[provision-vultr] ERROR: %s\n' "$*" >&2; exit 1; }
 log() { printf '[provision-vultr] %s\n' "$*" >&2; }
@@ -51,6 +52,7 @@ Options:
   --reuse-existing               Reuse matching instance label if found.
   --render-startup-script        Print startup script and exit.
   --api-smoke-test <method> <path>  Exercise the Vultr API wrapper.
+  --print-api-payload <kind>     Print an API payload for tests.
 EOF
 }
 
@@ -86,6 +88,11 @@ parse_args() {
         API_SMOKE_METHOD="$2"
         API_SMOKE_PATH="$3"
         shift 3
+        ;;
+      --print-api-payload)
+        [[ $# -ge 2 ]] || die "--print-api-payload requires a value"
+        PRINT_API_PAYLOAD="$2"
+        shift 2
         ;;
       --help|-h) usage; exit 0 ;;
       *) die "unknown option: $1" ;;
@@ -240,6 +247,26 @@ print_dry_run_payload() {
     "$(json_escape "${startup_script}")"
 }
 
+build_startup_script_payload() {
+  local startup_script="$1"
+  local label="$2"
+  STARTUP_SCRIPT="${startup_script}" LABEL="${label}" node -e 'console.log(JSON.stringify({name: `${process.env.LABEL}-installer`, type: "boot", script: Buffer.from(process.env.STARTUP_SCRIPT, "utf8").toString("base64")}))'
+}
+
+print_api_payload() {
+  case "${PRINT_API_PAYLOAD}" in
+    startup-script)
+      build_startup_script_payload "${VULTR_TEST_STARTUP_SCRIPT:-}" "${VULTR_TEST_LABEL:-cc-agent-ui-test}"
+      ;;
+    "")
+      die "--print-api-payload requires a payload kind"
+      ;;
+    *)
+      die "unknown API payload kind: ${PRINT_API_PAYLOAD}"
+      ;;
+  esac
+}
+
 ensure_ssh_key() {
   [[ -r "${SSH_PUBLIC_KEY_FILE}" ]] || die "SSH public key file not readable: ${SSH_PUBLIC_KEY_FILE}"
 
@@ -266,7 +293,7 @@ provision_instance() {
 
   local startup_script startup_body startup_response script_id ssh_key_id instance_body instance_response instance_id
   startup_script="$(render_startup_script)"
-  startup_body="$(STARTUP_SCRIPT="${startup_script}" LABEL="${LABEL}" node -e 'console.log(JSON.stringify({name: `${process.env.LABEL}-installer`, type: "boot", script: process.env.STARTUP_SCRIPT}))')"
+  startup_body="$(build_startup_script_payload "${startup_script}" "${LABEL}")"
   startup_response="$(vultr_api POST /v2/startup-scripts "${startup_body}")"
   script_id="$(printf '%s' "${startup_response}" | node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{const j=JSON.parse(s);console.log(j.startup_script?.id || "")})')"
   [[ -n "${script_id}" ]] || die "failed to parse startup script id"
@@ -282,6 +309,11 @@ provision_instance() {
 
 main() {
   parse_args "$@"
+
+  if [[ -n "${PRINT_API_PAYLOAD}" ]]; then
+    print_api_payload
+    return 0
+  fi
 
   if [[ "${API_SMOKE_TEST}" == "true" ]]; then
     vultr_api "${API_SMOKE_METHOD}" "${API_SMOKE_PATH}"

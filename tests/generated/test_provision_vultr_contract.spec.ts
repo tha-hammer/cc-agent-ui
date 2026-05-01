@@ -112,4 +112,21 @@ describe('Vultr provisioner contract', () => {
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain('--ssh-key-name');
   });
+
+  it('encodes startup scripts as base64 before sending them to Vultr', () => {
+    const result = runProvision(['--print-api-payload', 'startup-script'], {
+      env: {
+        VULTR_TEST_STARTUP_SCRIPT: '#!/usr/bin/env bash\necho e2e',
+        VULTR_TEST_LABEL: 'cc-agent-ui-test',
+      },
+    });
+
+    expect(result.status).toBe(0);
+    const payload = JSON.parse(result.stdout);
+    expect(payload).toEqual({
+      name: 'cc-agent-ui-test-installer',
+      type: 'boot',
+      script: Buffer.from('#!/usr/bin/env bash\necho e2e', 'utf8').toString('base64'),
+    });
+  });
 });
