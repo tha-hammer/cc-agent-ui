@@ -1,42 +1,240 @@
 #!/usr/bin/env bash
-# install-vps.sh — Provision cc-agent-ui on a fresh Ubuntu VPS as a non-root systemd service.
-#
-# Usage (as root on the target VPS):
-#   curl -fsSL https://raw.githubusercontent.com/tha-hammer/cc-agent-ui/main/scripts/deploy/install-vps.sh | bash
-#   # or, after cloning:
-#   sudo bash scripts/deploy/install-vps.sh
-#
-# Idempotent: safe to re-run. Exits 0 if everything is already set up.
-#
-# What it does:
-#   1. Verifies running as root, on Ubuntu 22+/24+.
-#   2. Creates the `cloudcli` service user (no sudo).
-#   3. Installs system dependencies (node 22, npm, git, rsync, curl).
-#   4. Installs bun for the cloudcli user.
-#   5. Clones (or updates) the repo to /home/cloudcli/Dev/cosmic-agent-memory.
-#   6. Runs `npm install` in cc-agent-ui/.
-#   7. Installs the hardened systemd unit.
-#   8. Enables and starts the service.
-#
-# CRITICAL: This script REFUSES to install a unit with `User=root`. cc-agent-ui must
-# never run as root in production — see docs/DEPLOY.md for rationale.
+# install-vps.sh - Provision cc-agent-ui on a fresh Ubuntu VPS as a non-root
+# systemd service. This script is idempotent for normal installs and supports
+# dry-run/test modes for contract tests.
 
 set -euo pipefail
 
-readonly SVC_USER="cloudcli"
-readonly SVC_HOME="/home/${SVC_USER}"
-readonly REPO_URL="${CC_AGENT_UI_REPO_URL:-https://github.com/tha-hammer/cc-agent-ui.git}"
-# Pin to a specific tag or commit by setting CC_AGENT_UI_REF (e.g. CC_AGENT_UI_REF=v1.28.0).
-# Defaults to `main` for first-time installs; production operators should pin to tagged releases.
-readonly REPO_REF="${CC_AGENT_UI_REF:-main}"
-readonly REPO_PARENT="${SVC_HOME}/Dev/cosmic-agent-memory"
-readonly REPO_DIR="${REPO_PARENT}/cc-agent-ui"
-readonly UNIT_SRC="${REPO_DIR}/scripts/deploy/cc-agent-ui.service"
-readonly UNIT_DST="/etc/systemd/system/cc-agent-ui.service"
-readonly NODE_MAJOR=22
+SVC_USER="${CC_AGENT_UI_SVC_USER:-cloudcli}"
+SVC_HOME="/home/${SVC_USER}"
+REPO_URL="${CC_AGENT_UI_REPO_URL:-https://github.com/tha-hammer/cc-agent-ui.git}"
+REPO_REF="${CC_AGENT_UI_REF:-}"
+CLIENT_ID="${CC_AGENT_UI_CLIENT_ID:-}"
+REPO_PARENT="${SVC_HOME}/Dev/cosmic-agent-memory"
+REPO_DIR="${REPO_PARENT}/cc-agent-ui"
+UNIT_SRC="${REPO_DIR}/scripts/deploy/cc-agent-ui.service"
+UNIT_DST="/etc/systemd/system/cc-agent-ui.service"
+INSTALL_ENV_DIR="/etc/cc-agent-ui"
+INSTALL_ENV_FILE="${INSTALL_ENV_DIR}/install.env"
+NODE_MAJOR="${CC_AGENT_UI_NODE_MAJOR:-22}"
+SERVER_HOST="127.0.0.1"
+SERVER_PORT="3001"
+UPSTREAM="${SERVER_HOST}:${SERVER_PORT}"
+DOMAIN="${CC_AGENT_UI_DOMAIN:-}"
+EMAIL="${CC_AGENT_UI_EMAIL:-}"
+PROXY="${CC_AGENT_UI_PROXY:-auto}"
+TLS_ENABLED="false"
+ALLOW_FLOATING_REF="false"
+DRY_RUN="false"
+PRINT_CONFIG="false"
+VERIFY_ONLY="false"
+RUN_STEP=""
 
-log() { printf '\n\033[1;36m[install-vps]\033[0m %s\n' "$*"; }
-die() { printf '\n\033[1;31m[install-vps] ERROR:\033[0m %s\n' "$*" >&2; exit 1; }
+AGENT_CLI_PACKAGES=(
+  "@anthropic-ai/claude-code"
+  "@openai/codex"
+  "@google/gemini-cli"
+)
+AGENT_CLI_COMMANDS=(claude codex gemini)
+
+log() { printf '\n[install-vps] %s\n' "$*"; }
+die() { printf '\n[install-vps] ERROR: %s\n' "$*" >&2; exit 1; }
+
+quote_cmd() {
+  local out="" arg
+  for arg in "$@"; do
+    printf -v arg '%q' "$arg"
+    out+="${arg} "
+  done
+  printf '%s' "${out% }"
+}
+
+run_cmd() {
+  printf '%s\n' "$(quote_cmd "$@")"
+  if [[ "${DRY_RUN}" == "true" ]]; then
+    return 0
+  fi
+  "$@"
+}
+
+usage() {
+  cat <<'EOF'
+Usage:
+  sudo bash scripts/deploy/install-vps.sh --ref v1.28.0 [options]
+
+Required for normal installs:
+  --ref <tag-or-sha>          Pinned release tag or commit SHA.
+  --client-id <slug>          Commercial client slug. One client per VPS.
+
+Options:
+  --repo-url <url>            Git repository URL.
+  --domain <host>             Public DNS name for TLS proxy setup.
+  --email <address>           ACME/Let's Encrypt contact email.
+  --proxy <caddy|nginx|none>  TLS reverse proxy implementation.
+  --no-tls                    Skip TLS/proxy setup; keep local-only bind.
+  --allow-floating-ref        Permit refs like main/master/develop.
+  --verify-only               Run post-install health checks only.
+  --print-config              Print normalized config and exit.
+  --dry-run                   Print commands instead of executing them.
+  --run-step <name>           Run one installer step, mainly for tests.
+  --help                      Show this help.
+
+Environment equivalents:
+  CC_AGENT_UI_REPO_URL, CC_AGENT_UI_REF, CC_AGENT_UI_DOMAIN,
+  CC_AGENT_UI_EMAIL, CC_AGENT_UI_PROXY, CC_AGENT_UI_CLIENT_ID
+EOF
+}
+
+is_floating_ref() {
+  case "$1" in
+    main|master|develop|dev|trunk) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+is_allowed_pinned_ref() {
+  local ref="$1"
+  [[ "${ref}" =~ ^v[0-9]+(\.[0-9]+){1,3}([.-][A-Za-z0-9._-]+)?$ ]] && return 0
+  [[ "${ref}" =~ ^[0-9a-fA-F]{7,40}$ ]] && return 0
+  return 1
+}
+
+parse_args() {
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --repo-url)
+        [[ $# -ge 2 ]] || die "--repo-url requires a value"
+        REPO_URL="$2"
+        shift 2
+        ;;
+      --ref)
+        [[ $# -ge 2 ]] || die "--ref requires a value"
+        REPO_REF="$2"
+        shift 2
+        ;;
+      --client-id)
+        [[ $# -ge 2 ]] || die "--client-id requires a value"
+        CLIENT_ID="$2"
+        shift 2
+        ;;
+      --domain)
+        [[ $# -ge 2 ]] || die "--domain requires a value"
+        DOMAIN="$2"
+        shift 2
+        ;;
+      --email)
+        [[ $# -ge 2 ]] || die "--email requires a value"
+        EMAIL="$2"
+        shift 2
+        ;;
+      --proxy)
+        [[ $# -ge 2 ]] || die "--proxy requires a value"
+        PROXY="$2"
+        shift 2
+        ;;
+      --no-tls)
+        TLS_ENABLED="false"
+        PROXY="none"
+        shift
+        ;;
+      --allow-floating-ref)
+        ALLOW_FLOATING_REF="true"
+        shift
+        ;;
+      --verify-only)
+        VERIFY_ONLY="true"
+        shift
+        ;;
+      --print-config)
+        PRINT_CONFIG="true"
+        shift
+        ;;
+      --dry-run)
+        DRY_RUN="true"
+        shift
+        ;;
+      --run-step)
+        [[ $# -ge 2 ]] || die "--run-step requires a value"
+        RUN_STEP="$2"
+        shift 2
+        ;;
+      --help|-h)
+        usage
+        exit 0
+        ;;
+      *)
+        die "unknown option: $1"
+        ;;
+    esac
+  done
+}
+
+normalize_proxy_config() {
+  case "${PROXY}" in
+    auto)
+      if [[ -n "${DOMAIN}" || -n "${EMAIL}" ]]; then
+        PROXY="caddy"
+        TLS_ENABLED="true"
+      else
+        PROXY="none"
+        TLS_ENABLED="false"
+      fi
+      ;;
+    caddy|nginx)
+      TLS_ENABLED="true"
+      ;;
+    none)
+      TLS_ENABLED="false"
+      ;;
+    *)
+      die "--proxy must be one of: caddy, nginx, none"
+      ;;
+  esac
+
+  if [[ "${TLS_ENABLED}" == "true" ]]; then
+    [[ -n "${DOMAIN}" ]] || die "--domain is required when TLS/proxy setup is enabled"
+    [[ -n "${EMAIL}" ]] || die "--email is required when TLS/proxy setup is enabled"
+  fi
+}
+
+validate_repo_ref() {
+  [[ -n "${REPO_REF}" ]] || die "commercial installs require a pinned release; pass --ref vX.Y.Z or set CC_AGENT_UI_REF"
+
+  if is_floating_ref "${REPO_REF}"; then
+    [[ "${ALLOW_FLOATING_REF}" == "true" ]] || die "floating ref '${REPO_REF}' requires --allow-floating-ref"
+    return 0
+  fi
+
+  is_allowed_pinned_ref "${REPO_REF}" || die "ref '${REPO_REF}' is not a semver tag or commit SHA"
+}
+
+validate_client_id() {
+  [[ -n "${CLIENT_ID}" ]] || die "full commercial installs require --client-id because each VPS hosts exactly one client"
+  [[ "${CLIENT_ID}" =~ ^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$ ]] || die "--client-id must be 1-64 characters: letters, numbers, dot, underscore, or dash"
+}
+
+validate_config() {
+  validate_repo_ref
+  normalize_proxy_config
+}
+
+print_config() {
+  cat <<EOF
+svc_user=${SVC_USER}
+svc_home=${SVC_HOME}
+repo_url=${REPO_URL}
+repo_ref=${REPO_REF}
+client_id=${CLIENT_ID}
+repo_dir=${REPO_DIR}
+domain=${DOMAIN}
+email=${EMAIL}
+proxy=${PROXY}
+tls_enabled=${TLS_ENABLED}
+allow_floating_ref=${ALLOW_FLOATING_REF}
+verify_only=${VERIFY_ONLY}
+dry_run=${DRY_RUN}
+EOF
+}
 
 require_root() {
   [[ ${EUID} -eq 0 ]] || die "must run as root (try: sudo bash $0)"
@@ -46,150 +244,312 @@ require_ubuntu() {
   [[ -r /etc/os-release ]] || die "/etc/os-release not found"
   # shellcheck disable=SC1091
   . /etc/os-release
-  [[ "${ID:-}" == "ubuntu" ]] || die "this installer targets Ubuntu (got ID=${ID:-unknown}). Patch for your distro or run the steps in docs/DEPLOY.md manually."
+  [[ "${ID:-}" == "ubuntu" ]] || die "this installer targets Ubuntu (got ID=${ID:-unknown})"
   local major=${VERSION_ID%%.*}
-  (( major >= 22 )) || die "Ubuntu ${VERSION_ID} too old; need 22.04 or newer."
-  log "OS check: Ubuntu ${VERSION_ID} ✓"
+  (( major >= 22 )) || die "Ubuntu ${VERSION_ID} too old; need 22.04 or newer"
+  log "OS check: Ubuntu ${VERSION_ID}"
 }
 
 ensure_packages() {
-  log "Installing system packages (apt)…"
+  log "Installing system packages"
   export DEBIAN_FRONTEND=noninteractive
-  apt-get update -qq
-  apt-get install -y -qq curl git rsync ca-certificates gnupg
+  run_cmd apt-get update -qq
+  run_cmd apt-get install -y -qq curl git rsync ca-certificates gnupg
   if ! command -v node >/dev/null 2>&1 || ! node --version | grep -q "^v${NODE_MAJOR}\."; then
-    log "Installing Node.js ${NODE_MAJOR}.x via NodeSource…"
-    curl -fsSL "https://deb.nodesource.com/setup_${NODE_MAJOR}.x" | bash -
-    apt-get install -y -qq nodejs
+    log "Installing Node.js ${NODE_MAJOR}.x via NodeSource"
+    if [[ "${DRY_RUN}" == "true" ]]; then
+      printf '%s\n' "curl -fsSL https://deb.nodesource.com/setup_${NODE_MAJOR}.x | bash -"
+    else
+      curl -fsSL "https://deb.nodesource.com/setup_${NODE_MAJOR}.x" | bash -
+    fi
+    run_cmd apt-get install -y -qq nodejs
   fi
-  log "Node: $(node --version)  npm: $(npm --version)"
+  if [[ "${DRY_RUN}" == "false" ]]; then
+    log "Node: $(node --version) npm: $(npm --version)"
+  fi
 }
 
 ensure_user() {
   if id "${SVC_USER}" >/dev/null 2>&1; then
-    log "User ${SVC_USER} already exists ✓"
+    log "User ${SVC_USER} already exists"
   else
-    log "Creating user ${SVC_USER}…"
-    useradd -m -s /bin/bash "${SVC_USER}"
+    log "Creating user ${SVC_USER}"
+    run_cmd useradd -m -s /bin/bash "${SVC_USER}"
   fi
-  # Ensure NOT in sudo (least privilege)
-  if id -Gn "${SVC_USER}" | grep -qw sudo; then
-    log "Removing ${SVC_USER} from sudo group…"
-    gpasswd -d "${SVC_USER}" sudo
+
+  if id -Gn "${SVC_USER}" 2>/dev/null | grep -qw sudo; then
+    run_cmd gpasswd -d "${SVC_USER}" sudo
   fi
 }
 
 ensure_bun() {
-  if [[ -x "${SVC_HOME}/.bun/bin/bun" ]]; then
-    log "bun already installed ✓ ($(sudo -u "${SVC_USER}" "${SVC_HOME}/.bun/bin/bun" --version))"
+  if [[ -x "${SVC_HOME}/.bun/bin/bun" && "${DRY_RUN}" == "false" ]]; then
+    log "bun already installed ($("${SVC_HOME}/.bun/bin/bun" --version))"
     return
   fi
-  log "Installing bun for ${SVC_USER}…"
-  sudo -u "${SVC_USER}" -H bash -c 'curl -fsSL https://bun.sh/install | bash'
+  log "Ensuring bun for ${SVC_USER}"
+  run_cmd sudo -u "${SVC_USER}" -H bash -lc 'test -x "$HOME/.bun/bin/bun" || curl -fsSL https://bun.sh/install | bash'
+}
+
+install_agent_clis() {
+  log "Installing agent CLIs for ${SVC_USER}"
+  run_cmd install -d -m 755 -o "${SVC_USER}" -g "${SVC_USER}" "${SVC_HOME}/.local/bin"
+  run_cmd sudo -u "${SVC_USER}" -H npm install -g --prefix "${SVC_HOME}/.local" "${AGENT_CLI_PACKAGES[@]}"
+
+  local cmd
+  for cmd in "${AGENT_CLI_COMMANDS[@]}"; do
+    run_cmd sudo -u "${SVC_USER}" -H env "PATH=${SVC_HOME}/.local/bin:/usr/local/bin:/usr/bin:/bin" "${SVC_HOME}/.local/bin/${cmd}" --version
+  done
 }
 
 ensure_repo() {
   if [[ -d "${REPO_DIR}/.git" ]]; then
-    log "Repo already cloned at ${REPO_DIR}; fetching ref ${REPO_REF}…"
-    sudo -u "${SVC_USER}" -H git -C "${REPO_DIR}" fetch --tags origin
-    sudo -u "${SVC_USER}" -H git -C "${REPO_DIR}" checkout --force "${REPO_REF}"
-    # If REPO_REF is a branch (not a tag/commit), fast-forward to remote.
-    if sudo -u "${SVC_USER}" -H git -C "${REPO_DIR}" symbolic-ref -q HEAD >/dev/null; then
-      sudo -u "${SVC_USER}" -H git -C "${REPO_DIR}" pull --ff-only origin "${REPO_REF}"
+    log "Repo already cloned at ${REPO_DIR}; fetching ${REPO_REF}"
+    run_cmd sudo -u "${SVC_USER}" -H git -C "${REPO_DIR}" fetch --tags origin
+    run_cmd sudo -u "${SVC_USER}" -H git -C "${REPO_DIR}" checkout --force "${REPO_REF}"
+    if [[ "${DRY_RUN}" == "true" ]]; then
+      printf '%s\n' "sudo -u ${SVC_USER} -H git -C ${REPO_DIR} pull --ff-only origin ${REPO_REF} # only when HEAD is a branch"
+    elif sudo -u "${SVC_USER}" -H git -C "${REPO_DIR}" symbolic-ref -q HEAD >/dev/null; then
+      run_cmd sudo -u "${SVC_USER}" -H git -C "${REPO_DIR}" pull --ff-only origin "${REPO_REF}"
     fi
   elif [[ -e "${REPO_DIR}" ]]; then
-    die "${REPO_DIR} exists but is not a git checkout — refusing to clobber. Inspect or remove it manually."
+    die "${REPO_DIR} exists but is not a git checkout"
   else
-    log "Cloning ${REPO_URL} (ref ${REPO_REF}) → ${REPO_DIR}…"
-    sudo -u "${SVC_USER}" -H mkdir -p "${REPO_PARENT}"
-    sudo -u "${SVC_USER}" -H git clone "${REPO_URL}" "${REPO_DIR}"
-    sudo -u "${SVC_USER}" -H git -C "${REPO_DIR}" checkout --force "${REPO_REF}"
+    log "Cloning ${REPO_URL} (${REPO_REF})"
+    run_cmd sudo -u "${SVC_USER}" -H mkdir -p "${REPO_PARENT}"
+    run_cmd sudo -u "${SVC_USER}" -H git clone "${REPO_URL}" "${REPO_DIR}"
+    run_cmd sudo -u "${SVC_USER}" -H git -C "${REPO_DIR}" checkout --force "${REPO_REF}"
   fi
-  [[ -d "${REPO_DIR}/.git" ]] || die "repo dir ${REPO_DIR} missing after clone"
-  log "Checked out: $(sudo -u "${SVC_USER}" -H git -C "${REPO_DIR}" describe --always --dirty)"
+
+  if [[ "${DRY_RUN}" == "false" ]]; then
+    [[ -d "${REPO_DIR}/.git" ]] || die "repo dir ${REPO_DIR} missing after clone"
+    log "Checked out: $(sudo -u "${SVC_USER}" -H git -C "${REPO_DIR}" describe --always --dirty)"
+  fi
 }
 
 install_deps() {
-  log "Running npm install in ${REPO_DIR}…"
-  sudo -u "${SVC_USER}" -H bash -lc 'cd "$1" && npm install --no-audit --no-fund' _ "${REPO_DIR}"
+  log "Running npm install"
+  run_cmd sudo -u "${SVC_USER}" -H bash -lc 'cd "$1" && npm install --no-audit --no-fund' _ "${REPO_DIR}"
+}
+
+write_install_metadata() {
+  log "Writing install metadata"
+  if [[ "${DRY_RUN}" == "true" ]]; then
+    printf '%s\n' "write ${INSTALL_ENV_FILE}"
+    return
+  fi
+
+  install -d -m 755 -o root -g root "${INSTALL_ENV_DIR}"
+  cat > "${INSTALL_ENV_FILE}" <<EOF
+CC_AGENT_UI_CLIENT_ID=${CLIENT_ID}
+CC_AGENT_UI_REPO_URL=${REPO_URL}
+CC_AGENT_UI_REF=${REPO_REF}
+CC_AGENT_UI_DOMAIN=${DOMAIN}
+CC_AGENT_UI_SERVICE_USER=${SVC_USER}
+CC_AGENT_UI_SINGLE_TENANT=true
+EOF
+  chmod 0644 "${INSTALL_ENV_FILE}"
 }
 
 install_unit() {
-  [[ -f "${UNIT_SRC}" ]] || die "unit template not found at ${UNIT_SRC}"
-  # Copy the unit to a root-owned temp file BEFORE the security checks so the
-  # checked bytes are the bytes installed (closes a TOCTOU window where the
-  # unprivileged repo owner could swap the file between grep and install).
+  [[ "${DRY_RUN}" == "true" || -f "${UNIT_SRC}" ]] || die "unit template not found at ${UNIT_SRC}"
+  log "Installing systemd unit"
+  if [[ "${DRY_RUN}" == "true" ]]; then
+    printf '%s\n' "install -m 644 -o root -g root ${UNIT_SRC} ${UNIT_DST}"
+    printf '%s\n' "systemctl daemon-reload"
+    return
+  fi
+
   local staged
   staged=$(mktemp -p /root cc-agent-ui.service.XXXXXX)
   install -m 600 -o root -g root "${UNIT_SRC}" "${staged}"
   trap 'rm -f "${staged}"' RETURN
   if grep -Eq '^[[:space:]]*User[[:space:]]*=[[:space:]]*root[[:space:]]*$' "${staged}"; then
-    die "unit declares User=root — refusing to install. cc-agent-ui must not run as root."
+    die "unit declares User=root; refusing to install"
   fi
-  if ! grep -Eq "^[[:space:]]*User[[:space:]]*=[[:space:]]*${SVC_USER}[[:space:]]*$" "${staged}"; then
-    die "unit does not declare User=${SVC_USER} — bailing."
-  fi
-  log "Installing systemd unit → ${UNIT_DST}"
+  grep -Eq "^[[:space:]]*User[[:space:]]*=[[:space:]]*${SVC_USER}[[:space:]]*$" "${staged}" || die "unit does not declare User=${SVC_USER}"
   install -m 644 -o root -g root "${staged}" "${UNIT_DST}"
   systemctl daemon-reload
 }
 
-start_service() {
-  log "Enabling + starting cc-agent-ui…"
-  systemctl enable cc-agent-ui
-  systemctl restart cc-agent-ui
+render_caddyfile() {
+  cat <<EOF
+${DOMAIN} {
+  encode zstd gzip
+  reverse_proxy ${UPSTREAM}
+}
+EOF
+}
 
-  # Poll up to 30s for service to reach active state.
-  local i
-  for ((i = 0; i < 30; i++)); do
-    if systemctl --quiet is-active cc-agent-ui; then break; fi
-    sleep 1
-  done
-  if ! systemctl --quiet is-active cc-agent-ui; then
-    journalctl -u cc-agent-ui -n 50 --no-pager
-    die "service failed to reach active state within 30s; see journal above."
+render_nginx_server_block() {
+  cat <<EOF
+server {
+    listen 80;
+    server_name ${DOMAIN};
+
+    location / {
+        proxy_pass http://${UPSTREAM};
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_read_timeout 300s;
+    }
+}
+EOF
+}
+
+configure_proxy() {
+  if [[ "${TLS_ENABLED}" != "true" || "${PROXY}" == "none" ]]; then
+    log "TLS/proxy setup disabled"
+    return
   fi
 
-  local pid owner
-  pid=$(systemctl show -p MainPID --value cc-agent-ui)
-  owner=$(ps -o user= -p "${pid}" 2>/dev/null || true)
-  [[ "${owner}" == "${SVC_USER}" ]] || die "service running as '${owner}', expected '${SVC_USER}'."
-  log "service running as ${SVC_USER} (PID ${pid}) ✓"
+  case "${PROXY}" in
+    caddy)
+      log "Configuring Caddy TLS reverse proxy"
+      run_cmd apt-get install -y -qq caddy
+      if [[ "${DRY_RUN}" == "true" ]]; then
+        printf '%s\n' "write /etc/caddy/Caddyfile"
+      else
+        render_caddyfile > /etc/caddy/Caddyfile
+      fi
+      run_cmd caddy validate --config /etc/caddy/Caddyfile
+      run_cmd systemctl enable caddy
+      run_cmd systemctl reload caddy
+      ;;
+    nginx)
+      log "Configuring nginx TLS reverse proxy"
+      run_cmd apt-get install -y -qq nginx certbot python3-certbot-nginx
+      if [[ "${DRY_RUN}" == "true" ]]; then
+        printf '%s\n' "write /etc/nginx/sites-available/cc-agent-ui.conf"
+      else
+        render_nginx_server_block > /etc/nginx/sites-available/cc-agent-ui.conf
+        ln -sf /etc/nginx/sites-available/cc-agent-ui.conf /etc/nginx/sites-enabled/cc-agent-ui.conf
+      fi
+      run_cmd nginx -t
+      run_cmd systemctl reload nginx
+      run_cmd certbot --nginx -d "${DOMAIN}" --email "${EMAIL}" --agree-tos --non-interactive --redirect
+      ;;
+  esac
+}
+
+start_service() {
+  log "Enabling and starting cc-agent-ui"
+  run_cmd systemctl enable cc-agent-ui
+  run_cmd systemctl restart cc-agent-ui
+  if [[ "${DRY_RUN}" == "false" ]]; then
+    local i
+    for ((i = 0; i < 30; i++)); do
+      systemctl --quiet is-active cc-agent-ui && break
+      sleep 1
+    done
+  fi
+  run_health_checks
+}
+
+check_http() {
+  local url="$1"
+  if [[ "${DRY_RUN}" == "true" ]]; then
+    printf '%s\n' "curl -fsS ${url}"
+    return 0
+  fi
+  if ! curl -fsS "${url}" >/dev/null; then
+    journalctl -u cc-agent-ui -n 50 --no-pager || true
+    die "health check failed for ${url}"
+  fi
+}
+
+check_websocket_readiness() {
+  local script
+  script='const net=require("node:net");const s=net.connect(3001,"127.0.0.1",()=>{s.write("GET /ws HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n")});s.setTimeout(5000);s.on("data",()=>{s.destroy();process.exit(0)});s.on("error",(e)=>{console.error(e.message);process.exit(1)});s.on("timeout",()=>{console.error("websocket readiness timeout");process.exit(1)});'
+  run_cmd node -e "${script}"
+}
+
+run_health_checks() {
+  log "Running health checks"
+  run_cmd systemctl is-active cc-agent-ui
+  run_cmd bash -lc "owner=\$(ps -o user= -p \"\$(systemctl show -p MainPID --value cc-agent-ui)\" | tr -d ' '); test \"\$owner\" = '${SVC_USER}'"
+  if [[ -n "${CLIENT_ID}" ]]; then
+    run_cmd test -r "${INSTALL_ENV_FILE}"
+    run_cmd grep -Fx "CC_AGENT_UI_CLIENT_ID=${CLIENT_ID}" "${INSTALL_ENV_FILE}"
+    run_cmd grep -Fx "CC_AGENT_UI_SINGLE_TENANT=true" "${INSTALL_ENV_FILE}"
+  fi
+  check_http "http://${UPSTREAM}/health"
+  check_http "http://${UPSTREAM}/"
+  check_http "http://${UPSTREAM}/app"
+  check_websocket_readiness
+
+  local cmd
+  for cmd in "${AGENT_CLI_COMMANDS[@]}"; do
+    run_cmd sudo -u "${SVC_USER}" -H env "PATH=${SVC_HOME}/.local/bin:/usr/local/bin:/usr/bin:/bin" "${SVC_HOME}/.local/bin/${cmd}" --version
+  done
 }
 
 post_install_summary() {
   cat <<EOF
 
-================================================================================
-  cc-agent-ui installed successfully.
+cc-agent-ui installed successfully.
 
-  Service:       cc-agent-ui.service     (User=${SVC_USER})
-  Working dir:   ${REPO_DIR}
-  Bind:          127.0.0.1:3001  (proxy with nginx/Caddy for public access)
-  Logs:          journalctl -u cc-agent-ui -f
-  Restart:       sudo systemctl restart cc-agent-ui
+Service:     cc-agent-ui.service (User=${SVC_USER})
+Client:      ${CLIENT_ID}
+Working dir: ${REPO_DIR}
+Bind:        http://${UPSTREAM}
+Ref:         ${REPO_REF}
+Proxy:       ${PROXY}
 
-  Verify:
-    curl -sS -o /dev/null -w 'HTTP %{http_code}\\n' http://127.0.0.1:3001/
-    systemd-analyze security cc-agent-ui
-
-  See docs/DEPLOY.md for TLS, reverse proxy, and operational notes.
-================================================================================
-
+Verify:
+  sudo bash scripts/deploy/install-vps.sh --ref ${REPO_REF} --verify-only --no-tls
+  journalctl -u cc-agent-ui -f
 EOF
 }
 
+run_named_step() {
+  case "${RUN_STEP}" in
+    install_agent_clis) install_agent_clis ;;
+    configure_proxy) configure_proxy ;;
+    run_health_checks) run_health_checks ;;
+    "") die "--run-step requires a step name" ;;
+    *) die "unknown run step: ${RUN_STEP}" ;;
+  esac
+}
+
 main() {
+  parse_args "$@"
+  validate_config
+
+  if [[ "${PRINT_CONFIG}" == "true" ]]; then
+    print_config
+    return 0
+  fi
+
+  if [[ -n "${RUN_STEP}" ]]; then
+    run_named_step
+    return 0
+  fi
+
+  if [[ "${VERIFY_ONLY}" == "true" ]]; then
+    run_health_checks
+    return 0
+  fi
+
+  validate_client_id
   require_root
   require_ubuntu
   ensure_packages
   ensure_user
   ensure_bun
+  install_agent_clis
   ensure_repo
   install_deps
+  write_install_metadata
   install_unit
+  configure_proxy
   start_service
   post_install_summary
 }
 
-main "$@"
+if [[ -z "${BASH_SOURCE[0]:-}" || "${BASH_SOURCE[0]:-}" == "$0" ]]; then
+  main "$@"
+fi
