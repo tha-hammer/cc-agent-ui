@@ -92,5 +92,24 @@ describe('Vultr provisioner contract', () => {
     expect(result.stdout).toContain('"client_id":"acme"');
     expect(result.stdout).toContain('"region":"ewr"');
     expect(result.stdout).toContain('"plan":"vc2-2c-4gb"');
+    expect(result.stdout).toContain('"ssh_key_name":"operator"');
+    expect(result.stdout).toContain('"ssh_public_key_file":"/tmp/operator.pub"');
+  });
+
+  it('requires ssh key inputs when creating an instance payload', () => {
+    const result = runProvision([
+      '--dry-run',
+      '--label', 'cc-agent-ui-test',
+      '--region', 'ewr',
+      '--plan', 'vc2-2c-4gb',
+      '--os-id', '2284',
+      '--repo-url', 'https://github.com/tha-hammer/cc-agent-ui.git',
+      '--ref', 'v1.28.0',
+      '--client-id', 'acme',
+      '--no-tls',
+    ]);
+
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('--ssh-key-name');
   });
 });

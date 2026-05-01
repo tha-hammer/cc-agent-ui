@@ -117,6 +117,7 @@ CLAUDE.md
 
 logs
 dev-debug.log
+install.env
 # Editor directories and files
 .idea
 .vscode

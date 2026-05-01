@@ -212,6 +212,8 @@ validate_dry_run_inputs() {
   [[ -n "${REGION}" ]] || die "--region is required"
   [[ -n "${PLAN}" ]] || die "--plan is required"
   [[ -n "${OS_ID}" ]] || die "--os-id is required"
+  [[ -n "${SSH_KEY_NAME}" ]] || die "--ssh-key-name is required"
+  [[ -n "${SSH_PUBLIC_KEY_FILE}" ]] || die "--ssh-public-key-file is required"
   [[ -n "${REPO_REF}" ]] || die "--ref is required"
 }
 
@@ -224,16 +226,37 @@ print_dry_run_payload() {
   validate_dry_run_inputs
   local startup_script
   startup_script="$(render_startup_script)"
-  printf '{"label":"%s","client_id":"%s","region":"%s","plan":"%s","os_id":%s,"repo_url":"%s","ref":"%s","reuse_existing":%s,"startup_script":"%s"}\n' \
+  printf '{"label":"%s","client_id":"%s","region":"%s","plan":"%s","os_id":%s,"ssh_key_name":"%s","ssh_public_key_file":"%s","repo_url":"%s","ref":"%s","reuse_existing":%s,"startup_script":"%s"}\n' \
     "$(json_escape "${LABEL}")" \
     "$(json_escape "${CLIENT_ID}")" \
     "$(json_escape "${REGION}")" \
     "$(json_escape "${PLAN}")" \
     "${OS_ID}" \
+    "$(json_escape "${SSH_KEY_NAME}")" \
+    "$(json_escape "${SSH_PUBLIC_KEY_FILE}")" \
     "$(json_escape "${REPO_URL}")" \
     "$(json_escape "${REPO_REF}")" \
     "${REUSE_EXISTING}" \
     "$(json_escape "${startup_script}")"
+}
+
+ensure_ssh_key() {
+  [[ -r "${SSH_PUBLIC_KEY_FILE}" ]] || die "SSH public key file not readable: ${SSH_PUBLIC_KEY_FILE}"
+
+  local keys_response existing_id public_key body create_response ssh_key_id
+  keys_response="$(vultr_api GET /v2/ssh-keys)"
+  existing_id="$(printf '%s' "${keys_response}" | SSH_KEY_NAME="${SSH_KEY_NAME}" node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{const j=JSON.parse(s);const key=(j.ssh_keys||[]).find(k=>k.name===process.env.SSH_KEY_NAME);console.log(key?.id || "")})')"
+  if [[ -n "${existing_id}" ]]; then
+    printf '%s\n' "${existing_id}"
+    return 0
+  fi
+
+  public_key="$(< "${SSH_PUBLIC_KEY_FILE}")"
+  body="$(SSH_KEY_NAME="${SSH_KEY_NAME}" SSH_PUBLIC_KEY="${public_key}" node -e 'console.log(JSON.stringify({name: process.env.SSH_KEY_NAME, ssh_key: process.env.SSH_PUBLIC_KEY}))')"
+  create_response="$(vultr_api POST /v2/ssh-keys "${body}")"
+  ssh_key_id="$(printf '%s' "${create_response}" | node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{const j=JSON.parse(s);console.log(j.ssh_key?.id || "")})')"
+  [[ -n "${ssh_key_id}" ]] || die "failed to parse ssh key id"
+  printf '%s\n' "${ssh_key_id}"
 }
 
 provision_instance() {
@@ -241,14 +264,15 @@ provision_instance() {
   require_vultr_token
   command -v node >/dev/null 2>&1 || die "node is required to build Vultr JSON payloads"
 
-  local startup_script startup_body startup_response script_id instance_body instance_response instance_id
+  local startup_script startup_body startup_response script_id ssh_key_id instance_body instance_response instance_id
   startup_script="$(render_startup_script)"
   startup_body="$(STARTUP_SCRIPT="${startup_script}" LABEL="${LABEL}" node -e 'console.log(JSON.stringify({name: `${process.env.LABEL}-installer`, type: "boot", script: process.env.STARTUP_SCRIPT}))')"
   startup_response="$(vultr_api POST /v2/startup-scripts "${startup_body}")"
   script_id="$(printf '%s' "${startup_response}" | node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{const j=JSON.parse(s);console.log(j.startup_script?.id || "")})')"
   [[ -n "${script_id}" ]] || die "failed to parse startup script id"
 
-  instance_body="$(LABEL="${LABEL}" REGION="${REGION}" PLAN="${PLAN}" OS_ID="${OS_ID}" SCRIPT_ID="${script_id}" node -e 'console.log(JSON.stringify({region: process.env.REGION, plan: process.env.PLAN, os_id: Number(process.env.OS_ID), label: process.env.LABEL, script_id: process.env.SCRIPT_ID}))')"
+  ssh_key_id="$(ensure_ssh_key)"
+  instance_body="$(LABEL="${LABEL}" REGION="${REGION}" PLAN="${PLAN}" OS_ID="${OS_ID}" SCRIPT_ID="${script_id}" SSH_KEY_ID="${ssh_key_id}" node -e 'console.log(JSON.stringify({region: process.env.REGION, plan: process.env.PLAN, os_id: Number(process.env.OS_ID), label: process.env.LABEL, script_id: process.env.SCRIPT_ID, sshkey_id: [process.env.SSH_KEY_ID]}))')"
   instance_response="$(vultr_api POST /v2/instances "${instance_body}")"
   instance_id="$(printf '%s' "${instance_response}" | node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{const j=JSON.parse(s);console.log(j.instance?.id || "")})')"
   [[ -n "${instance_id}" ]] || die "failed to parse instance id"
