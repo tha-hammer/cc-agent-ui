@@ -38,6 +38,7 @@ INSTALL_ENV_FILE="${INSTALL_ENV_DIR}/install.env"
 NODE_MAJOR="${CC_AGENT_UI_NODE_MAJOR:-22}"
 SERVER_HOST="127.0.0.1"
 SERVER_PORT="3001"
+VITE_PORT="${CC_AGENT_UI_VITE_PORT:-5173}"
 UPSTREAM="${SERVER_HOST}:${SERVER_PORT}"
 DOMAIN="${CC_AGENT_UI_DOMAIN:-}"
 EMAIL="${CC_AGENT_UI_EMAIL:-}"
@@ -508,6 +509,11 @@ install_deps() {
   run_cmd sudo -u "${SVC_USER}" -H bash -lc 'cd "$1" && npm install --no-audit --no-fund' _ "${REPO_DIR}"
 }
 
+build_frontend() {
+  log "Building frontend bundle (dist/)"
+  run_cmd sudo -u "${SVC_USER}" -H bash -lc 'cd "$1" && npm run build' _ "${REPO_DIR}"
+}
+
 write_install_metadata() {
   log "Writing install metadata"
   if [[ "${DRY_RUN}" == "true" ]]; then
@@ -542,7 +548,7 @@ install_unit() {
   local staged
   staged=$(mktemp -p /root cc-agent-ui.service.XXXXXX)
   install -m 600 -o root -g root "${UNIT_SRC}" "${staged}"
-  trap 'rm -f "${staged}"' RETURN
+  trap 'rm -f "${staged:-}"' RETURN
   if grep -Eq '^[[:space:]]*User[[:space:]]*=[[:space:]]*root[[:space:]]*$' "${staged}"; then
     die "unit declares User=root; refusing to install"
   fi
@@ -663,6 +669,28 @@ check_websocket_readiness() {
   die "websocket readiness check failed"
 }
 
+check_no_vite_redirect() {
+  local url="$1"
+  if [[ "${DRY_RUN}" == "true" ]]; then
+    printf '%s\n' "assert no redirect to :${VITE_PORT} for ${url}"
+    return 0
+  fi
+
+  local i headers location
+  for ((i = 1; i <= 60; i++)); do
+    headers=$(curl -sS -D - -o /dev/null "${url}" || true)
+    location=$(printf '%s\n' "${headers}" | awk 'BEGIN{IGNORECASE=1} /^Location:/ {print $2}' | tr -d '\r' || true)
+    if [[ "${location}" == *":${VITE_PORT}"* ]]; then
+      sleep 1
+      continue
+    fi
+    return 0
+  done
+
+  journalctl -u cc-agent-ui -n 50 --no-pager || true
+  die "unexpected redirect to Vite dev server :${VITE_PORT} for ${url}"
+}
+
 run_health_checks() {
   log "Running health checks"
   run_cmd systemctl is-active cc-agent-ui
@@ -672,7 +700,10 @@ run_health_checks() {
     run_cmd grep -Fx "CC_AGENT_UI_CLIENT_ID=${CLIENT_ID}" "${INSTALL_ENV_FILE}"
     run_cmd grep -Fx "CC_AGENT_UI_SINGLE_TENANT=true" "${INSTALL_ENV_FILE}"
   fi
+  run_cmd test -f "${REPO_DIR}/dist/index.html"
   check_http "http://${UPSTREAM}/health"
+  check_no_vite_redirect "http://${UPSTREAM}/"
+  check_no_vite_redirect "http://${UPSTREAM}/app"
   check_http "http://${UPSTREAM}/"
   check_http "http://${UPSTREAM}/app"
   check_websocket_readiness
@@ -708,6 +739,7 @@ EOF
 run_named_step() {
   case "${RUN_STEP}" in
     install_agent_clis) install_agent_clis ;;
+    build_frontend) build_frontend ;;
     ensure_monorepo_packages)
       require_monorepo_ref
       ensure_monorepo_packages
@@ -750,6 +782,7 @@ main() {
   ensure_repo
   ensure_monorepo_packages
   install_deps
+  build_frontend
   write_install_metadata
   install_unit
   configure_proxy
