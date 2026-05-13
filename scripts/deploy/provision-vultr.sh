@@ -13,6 +13,11 @@ SSH_KEY_NAME=""
 SSH_PUBLIC_KEY_FILE=""
 REPO_URL="${CC_AGENT_UI_REPO_URL:-https://github.com/tha-hammer/cc-agent-ui.git}"
 REPO_REF="${CC_AGENT_UI_REF:-}"
+# cc-agent-ui install-vps.sh also requires a pinned agent-memory monorepo ref
+# so packages/session-protocol and app surfaces resolve deterministically.
+MONOREPO_URL="${CC_AGENT_UI_MONOREPO_URL:-https://github.com/tha-hammer/agent-memory.git}"
+MONOREPO_REF="${CC_AGENT_UI_MONOREPO_REF:-}"
+REQUIRED_MONOREPO_APPS_RAW="${CC_AGENT_UI_REQUIRED_MONOREPO_APPS:-cosmic-agent-core,silmari-genui,cosmic-video}"
 CLIENT_ID="${CC_AGENT_UI_CLIENT_ID:-}"
 DOMAIN=""
 EMAIL=""
@@ -33,7 +38,8 @@ usage() {
 Usage:
   scripts/deploy/provision-vultr.sh --label NAME --region ewr --plan vc2-2c-4gb \
     --os-id 2284 --ssh-key-name operator --ssh-public-key-file ~/.ssh/id_ed25519.pub \
-    --repo-url https://github.com/tha-hammer/cc-agent-ui.git --ref v1.28.0 [options]
+    --repo-url https://github.com/tha-hammer/cc-agent-ui.git --ref v1.28.0 \
+    --monorepo-ref v1.28.0 [options]
 
 Options:
   --label <name>                 Vultr instance label.
@@ -44,6 +50,8 @@ Options:
   --ssh-public-key-file <path>   Local SSH public key file.
   --repo-url <url>               Installer repo URL.
   --ref <tag-or-sha>             Pinned installer/app ref.
+  --monorepo-url <url>           Agent-memory monorepo URL.
+  --monorepo-ref <tag-or-sha>    Pinned monorepo ref for packages/apps.
   --client-id <slug>             Commercial client slug. One client per VPS.
   --domain <host>                Public DNS name for TLS setup.
   --email <address>              ACME contact email.
@@ -75,6 +83,8 @@ parse_args() {
       --ssh-public-key-file) SSH_PUBLIC_KEY_FILE="$2"; shift 2 ;;
       --repo-url) REPO_URL="$2"; shift 2 ;;
       --ref) REPO_REF="$2"; shift 2 ;;
+      --monorepo-url) MONOREPO_URL="$2"; shift 2 ;;
+      --monorepo-ref) MONOREPO_REF="$2"; shift 2 ;;
       --client-id) CLIENT_ID="$2"; shift 2 ;;
       --domain) DOMAIN="$2"; shift 2 ;;
       --email) EMAIL="$2"; shift 2 ;;
@@ -183,10 +193,17 @@ shell_quote() {
 
 render_startup_script() {
   [[ -n "${REPO_REF}" ]] || die "--ref is required"
+  [[ -n "${MONOREPO_REF}" ]] || die "--monorepo-ref is required"
   validate_client_id
 
   local install_args
-  install_args=(--repo-url "${REPO_URL}" --ref "${REPO_REF}" --client-id "${CLIENT_ID}")
+  install_args=(
+    --repo-url "${REPO_URL}"
+    --ref "${REPO_REF}"
+    --monorepo-url "${MONOREPO_URL}"
+    --monorepo-ref "${MONOREPO_REF}"
+    --client-id "${CLIENT_ID}"
+  )
   if [[ "${NO_TLS}" == "true" ]]; then
     install_args+=(--no-tls)
   else
@@ -199,6 +216,9 @@ render_startup_script() {
 set -euo pipefail
 export CC_AGENT_UI_REPO_URL=$(printf '%q' "${REPO_URL}")
 export CC_AGENT_UI_REF=$(printf '%q' "${REPO_REF}")
+export CC_AGENT_UI_MONOREPO_URL=$(printf '%q' "${MONOREPO_URL}")
+export CC_AGENT_UI_MONOREPO_REF=$(printf '%q' "${MONOREPO_REF}")
+export CC_AGENT_UI_REQUIRED_MONOREPO_APPS=$(printf '%q' "${REQUIRED_MONOREPO_APPS_RAW}")
 export CC_AGENT_UI_CLIENT_ID=$(printf '%q' "${CLIENT_ID}")
 apt-get update -qq
 apt-get install -y -qq curl git ca-certificates
@@ -222,6 +242,8 @@ validate_dry_run_inputs() {
   [[ -n "${SSH_KEY_NAME}" ]] || die "--ssh-key-name is required"
   [[ -n "${SSH_PUBLIC_KEY_FILE}" ]] || die "--ssh-public-key-file is required"
   [[ -n "${REPO_REF}" ]] || die "--ref is required"
+  [[ -n "${MONOREPO_REF}" ]] || die "--monorepo-ref is required"
+  [[ -n "${REQUIRED_MONOREPO_APPS_RAW}" ]] || die "CC_AGENT_UI_REQUIRED_MONOREPO_APPS cannot be empty"
 }
 
 validate_client_id() {
@@ -233,7 +255,7 @@ print_dry_run_payload() {
   validate_dry_run_inputs
   local startup_script
   startup_script="$(render_startup_script)"
-  printf '{"label":"%s","client_id":"%s","region":"%s","plan":"%s","os_id":%s,"ssh_key_name":"%s","ssh_public_key_file":"%s","repo_url":"%s","ref":"%s","reuse_existing":%s,"startup_script":"%s"}\n' \
+  printf '{"label":"%s","client_id":"%s","region":"%s","plan":"%s","os_id":%s,"ssh_key_name":"%s","ssh_public_key_file":"%s","repo_url":"%s","ref":"%s","monorepo_url":"%s","monorepo_ref":"%s","required_monorepo_apps":"%s","reuse_existing":%s,"startup_script":"%s"}\n' \
     "$(json_escape "${LABEL}")" \
     "$(json_escape "${CLIENT_ID}")" \
     "$(json_escape "${REGION}")" \
@@ -243,6 +265,9 @@ print_dry_run_payload() {
     "$(json_escape "${SSH_PUBLIC_KEY_FILE}")" \
     "$(json_escape "${REPO_URL}")" \
     "$(json_escape "${REPO_REF}")" \
+    "$(json_escape "${MONOREPO_URL}")" \
+    "$(json_escape "${MONOREPO_REF}")" \
+    "$(json_escape "${REQUIRED_MONOREPO_APPS_RAW}")" \
     "${REUSE_EXISTING}" \
     "$(json_escape "${startup_script}")"
 }

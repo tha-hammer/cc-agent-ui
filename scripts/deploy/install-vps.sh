@@ -10,8 +10,27 @@ SVC_HOME="/home/${SVC_USER}"
 REPO_URL="${CC_AGENT_UI_REPO_URL:-https://github.com/tha-hammer/cc-agent-ui.git}"
 REPO_REF="${CC_AGENT_UI_REF:-}"
 CLIENT_ID="${CC_AGENT_UI_CLIENT_ID:-}"
+# Q1 (SSE wire protocol) split a shared package out of cc-agent-ui:
+# `@cosmic-agent/session-protocol` lives in the agent-memory monorepo's
+# packages/ dir. cc-agent-ui's package.json declares `file:../packages/...`
+# so the monorepo clone has to land alongside the cc-agent-ui clone.
+# Current monorepo layout also carries:
+#   - apps/cosmic-agent-core  (AAI source tree)
+#   - apps/silmari-genui      (genui framework app)
+#   - apps/cosmic-video       (video compositor/transcriber app)
+MONOREPO_URL="${CC_AGENT_UI_MONOREPO_URL:-https://github.com/tha-hammer/agent-memory.git}"
+MONOREPO_REF="${CC_AGENT_UI_MONOREPO_REF:-}"
+# Comma-separated app directories expected under <monorepo>/apps.
+# Defaults reflect the current production surfaces:
+#   - cosmic-agent-core (AAI infrastructure)
+#   - silmari-genui     (second UI surface)
+#   - cosmic-video      (video processing app)
+REQUIRED_MONOREPO_APPS_RAW="${CC_AGENT_UI_REQUIRED_MONOREPO_APPS:-cosmic-agent-core,silmari-genui,cosmic-video}"
 REPO_PARENT="${SVC_HOME}/Dev/cosmic-agent-memory"
 REPO_DIR="${REPO_PARENT}/cc-agent-ui"
+MONOREPO_DIR="${REPO_PARENT}/_monorepo"
+PACKAGES_LINK="${REPO_PARENT}/packages"
+APPS_LINK="${REPO_PARENT}/apps"
 UNIT_SRC="${REPO_DIR}/scripts/deploy/cc-agent-ui.service"
 UNIT_DST="/etc/systemd/system/cc-agent-ui.service"
 INSTALL_ENV_DIR="/etc/cc-agent-ui"
@@ -36,6 +55,7 @@ AGENT_CLI_PACKAGES=(
   "@google/gemini-cli"
 )
 AGENT_CLI_COMMANDS=(claude codex gemini)
+REQUIRED_MONOREPO_APPS=()
 
 log() { printf '\n[install-vps] %s\n' "$*"; }
 die() { printf '\n[install-vps] ERROR: %s\n' "$*" >&2; exit 1; }
@@ -63,16 +83,23 @@ Usage:
   sudo bash scripts/deploy/install-vps.sh --ref v1.28.0 [options]
 
 Required for normal installs:
-  --ref <tag-or-sha>          Pinned release tag or commit SHA.
+  --ref <tag-or-sha>          Pinned cc-agent-ui release tag or commit SHA.
+  --monorepo-ref <tag-or-sha> Pinned agent-memory monorepo ref. Provides
+                              packages/session-protocol/ (required by
+                              cc-agent-ui via file:../packages) plus the apps/
+                              subtree (cosmic-agent-core, silmari-genui,
+                              cosmic-video) for one-client-per-VPS routing.
   --client-id <slug>          Commercial client slug. One client per VPS.
 
 Options:
-  --repo-url <url>            Git repository URL.
+  --repo-url <url>            cc-agent-ui git repository URL.
+  --monorepo-url <url>        agent-memory monorepo URL.
   --domain <host>             Public DNS name for TLS proxy setup.
   --email <address>           ACME/Let's Encrypt contact email.
   --proxy <caddy|nginx|none>  TLS reverse proxy implementation.
   --no-tls                    Skip TLS/proxy setup; keep local-only bind.
-  --allow-floating-ref        Permit refs like main/master/develop.
+  --allow-floating-ref        Permit refs like main/master/develop (applies
+                              to BOTH --ref and --monorepo-ref).
   --verify-only               Run post-install health checks only.
   --print-config              Print normalized config and exit.
   --dry-run                   Print commands instead of executing them.
@@ -81,7 +108,9 @@ Options:
 
 Environment equivalents:
   CC_AGENT_UI_REPO_URL, CC_AGENT_UI_REF, CC_AGENT_UI_DOMAIN,
-  CC_AGENT_UI_EMAIL, CC_AGENT_UI_PROXY, CC_AGENT_UI_CLIENT_ID
+  CC_AGENT_UI_EMAIL, CC_AGENT_UI_PROXY, CC_AGENT_UI_CLIENT_ID,
+  CC_AGENT_UI_MONOREPO_URL, CC_AGENT_UI_MONOREPO_REF,
+  CC_AGENT_UI_REQUIRED_MONOREPO_APPS
 EOF
 }
 
@@ -110,6 +139,16 @@ parse_args() {
       --ref)
         [[ $# -ge 2 ]] || die "--ref requires a value"
         REPO_REF="$2"
+        shift 2
+        ;;
+      --monorepo-url)
+        [[ $# -ge 2 ]] || die "--monorepo-url requires a value"
+        MONOREPO_URL="$2"
+        shift 2
+        ;;
+      --monorepo-ref)
+        [[ $# -ge 2 ]] || die "--monorepo-ref requires a value"
+        MONOREPO_REF="$2"
         shift 2
         ;;
       --client-id)
@@ -208,6 +247,28 @@ validate_repo_ref() {
   is_allowed_pinned_ref "${REPO_REF}" || die "ref '${REPO_REF}' is not a semver tag or commit SHA"
 }
 
+validate_monorepo_ref() {
+  # Format-only check: tolerates empty MONOREPO_REF so paths that don't need
+  # the monorepo (--print-config without --monorepo-ref, --run-step
+  # install_agent_clis, etc.) don't have to invent a placeholder. The
+  # presence requirement is enforced separately by require_monorepo_ref.
+  [[ -n "${MONOREPO_REF}" ]] || return 0
+
+  if is_floating_ref "${MONOREPO_REF}"; then
+    [[ "${ALLOW_FLOATING_REF}" == "true" ]] || die "floating monorepo ref '${MONOREPO_REF}' requires --allow-floating-ref"
+    return 0
+  fi
+
+  is_allowed_pinned_ref "${MONOREPO_REF}" || die "monorepo ref '${MONOREPO_REF}' is not a semver tag or commit SHA"
+}
+
+require_monorepo_ref() {
+  # Hard requirement. Called from the full install path and from
+  # `--run-step ensure_monorepo_packages` — anything that actually clones
+  # the monorepo.
+  [[ -n "${MONOREPO_REF}" ]] || die "commercial installs require a pinned monorepo ref so packages/session-protocol matches the cc-agent-ui release; pass --monorepo-ref vX.Y.Z or set CC_AGENT_UI_MONOREPO_REF"
+}
+
 validate_client_id() {
   [[ -n "${CLIENT_ID}" ]] || die "full commercial installs require --client-id because each VPS hosts exactly one client"
   [[ "${CLIENT_ID}" =~ ^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$ ]] || die "--client-id must be 1-64 characters: letters, numbers, dot, underscore, or dash"
@@ -215,7 +276,38 @@ validate_client_id() {
 
 validate_config() {
   validate_repo_ref
+  validate_monorepo_ref
   normalize_proxy_config
+}
+
+parse_required_monorepo_apps() {
+  REQUIRED_MONOREPO_APPS=()
+  local raw_apps app
+  IFS=',' read -r -a raw_apps <<< "${REQUIRED_MONOREPO_APPS_RAW}"
+
+  for app in "${raw_apps[@]}"; do
+    # Trim leading/trailing ASCII whitespace so env values like
+    # "foo, bar" are accepted.
+    app="${app#"${app%%[![:space:]]*}"}"
+    app="${app%"${app##*[![:space:]]}"}"
+    [[ -n "${app}" ]] || continue
+    REQUIRED_MONOREPO_APPS+=("${app}")
+  done
+
+  [[ "${#REQUIRED_MONOREPO_APPS[@]}" -gt 0 ]] || die "CC_AGENT_UI_REQUIRED_MONOREPO_APPS resolved to an empty app list"
+}
+
+verify_required_monorepo_surfaces() {
+  local missing_paths=() app
+
+  [[ -d "${MONOREPO_DIR}/packages/session-protocol" ]] || missing_paths+=("packages/session-protocol")
+  for app in "${REQUIRED_MONOREPO_APPS[@]}"; do
+    [[ -d "${MONOREPO_DIR}/apps/${app}" ]] || missing_paths+=("apps/${app}")
+  done
+
+  if [[ "${#missing_paths[@]}" -gt 0 ]]; then
+    die "monorepo ref '${MONOREPO_REF}' at '${MONOREPO_URL}' is missing required surfaces: ${missing_paths[*]} (these must exist in GitHub before provisioning)"
+  fi
 }
 
 print_config() {
@@ -224,8 +316,14 @@ svc_user=${SVC_USER}
 svc_home=${SVC_HOME}
 repo_url=${REPO_URL}
 repo_ref=${REPO_REF}
+monorepo_url=${MONOREPO_URL}
+monorepo_ref=${MONOREPO_REF}
+required_monorepo_apps=${REQUIRED_MONOREPO_APPS_RAW}
 client_id=${CLIENT_ID}
 repo_dir=${REPO_DIR}
+monorepo_dir=${MONOREPO_DIR}
+packages_link=${PACKAGES_LINK}
+apps_link=${APPS_LINK}
 domain=${DOMAIN}
 email=${EMAIL}
 proxy=${PROXY}
@@ -328,6 +426,83 @@ ensure_repo() {
   fi
 }
 
+ensure_monorepo_packages() {
+  # cc-agent-ui's package.json declares
+  # `"@cosmic-agent/session-protocol": "file:../packages/session-protocol"`.
+  # That `..` resolves to ${REPO_PARENT}, so we must ensure
+  # ${REPO_PARENT}/packages/session-protocol/ exists at install time.
+  #
+  # Strategy: clone the agent-memory monorepo into ${REPO_PARENT}/_monorepo
+  # (idempotent fetch + checkout, mirroring ensure_repo), then symlink both:
+  #   - ${REPO_PARENT}/packages -> ${MONOREPO_DIR}/packages  (required)
+  #   - ${REPO_PARENT}/apps     -> ${MONOREPO_DIR}/apps      (operational)
+  # This keeps shared protocol + app surfaces in lockstep with the pinned
+  # monorepo ref and avoids copy-on-update drift.
+  if [[ -d "${MONOREPO_DIR}/.git" ]]; then
+    log "Monorepo already cloned at ${MONOREPO_DIR}; fetching ${MONOREPO_REF}"
+    run_cmd sudo -u "${SVC_USER}" -H git -C "${MONOREPO_DIR}" fetch --tags origin
+    run_cmd sudo -u "${SVC_USER}" -H git -C "${MONOREPO_DIR}" checkout --force "${MONOREPO_REF}"
+    if [[ "${DRY_RUN}" == "true" ]]; then
+      printf '%s\n' "sudo -u ${SVC_USER} -H git -C ${MONOREPO_DIR} pull --ff-only origin ${MONOREPO_REF} # only when HEAD is a branch"
+    elif sudo -u "${SVC_USER}" -H git -C "${MONOREPO_DIR}" symbolic-ref -q HEAD >/dev/null; then
+      run_cmd sudo -u "${SVC_USER}" -H git -C "${MONOREPO_DIR}" pull --ff-only origin "${MONOREPO_REF}"
+    fi
+  elif [[ -e "${MONOREPO_DIR}" ]]; then
+    die "${MONOREPO_DIR} exists but is not a git checkout"
+  else
+    log "Cloning ${MONOREPO_URL} (${MONOREPO_REF}) into ${MONOREPO_DIR}"
+    run_cmd sudo -u "${SVC_USER}" -H mkdir -p "${REPO_PARENT}"
+    run_cmd sudo -u "${SVC_USER}" -H git clone "${MONOREPO_URL}" "${MONOREPO_DIR}"
+    run_cmd sudo -u "${SVC_USER}" -H git -C "${MONOREPO_DIR}" checkout --force "${MONOREPO_REF}"
+  fi
+
+  if [[ "${DRY_RUN}" == "false" ]]; then
+    [[ -d "${MONOREPO_DIR}/.git" ]] || die "monorepo dir ${MONOREPO_DIR} missing after clone"
+    verify_required_monorepo_surfaces
+    log "Monorepo checked out: $(sudo -u "${SVC_USER}" -H git -C "${MONOREPO_DIR}" describe --always --dirty)"
+  fi
+
+  # Symlink ${REPO_PARENT}/packages -> ${MONOREPO_DIR}/packages so that
+  # cc-agent-ui's `file:../packages/session-protocol` resolves to the cloned
+  # monorepo's packages/ subtree.
+  if [[ "${DRY_RUN}" == "true" ]]; then
+    printf '%s\n' "sudo -u ${SVC_USER} -H ln -sfn ${MONOREPO_DIR}/packages ${PACKAGES_LINK}"
+    printf '%s\n' "sudo -u ${SVC_USER} -H ln -sfn ${MONOREPO_DIR}/apps ${APPS_LINK}"
+    return 0
+  fi
+
+  if [[ -L "${PACKAGES_LINK}" ]]; then
+    local current
+    current=$(readlink -f "${PACKAGES_LINK}" || true)
+    if [[ "${current}" != "${MONOREPO_DIR}/packages" ]]; then
+      log "Refreshing stale ${PACKAGES_LINK} symlink (was ${current})"
+      run_cmd sudo -u "${SVC_USER}" -H ln -sfn "${MONOREPO_DIR}/packages" "${PACKAGES_LINK}"
+    fi
+  elif [[ -e "${PACKAGES_LINK}" ]]; then
+    die "${PACKAGES_LINK} exists and is not a symlink — refusing to clobber"
+  else
+    log "Linking ${PACKAGES_LINK} -> ${MONOREPO_DIR}/packages"
+    run_cmd sudo -u "${SVC_USER}" -H ln -sfn "${MONOREPO_DIR}/packages" "${PACKAGES_LINK}"
+  fi
+
+  # Symlink ${REPO_PARENT}/apps -> ${MONOREPO_DIR}/apps so one-client-per-VPS
+  # deployments can access monorepo app surfaces in a stable path.
+  [[ -d "${MONOREPO_DIR}/apps" ]] || die "${MONOREPO_DIR}/apps is missing"
+  if [[ -L "${APPS_LINK}" ]]; then
+    local current_apps
+    current_apps=$(readlink -f "${APPS_LINK}" || true)
+    if [[ "${current_apps}" != "${MONOREPO_DIR}/apps" ]]; then
+      log "Refreshing stale ${APPS_LINK} symlink (was ${current_apps})"
+      run_cmd sudo -u "${SVC_USER}" -H ln -sfn "${MONOREPO_DIR}/apps" "${APPS_LINK}"
+    fi
+  elif [[ -e "${APPS_LINK}" ]]; then
+    die "${APPS_LINK} exists and is not a symlink — refusing to clobber"
+  else
+    log "Linking ${APPS_LINK} -> ${MONOREPO_DIR}/apps"
+    run_cmd sudo -u "${SVC_USER}" -H ln -sfn "${MONOREPO_DIR}/apps" "${APPS_LINK}"
+  fi
+}
+
 install_deps() {
   log "Running npm install"
   run_cmd sudo -u "${SVC_USER}" -H bash -lc 'cd "$1" && npm install --no-audit --no-fund' _ "${REPO_DIR}"
@@ -345,6 +520,9 @@ write_install_metadata() {
 CC_AGENT_UI_CLIENT_ID=${CLIENT_ID}
 CC_AGENT_UI_REPO_URL=${REPO_URL}
 CC_AGENT_UI_REF=${REPO_REF}
+CC_AGENT_UI_MONOREPO_URL=${MONOREPO_URL}
+CC_AGENT_UI_MONOREPO_REF=${MONOREPO_REF}
+CC_AGENT_UI_REQUIRED_MONOREPO_APPS=${REQUIRED_MONOREPO_APPS_RAW}
 CC_AGENT_UI_DOMAIN=${DOMAIN}
 CC_AGENT_UI_SERVICE_USER=${SVC_USER}
 CC_AGENT_UI_SINGLE_TENANT=true
@@ -510,15 +688,19 @@ post_install_summary() {
 
 cc-agent-ui installed successfully.
 
-Service:     cc-agent-ui.service (User=${SVC_USER})
-Client:      ${CLIENT_ID}
-Working dir: ${REPO_DIR}
-Bind:        http://${UPSTREAM}
-Ref:         ${REPO_REF}
-Proxy:       ${PROXY}
+Service:        cc-agent-ui.service (User=${SVC_USER})
+Client:         ${CLIENT_ID}
+Working dir:    ${REPO_DIR}
+Monorepo dir:   ${MONOREPO_DIR}
+Packages link:  ${PACKAGES_LINK} -> ${MONOREPO_DIR}/packages
+Apps link:      ${APPS_LINK} -> ${MONOREPO_DIR}/apps
+Bind:           http://${UPSTREAM}
+cc-agent-ui ref: ${REPO_REF}
+Monorepo ref:   ${MONOREPO_REF}
+Proxy:          ${PROXY}
 
 Verify:
-  sudo bash scripts/deploy/install-vps.sh --ref ${REPO_REF} --verify-only --no-tls
+  sudo bash scripts/deploy/install-vps.sh --ref ${REPO_REF} --monorepo-ref ${MONOREPO_REF} --verify-only --no-tls
   journalctl -u cc-agent-ui -f
 EOF
 }
@@ -526,6 +708,10 @@ EOF
 run_named_step() {
   case "${RUN_STEP}" in
     install_agent_clis) install_agent_clis ;;
+    ensure_monorepo_packages)
+      require_monorepo_ref
+      ensure_monorepo_packages
+      ;;
     configure_proxy) configure_proxy ;;
     run_health_checks) run_health_checks ;;
     "") die "--run-step requires a step name" ;;
@@ -535,6 +721,7 @@ run_named_step() {
 
 main() {
   parse_args "$@"
+  parse_required_monorepo_apps
   validate_config
 
   if [[ "${PRINT_CONFIG}" == "true" ]]; then
@@ -553,6 +740,7 @@ main() {
   fi
 
   validate_client_id
+  require_monorepo_ref
   require_root
   require_ubuntu
   ensure_packages
@@ -560,6 +748,7 @@ main() {
   ensure_bun
   install_agent_clis
   ensure_repo
+  ensure_monorepo_packages
   install_deps
   write_install_metadata
   install_unit

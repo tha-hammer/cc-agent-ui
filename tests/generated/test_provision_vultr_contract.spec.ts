@@ -27,6 +27,7 @@ describe('Vultr provisioner contract', () => {
       '--render-startup-script',
       '--repo-url', 'https://github.com/tha-hammer/cc-agent-ui.git',
       '--ref', 'v1.28.0',
+      '--monorepo-ref', 'v1.28.0',
       '--client-id', 'acme',
       '--domain', 'app.example.com',
       '--email', 'ops@example.com',
@@ -37,8 +38,11 @@ describe('Vultr provisioner contract', () => {
     expect(result.stdout).toContain('git -C "${tmp_dir}/cc-agent-ui" checkout --force v1.28.0');
     expect(result.stdout).toContain('--repo-url https://github.com/tha-hammer/cc-agent-ui.git');
     expect(result.stdout).toContain('--ref v1.28.0');
+    expect(result.stdout).toContain('--monorepo-ref v1.28.0');
     expect(result.stdout).toContain('--client-id acme');
     expect(result.stdout).toContain('export CC_AGENT_UI_CLIENT_ID=acme');
+    expect(result.stdout).toContain('export CC_AGENT_UI_MONOREPO_REF=v1.28.0');
+    expect(result.stdout).toContain('export CC_AGENT_UI_REQUIRED_MONOREPO_APPS=cosmic-agent-core\\,silmari-genui\\,cosmic-video');
     expect(result.stdout).toContain('--domain app.example.com');
     expect(result.stdout).toContain('--email ops@example.com');
     expect(result.stdout).not.toContain('VULTR_API_KEY');
@@ -50,6 +54,7 @@ describe('Vultr provisioner contract', () => {
       '--render-startup-script',
       '--repo-url', 'https://github.com/tha-hammer/cc-agent-ui.git',
       '--ref', sha,
+      '--monorepo-ref', 'v1.28.0',
       '--client-id', 'sha-client',
       '--no-tls',
     ]);
@@ -65,11 +70,25 @@ describe('Vultr provisioner contract', () => {
       '--render-startup-script',
       '--repo-url', 'https://github.com/tha-hammer/cc-agent-ui.git',
       '--ref', 'v1.28.0',
+      '--monorepo-ref', 'v1.28.0',
       '--no-tls',
     ]);
 
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain('--client-id');
+  });
+
+  it('requires a monorepo ref when rendering a startup script directly', () => {
+    const result = runProvision([
+      '--render-startup-script',
+      '--repo-url', 'https://github.com/tha-hammer/cc-agent-ui.git',
+      '--ref', 'v1.28.0',
+      '--client-id', 'acme',
+      '--no-tls',
+    ]);
+
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('--monorepo-ref');
   });
 
   it('prints a dry-run provisioning payload without network access', () => {
@@ -83,6 +102,7 @@ describe('Vultr provisioner contract', () => {
       '--ssh-public-key-file', '/tmp/operator.pub',
       '--repo-url', 'https://github.com/tha-hammer/cc-agent-ui.git',
       '--ref', 'v1.28.0',
+      '--monorepo-ref', 'v1.28.0',
       '--client-id', 'acme',
       '--no-tls',
     ]);
@@ -94,6 +114,8 @@ describe('Vultr provisioner contract', () => {
     expect(result.stdout).toContain('"plan":"vc2-2c-4gb"');
     expect(result.stdout).toContain('"ssh_key_name":"operator"');
     expect(result.stdout).toContain('"ssh_public_key_file":"/tmp/operator.pub"');
+    expect(result.stdout).toContain('"monorepo_ref":"v1.28.0"');
+    expect(result.stdout).toContain('"required_monorepo_apps":"cosmic-agent-core,silmari-genui,cosmic-video"');
   });
 
   it('requires ssh key inputs when creating an instance payload', () => {
@@ -105,6 +127,7 @@ describe('Vultr provisioner contract', () => {
       '--os-id', '2284',
       '--repo-url', 'https://github.com/tha-hammer/cc-agent-ui.git',
       '--ref', 'v1.28.0',
+      '--monorepo-ref', 'v1.28.0',
       '--client-id', 'acme',
       '--no-tls',
     ]);
